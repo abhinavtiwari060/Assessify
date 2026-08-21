@@ -7,6 +7,12 @@ import Sidebar from './components/Sidebar';
 // Auth Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import AdminLogin from './pages/auth/AdminLogin';
+
+// Public Informational Pages
+import About from './pages/public/About';
+import AboutDeveloper from './pages/public/AboutDeveloper';
+import PrivacyPolicy from './pages/public/PrivacyPolicy';
 
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -40,8 +46,17 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user, loading } = useAuth();
   if (loading) return null;
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    if (allowedRoles && allowedRoles.includes('admin')) {
+      return <Navigate to="/admin/login" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    if (allowedRoles.includes('admin')) {
+      return <Navigate to="/admin/login" replace />;
+    }
     if (user?.role === 'student') return <Navigate to="/student/dashboard" replace />;
     if (user?.role === 'teacher') return <Navigate to="/teacher/dashboard" replace />;
     if (user?.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
@@ -55,21 +70,31 @@ const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/admin/login';
   const isTestTakingPage = location.pathname.includes('/student/test/');
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans transition-colors">
+      {/* Top Navbar */}
       {!isAuthPage && !isTestTakingPage && (
         <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       )}
 
       <div className="flex-1 flex">
-        {!isAuthPage && !isTestTakingPage && isAuthenticated && (
+        {/* Compact Sidebar */}
+        {!isAuthPage && !isTestTakingPage && (
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
 
-        <main className={`flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full ${isAuthPage || isTestTakingPage ? 'p-0 sm:p-0 lg:p-0 max-w-none' : ''}`}>
+        {/* Main Content Area */}
+        <main
+          className={`flex-1 p-3 sm:p-5 max-w-7xl mx-auto w-full ${
+            isAuthPage || isTestTakingPage ? 'p-0 sm:p-0 max-w-none' : ''
+          }`}
+        >
           <Routes>
             {/* Default Landing Redirect */}
             <Route
@@ -87,9 +112,24 @@ const App = () => {
               }
             />
 
+            {/* Public Pages */}
+            <Route path="/about" element={<About />} />
+            <Route path="/about-developer" element={<AboutDeveloper />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route
+              path="/admin/login"
+              element={
+                isAuthenticated && user?.role === 'admin' ? (
+                  <Navigate to="/admin/dashboard" replace />
+                ) : (
+                  <AdminLogin />
+                )
+              }
+            />
 
             {/* Student Routes */}
             <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
@@ -114,6 +154,7 @@ const App = () => {
             <Route path="/teacher/profile" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><Profile /></ProtectedRoute>} />
 
             {/* Admin Routes */}
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
             <Route path="/admin/subjects" element={<ProtectedRoute allowedRoles={['admin']}><ManageSubjects /></ProtectedRoute>} />

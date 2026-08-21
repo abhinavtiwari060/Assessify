@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { GraduationCap, Mail, Lock, ArrowRight, Sparkles, UserCheck } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,7 +12,6 @@ const Login = () => {
   const { login } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -38,108 +37,49 @@ const Login = () => {
     }
   };
 
-  const setQuickDemoUser = (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900 text-slate-100 relative overflow-hidden">
       {/* Background Gradients */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/20 blur-3xl rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-blue-600/15 blur-3xl rounded-full pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-600/15 blur-3xl rounded-full pointer-events-none"></div>
 
-      <div className="max-w-md w-full relative z-10 space-y-6">
+      <div className="max-w-sm sm:max-w-md w-full relative z-10 space-y-5">
         {/* Logo Banner */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-xl shadow-indigo-500/30">
-            <GraduationCap className="w-8 h-8" />
+        <div className="text-center space-y-1.5">
+          <div className="w-11 h-11 mx-auto rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+            <GraduationCap className="w-6 h-6" />
           </div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Assessify</h2>
-          <p className="text-sm text-slate-400">Online Assessment & MCQ/Essay Evaluation Engine</p>
-        </div>
-
-        {/* Quick Demo Credentials Panel */}
-        <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-5 shadow-xl space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
-            <Sparkles className="w-4 h-4" />
-            <span>Quick One-Click Demo Logins</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              onClick={() => setQuickDemoUser('student@platform.com', 'student123')}
-              className="p-2.5 bg-slate-700/60 hover:bg-slate-700 rounded-xl border border-slate-600/60 text-left transition-colors flex items-center gap-2"
-            >
-              <UserCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div>
-                <div className="font-semibold text-slate-200">Student Demo</div>
-                <div className="text-[10px] text-slate-400">Alex Johnson</div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => setQuickDemoUser('teacher@platform.com', 'teacher123')}
-              className="p-2.5 bg-slate-700/60 hover:bg-slate-700 rounded-xl border border-slate-600/60 text-left transition-colors flex items-center gap-2"
-            >
-              <UserCheck className="w-4 h-4 text-indigo-400 shrink-0" />
-              <div>
-                <div className="font-semibold text-slate-200">Teacher A</div>
-                <div className="text-[10px] text-slate-400">Prof. Turing</div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => setQuickDemoUser('teacher2@platform.com', 'teacher123')}
-              className="p-2.5 bg-slate-700/60 hover:bg-slate-700 rounded-xl border border-slate-600/60 text-left transition-colors flex items-center gap-2"
-            >
-              <UserCheck className="w-4 h-4 text-purple-400 shrink-0" />
-              <div>
-                <div className="font-semibold text-slate-200">Teacher B</div>
-                <div className="text-[10px] text-slate-400">Dr. Hopper</div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => setQuickDemoUser('admin@platform.com', 'admin123')}
-              className="p-2.5 bg-slate-700/60 hover:bg-slate-700 rounded-xl border border-slate-600/60 text-left transition-colors flex items-center gap-2"
-            >
-              <UserCheck className="w-4 h-4 text-rose-400 shrink-0" />
-              <div>
-                <div className="font-semibold text-slate-200">Admin Demo</div>
-                <div className="text-[10px] text-slate-400">Platform Admin</div>
-              </div>
-            </button>
-          </div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Assessify</h2>
+          <p className="text-xs text-slate-400 font-normal">Online Assessment & MCQ/Essay Evaluation Engine</p>
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleLogin} className="bg-slate-800/90 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-8 shadow-2xl space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">Email Address</label>
+        <form onSubmit={handleLogin} className="bg-slate-800/90 backdrop-blur-xl border border-slate-700/80 rounded-xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">Email Address</label>
             <div className="relative">
-              <Mail className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@domain.com"
-                className="w-full bg-slate-900/80 border border-slate-700 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-10 pr-3.5 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-300">Password</label>
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-300">Password</label>
             <div className="relative">
-              <Lock className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-900/80 border border-slate-700 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-900/80 border border-slate-700 rounded-lg pl-10 pr-3.5 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -147,18 +87,26 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold shadow-lg shadow-indigo-600/30 transition-all transform active:scale-95 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm shadow-sm transition-colors active:scale-[0.99] disabled:opacity-50 mt-1"
           >
             {loading ? 'Signing In...' : 'Sign In to Account'}
-            {!loading && <ArrowRight className="w-5 h-5" />}
+            {!loading && <ArrowRight className="w-4 h-4" />}
           </button>
 
-          <p className="text-center text-xs text-slate-400 pt-2">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-indigo-400 hover:underline">
-              Create student or teacher account
-            </Link>
-          </p>
+          <div className="pt-2 text-center space-y-1.5 text-xs text-slate-400 font-normal">
+            <p>
+              Don't have an account?{' '}
+              <Link to="/register" className="font-semibold text-indigo-400 hover:underline">
+                Create student or teacher account
+              </Link>
+            </p>
+            <p className="pt-1.5 border-t border-slate-700/60">
+              Platform Administrator?{' '}
+              <Link to="/admin/login" className="font-semibold text-rose-400 hover:underline">
+                Access Admin Portal
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </div>

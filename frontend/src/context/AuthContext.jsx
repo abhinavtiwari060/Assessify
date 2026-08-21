@@ -38,6 +38,16 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const adminLogin = async (email, password) => {
+    const res = await api.post('/auth/admin/login', { email, password });
+    const { token: newToken, ...userData } = res.data;
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(newToken);
+    setUser(userData);
+    return userData;
+  };
+
   const register = async (name, email, password, role, bio) => {
     const res = await api.post('/auth/register', { name, email, password, role, bio });
     const { token: newToken, ...userData } = res.data;
@@ -68,6 +78,7 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         login,
+        adminLogin,
         register,
         logout,
         updateUser,

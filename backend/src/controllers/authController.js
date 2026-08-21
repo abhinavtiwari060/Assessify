@@ -175,6 +175,70 @@ const loginUser = async (req, res) => {
   }
 };
 
+// @desc    Authenticate admin & get token
+// @route   POST /api/auth/admin/login
+// @access  Public (Admin portal)
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please enter admin email and password' });
+    }
+
+    const envAdminEmail = process.env.ADMIN_EMAIL;
+    const envAdminPassword = process.env.ADMIN_PASSWORD;
+
+    let user = await User.findOne({ email }).select('+password');
+
+    if (!user && envAdminEmail && email.toLowerCase() === envAdminEmail.toLowerCase()) {
+      if (password === envAdminPassword) {
+        user = await User.create({
+          name: 'Platform Admin',
+          email: envAdminEmail,
+          password: envAdminPassword,
+          role: 'admin',
+          bio: 'System Administrator',
+        });
+        user = await User.findById(user._id).select('+password');
+      }
+    }
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Account does not have administrator privileges.' });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: 'Admin account has been deactivated.' });
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
+    req.user = user;
+    await logAudit(req, 'ADMIN_LOGIN', `Admin logged in (${user.email})`);
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      rollNo: user.rollNo || '',
+      avatar: user.avatar,
+      bio: user.bio,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Get current user profile
 // @route   GET /api/auth/me
 // @access  Private
@@ -238,4 +302,4 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, googleAuth, loginUser, getMe, updateProfile };
+module.exports = { registerUser, googleAuth, loginUser, adminLogin, getMe, updateProfile };

@@ -18,8 +18,8 @@ const seedInitialData = async () => {
     // 1. Create Default Users
     const admin = await User.create({
       name: 'Platform Admin',
-      email: 'admin@platform.com',
-      password: 'admin123',
+      email: 'abhitiwariaj@gmail.com',
+      password: 'Abhi8957@tiwari#9451',
       role: 'admin',
       bio: 'System Administrator & Moderation Lead',
     });
@@ -56,7 +56,7 @@ const seedInitialData = async () => {
       bio: 'Full Stack Engineering Student',
     });
 
-    console.log('✅ Users seeded: admin@platform.com, teacher@platform.com, teacher2@platform.com, student@platform.com');
+    console.log('✅ Users seeded: abhitiwariaj@gmail.com, teacher@platform.com, teacher2@platform.com, student@platform.com');
 
     // 2. Create Subjects
     const subjectsData = [
