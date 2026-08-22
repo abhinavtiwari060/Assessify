@@ -13,7 +13,7 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key_12345');
 
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.id).select('-password').lean();
 
       if (!req.user || !req.user.isActive) {
         return res.status(401).json({ message: 'User account is inactive or disabled' });

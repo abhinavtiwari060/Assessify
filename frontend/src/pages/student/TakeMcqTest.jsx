@@ -75,8 +75,13 @@ const TakeMcqTest = () => {
     return () => clearInterval(interval);
   }, [flushDirtyAnswers]);
 
-  // Load Test & Start Attempt
+  const initializedTestIdRef = useRef(null);
+
+  // Load Test & Start Attempt (Guarded against duplicate requests)
   useEffect(() => {
+    if (initializedTestIdRef.current === testId) return;
+    initializedTestIdRef.current = testId;
+
     const initTest = async () => {
       try {
         const testRes = await api.get(`/tests/${testId}`);

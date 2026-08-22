@@ -122,41 +122,97 @@ const getTests = async (req, res) => {
   }
 };
 
-// @desc    Get single test details (Optimized)
+// Safe Server-Side In-Memory Cache for sanitized student test definitions
+const studentTestCache = new Map();
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds TTL
+
+function invalidateTestCache(testId) {
+  if (testId) {
+    studentTestCache.delete(testId.toString());
+  }
+}
+
+// @desc    Get single test details (High-Concurrency Optimized)
 // @route   GET /api/tests/:id
 // @access  Private
 const getTestById = async (req, res) => {
-  try {
-    const test = await Test.findById(req.params.id)
-      .populate('subjectId', 'name code iconName')
-      .populate('teacherId', 'name email')
-      .lean();
+  const startTime = Date.now();
+  const testIdStr = req.params.id;
 
-    if (!test) {
-      return res.status(404).json({ message: 'Test not found' });
+  try {
+    // 1. FAST PATH: Check safe in-memory cache for student users
+    if (req.user.role === 'student') {
+      const cached = studentTestCache.get(testIdStr);
+      if (cached && cached.expiresAt > Date.now()) {
+        const totalDuration = Date.now() - startTime;
+        console.log(`⚡ [Test API Cache HIT] testId=${testIdStr} | total=${totalDuration}ms`);
+        return res.json(cached.data);
+      }
+    }
+
+    // 2. DB Query for Test
+    const t0 = Date.now();
+    let testQuery;
+
+    if (req.user.role === 'teacher') {
+      testQuery = Test.findById(testIdStr)
+        .populate('subjectId', 'name code iconName')
+        .populate('teacherId', 'name email')
+        .lean();
+    } else {
+      // Students don't need teacherId populated
+      testQuery = Test.findById(testIdStr)
+        .populate('subjectId', 'name code iconName')
+        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished subjectId')
+        .lean();
+    }
+
+    const test = await testQuery;
+    const testQueryDuration = Date.now() - t0;
+
+    if (!test || (!test.isPublished && req.user.role === 'student')) {
+      return res.status(404).json({ message: 'Test not found or unavailable' });
     }
 
     if (
       req.user.role === 'teacher' &&
-      test.teacherId._id.toString() !== req.user._id.toString()
+      test.teacherId?._id?.toString() !== req.user._id.toString()
     ) {
       return res.status(403).json({ message: 'Access denied: You can only access your own created tests' });
     }
 
-    // Optimize DB projections: Omit correctAnswerIndex & explanation for students at database level
-    let questionQuery = Question.find({ testId: test._id }).sort({ order: 1, createdAt: 1 }).lean();
+    // 3. DB Query for Questions with exact index-scan sort clause { order: 1 }
+    const t1 = Date.now();
+    let questionQuery = Question.find({ testId: test._id }).sort({ order: 1 }).lean();
 
     if (req.user.role === 'student') {
       questionQuery = questionQuery.select('_id testId questionText options marks timerSeconds order');
     }
 
     const questions = await questionQuery;
+    const questionQueryDuration = Date.now() - t1;
 
-    res.json({
+    const responsePayload = {
       ...test,
       questions,
-    });
+    };
+
+    // 4. Store in safe student test cache if student role
+    if (req.user.role === 'student') {
+      studentTestCache.set(testIdStr, {
+        data: responsePayload,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+      });
+    }
+
+    const totalDuration = Date.now() - startTime;
+    console.log(
+      `📊 [Test API DB MISS] testId=${testIdStr} | total=${totalDuration}ms | testQuery=${testQueryDuration}ms | questionQuery=${questionQueryDuration}ms`
+    );
+
+    res.json(responsePayload);
   } catch (error) {
+    console.error(`❌ [Test API Error] testId=${testIdStr} | error=${error.message}`);
     res.status(500).json({ message: error.message });
   }
 };
@@ -308,6 +364,7 @@ const updateTest = async (req, res) => {
     }
 
     const updatedTest = await test.save();
+    invalidateTestCache(test._id);
     await logAudit(req, 'TEST_UPDATE', `Updated test "${updatedTest.title}"`);
 
     res.json(updatedTest);
@@ -341,6 +398,7 @@ const deleteTest = async (req, res) => {
     await EssaySubmission.deleteMany({ testId: test._id });
     await test.deleteOne();
 
+    invalidateTestCache(test._id);
     await logAudit(req, 'TEST_DELETE', `Deleted test "${test.title}"`);
 
     res.json({ message: 'Test and associated questions/attempts removed' });
