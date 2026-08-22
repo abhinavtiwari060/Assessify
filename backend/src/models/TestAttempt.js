@@ -67,6 +67,22 @@ const testAttemptSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    totalQuestions: {
+      type: Number,
+      default: 0,
+    },
+    unansweredCount: {
+      type: Number,
+      default: 0,
+    },
+    percentage: {
+      type: Number,
+      default: 0,
+    },
+    isPassed: {
+      type: Boolean,
+      default: false,
+    },
     timeTakenSeconds: {
       type: Number,
       default: 0,
@@ -101,9 +117,11 @@ const testAttemptSchema = new mongoose.Schema(
   }
 );
 
-// Compound index for in-progress & completed queries
+// Compound indexes for report queries, filtering, and in-progress attempts
 testAttemptSchema.index({ testId: 1, studentId: 1, status: 1 });
 testAttemptSchema.index({ studentId: 1, status: 1 });
+testAttemptSchema.index({ testId: 1, submittedAt: -1 });
+testAttemptSchema.index({ studentId: 1, submittedAt: -1 });
 
 // Strict unique partial index ensuring only ONE in-progress attempt per (testId, studentId)
 testAttemptSchema.index(

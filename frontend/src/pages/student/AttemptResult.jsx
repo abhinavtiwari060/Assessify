@@ -55,18 +55,39 @@ const AttemptResult = () => {
     );
   }
 
-  const isPassed = result.accuracy >= 40;
+  const passingPercentage = result.testId?.passingPercentage || 40;
+  const percentage = result.percentage !== undefined ? result.percentage : result.accuracy;
+  const isPassed = result.isPassed !== undefined ? result.isPassed : percentage >= passingPercentage;
+
+  const totalQuestions = result.totalQuestions || questions.length;
+  const attemptedCount = result.attemptedCount || 0;
+  const unansweredCount = result.unansweredCount !== undefined ? result.unansweredCount : Math.max(0, totalQuestions - attemptedCount);
+
+  function formatTime(secs) {
+    if (!secs) return '0s';
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return m === 0 ? `${s}s` : `${m}m ${s}s`;
+  }
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-12">
-      {/* Top Banner */}
-      <div className="flex items-center justify-between">
+      {/* Top Banner Navigation Buttons */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
-          to="/student/history"
-          className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-colors"
+          to="/student/dashboard"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Test History</span>
+          <span>Back to Dashboard</span>
+        </Link>
+
+        <Link
+          to="/student/history"
+          className="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 transition-colors"
+        >
+          <Trophy className="w-4 h-4" />
+          <span>View All Results</span>
         </Link>
       </div>
 
@@ -81,16 +102,22 @@ const AttemptResult = () => {
               {result.testId?.title}
             </h1>
             <p className="text-xs text-slate-500">
-              Completed on {new Date(result.submittedAt || result.createdAt).toLocaleString()}
+              Student: <strong className="text-slate-800 dark:text-slate-200">{result.studentId?.name}</strong> ({result.studentId?.email})
+            </p>
+            <p className="text-[11px] text-slate-400">
+              Submitted on {new Date(result.submittedAt || result.createdAt).toLocaleString()}
             </p>
           </div>
 
-          <div className="flex flex-col items-center p-5 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-900 dark:to-indigo-950/60 rounded-3xl border border-indigo-100 dark:border-indigo-800/80 min-w-48 text-center">
+          <div className="flex flex-col items-center p-5 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-900 dark:to-indigo-950/60 rounded-3xl border border-indigo-100 dark:border-indigo-800/80 min-w-52 text-center">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Final Score</span>
             <div className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent my-1">
               {result.score} / {result.maxMarks}
             </div>
-            <span className={`text-xs font-bold px-3 py-0.5 rounded-full ${
+            <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-2">
+              {percentage}%
+            </div>
+            <span className={`text-xs font-bold px-3.5 py-1 rounded-full ${
               isPassed ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/20 text-rose-600 dark:text-rose-400'
             }`}>
               {isPassed ? 'PASSED' : 'NEEDS IMPROVEMENT'}
@@ -99,29 +126,41 @@ const AttemptResult = () => {
         </div>
 
         {/* Detailed Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 mx-auto" />
-            <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{result.correctCount}</div>
-            <div className="text-xs font-semibold text-slate-500">Correct</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 space-y-1">
+            <HelpCircle className="w-4 h-4 text-slate-500 mx-auto" />
+            <div className="text-xl font-extrabold text-slate-800 dark:text-slate-200">{totalQuestions}</div>
+            <div className="text-[10px] font-semibold text-slate-500 uppercase">Total Qs</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-1">
-            <XCircle className="w-5 h-5 text-rose-500 mx-auto" />
-            <div className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">{result.wrongCount}</div>
-            <div className="text-xs font-semibold text-slate-500">Wrong</div>
+          <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 space-y-1">
+            <Award className="w-4 h-4 text-indigo-500 mx-auto" />
+            <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{attemptedCount}</div>
+            <div className="text-[10px] font-semibold text-slate-500 uppercase">Attempted</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-1">
-            <Award className="w-5 h-5 text-blue-500 mx-auto" />
-            <div className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">{result.accuracy}%</div>
-            <div className="text-xs font-semibold text-slate-500">Accuracy</div>
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
+            <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{result.correctCount}</div>
+            <div className="text-[10px] font-semibold text-slate-500 uppercase">Correct</div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-            <ShieldAlert className="w-5 h-5 text-amber-500 mx-auto" />
-            <div className="text-2xl font-extrabold text-amber-600 dark:text-amber-400">{result.violationCount || 0}</div>
-            <div className="text-xs font-semibold text-slate-500">Violations</div>
+          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-1">
+            <XCircle className="w-4 h-4 text-rose-500 mx-auto" />
+            <div className="text-xl font-extrabold text-rose-600 dark:text-rose-400">{result.wrongCount}</div>
+            <div className="text-[10px] font-semibold text-slate-500 uppercase">Wrong</div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-500/10 border border-slate-500/20 space-y-1">
+            <HelpCircle className="w-4 h-4 text-slate-400 mx-auto" />
+            <div className="text-xl font-extrabold text-slate-600 dark:text-slate-400">{unansweredCount}</div>
+            <div className="text-[10px] font-semibold text-slate-500 uppercase">Unanswered</div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
+            <Clock className="w-4 h-4 text-amber-500 mx-auto" />
+            <div className="text-xl font-extrabold text-amber-600 dark:text-amber-400">{formatTime(result.timeTakenSeconds)}</div>
+            <div className="text-[10px] font-semibold text-slate-500 uppercase">Time Taken</div>
           </div>
         </div>
       </div>

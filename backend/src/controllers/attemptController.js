@@ -294,7 +294,7 @@ const submitAttempt = async (req, res) => {
 // Helper: Calculate scores, negative marking, and accuracy (Optimized O(1) Answer Map)
 async function evaluateAttemptScores(attempt) {
   const test = await Test.findById(attempt.testId)
-    .select('negativeMarkingRate')
+    .select('negativeMarkingRate passingPercentage')
     .lean();
   const questions = await Question.find({ testId: attempt.testId })
     .select('_id correctAnswerIndex marks')
@@ -307,6 +307,7 @@ async function evaluateAttemptScores(attempt) {
   let totalMaxMarks = 0;
 
   const negativeRate = test ? test.negativeMarkingRate || 0 : 0;
+  const passingPercentage = test ? test.passingPercentage || 40 : 40;
   const answerMap = new Map(attempt.answers.map((a) => [a.questionId.toString(), a]));
 
   questions.forEach((q) => {
@@ -330,11 +331,21 @@ async function evaluateAttemptScores(attempt) {
     }
   });
 
-  attempt.score = Math.max(0, Math.round(totalScore * 100) / 100);
+  const finalScore = Math.max(0, Math.round(totalScore * 100) / 100);
+  const totalQuestions = questions.length;
+  const unansweredCount = Math.max(0, totalQuestions - attemptedCount);
+  const percentage = totalMaxMarks > 0 ? Math.round((finalScore / totalMaxMarks) * 10000) / 100 : 0;
+  const isPassed = percentage >= passingPercentage;
+
+  attempt.score = finalScore;
   attempt.maxMarks = totalMaxMarks;
   attempt.attemptedCount = attemptedCount;
   attempt.correctCount = correctCount;
   attempt.wrongCount = wrongCount;
+  attempt.totalQuestions = totalQuestions;
+  attempt.unansweredCount = unansweredCount;
+  attempt.percentage = percentage;
+  attempt.isPassed = isPassed;
   attempt.accuracy = attemptedCount > 0 ? Math.round((correctCount / attemptedCount) * 10000) / 100 : 0;
 
   if (attempt.startedAt && attempt.submittedAt) {
@@ -408,13 +419,273 @@ const getMyHistory = async (req, res) => {
     })
       .populate({
         path: 'testId',
-        select: 'title type subjectId durationMinutes',
+        select: 'title type subjectId durationMinutes passingPercentage',
         populate: { path: 'subjectId', select: 'name code iconName' },
       })
       .sort({ createdAt: -1 })
       .lean();
 
     res.json(attempts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Helper: Format duration seconds to string (e.g. 07m 30s)
+function formatDuration(seconds) {
+  if (!seconds || seconds <= 0) return '0s';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m === 0) return `${s}s`;
+  return `${m}m ${s}s`;
+}
+
+// @desc    Get Student Test Reports for Teacher / Admin
+// @route   GET /api/attempts/reports
+// @access  Private (Teacher / Admin)
+const getTeacherStudentReports = async (req, res) => {
+  try {
+    const xlsx = require('xlsx'); // verify requirement
+    const {
+      search,
+      testId,
+      status,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 10,
+      sortBy = 'submittedAt',
+      sortOrder = 'desc',
+    } = req.query;
+
+    let testFilter = {};
+    if (req.user.role === 'teacher') {
+      const myTests = await Test.find({ teacherId: req.user._id }).select('_id').lean();
+      const myTestIds = myTests.map((t) => t._id);
+      testFilter.testId = { $in: myTestIds };
+    }
+
+    if (testId) {
+      testFilter.testId = testId;
+    }
+
+    let query = {
+      status: { $ne: 'in_progress' },
+      ...testFilter,
+    };
+
+    if (startDate || endDate) {
+      query.submittedAt = {};
+      if (startDate) query.submittedAt.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.submittedAt.$lte = end;
+      }
+    }
+
+    let attempts = await TestAttempt.find(query)
+      .populate('studentId', 'name email rollNo avatar')
+      .populate({
+        path: 'testId',
+        select: 'title subjectId passingPercentage totalMarks',
+        populate: { path: 'subjectId', select: 'name code' },
+      })
+      .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
+      .lean();
+
+    // In-memory filter for status & search
+    if (status && status !== 'all') {
+      attempts = attempts.filter((att) => {
+        const passingRate = att.testId?.passingPercentage || 40;
+        const pct = att.percentage !== undefined ? att.percentage : att.accuracy;
+        const passed = att.isPassed !== undefined ? att.isPassed : pct >= passingRate;
+        return status === 'passed' ? passed : !passed;
+      });
+    }
+
+    if (search && search.trim() !== '') {
+      const term = search.trim().toLowerCase();
+      attempts = attempts.filter((att) => {
+        const nameMatch = att.studentId?.name?.toLowerCase().includes(term);
+        const emailMatch = att.studentId?.email?.toLowerCase().includes(term);
+        const testMatch = att.testId?.title?.toLowerCase().includes(term);
+        return nameMatch || emailMatch || testMatch;
+      });
+    }
+
+    const total = attempts.length;
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const startIndex = (pageNum - 1) * limitNum;
+    const paginatedAttempts = attempts.slice(startIndex, startIndex + limitNum);
+
+    const formattedReports = paginatedAttempts.map((att) => {
+      const totalQs = att.totalQuestions || att.answers?.length || 0;
+      const attempted = att.attemptedCount || 0;
+      const correct = att.correctCount || 0;
+      const wrong = att.wrongCount || 0;
+      const unanswered = att.unansweredCount !== undefined ? att.unansweredCount : Math.max(0, totalQs - attempted);
+      const passingRate = att.testId?.passingPercentage || 40;
+      const pct = att.percentage !== undefined ? att.percentage : att.accuracy;
+      const isPassed = att.isPassed !== undefined ? att.isPassed : pct >= passingRate;
+
+      return {
+        _id: att._id,
+        studentId: att.studentId?._id,
+        studentName: att.studentId?.name || 'Unknown Student',
+        studentEmail: att.studentId?.email || 'N/A',
+        studentAvatar: att.studentId?.avatar || '',
+        testId: att.testId?._id,
+        testName: att.testId?.title || 'MCQ Exam',
+        subjectName: att.testId?.subjectId?.name || 'General',
+        totalQuestions: totalQs,
+        attempted,
+        correct,
+        wrong,
+        unanswered,
+        score: att.score,
+        maxMarks: att.maxMarks,
+        accuracy: att.accuracy,
+        percentage: pct,
+        timeTakenSeconds: att.timeTakenSeconds || 0,
+        timeTakenFormatted: formatDuration(att.timeTakenSeconds),
+        status: isPassed ? 'Passed' : 'Needs Improvement',
+        isPassed,
+        violationCount: att.violationCount || 0,
+        submittedAt: att.submittedAt || att.createdAt,
+      };
+    });
+
+    res.json({
+      reports: formattedReports,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum) || 1,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Export Student Test Reports to Excel (.xlsx)
+// @route   GET /api/attempts/reports/export
+// @access  Private (Teacher / Admin)
+const exportStudentReportsExcel = async (req, res) => {
+  try {
+    const xlsx = require('xlsx');
+    const { search, testId, status, startDate, endDate } = req.query;
+
+    let testFilter = {};
+    if (req.user.role === 'teacher') {
+      const myTests = await Test.find({ teacherId: req.user._id }).select('_id').lean();
+      const myTestIds = myTests.map((t) => t._id);
+      testFilter.testId = { $in: myTestIds };
+    }
+
+    if (testId) {
+      testFilter.testId = testId;
+    }
+
+    let query = {
+      status: { $ne: 'in_progress' },
+      ...testFilter,
+    };
+
+    if (startDate || endDate) {
+      query.submittedAt = {};
+      if (startDate) query.submittedAt.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.submittedAt.$lte = end;
+      }
+    }
+
+    let attempts = await TestAttempt.find(query)
+      .populate('studentId', 'name email rollNo')
+      .populate({
+        path: 'testId',
+        select: 'title subjectId passingPercentage totalMarks',
+      })
+      .sort({ submittedAt: -1 })
+      .lean();
+
+    if (status && status !== 'all') {
+      attempts = attempts.filter((att) => {
+        const passingRate = att.testId?.passingPercentage || 40;
+        const pct = att.percentage !== undefined ? att.percentage : att.accuracy;
+        const passed = att.isPassed !== undefined ? att.isPassed : pct >= passingRate;
+        return status === 'passed' ? passed : !passed;
+      });
+    }
+
+    if (search && search.trim() !== '') {
+      const term = search.trim().toLowerCase();
+      attempts = attempts.filter((att) => {
+        const nameMatch = att.studentId?.name?.toLowerCase().includes(term);
+        const emailMatch = att.studentId?.email?.toLowerCase().includes(term);
+        const testMatch = att.testId?.title?.toLowerCase().includes(term);
+        return nameMatch || emailMatch || testMatch;
+      });
+    }
+
+    const excelRows = attempts.map((att) => {
+      const totalQs = att.totalQuestions || att.answers?.length || 0;
+      const attempted = att.attemptedCount || 0;
+      const correct = att.correctCount || 0;
+      const wrong = att.wrongCount || 0;
+      const unanswered = att.unansweredCount !== undefined ? att.unansweredCount : Math.max(0, totalQs - attempted);
+      const passingRate = att.testId?.passingPercentage || 40;
+      const pct = att.percentage !== undefined ? att.percentage : att.accuracy;
+      const isPassed = att.isPassed !== undefined ? att.isPassed : pct >= passingRate;
+
+      return {
+        'Student Name': att.studentId?.name || 'Unknown Student',
+        'Student Email': att.studentId?.email || 'N/A',
+        'Test Name': att.testId?.title || 'MCQ Exam',
+        'Total Questions': totalQs,
+        'Attempted': attempted,
+        'Correct': correct,
+        'Wrong': wrong,
+        'Unanswered': unanswered,
+        'Score': `${att.score} / ${att.maxMarks}`,
+        'Percentage': `${pct}%`,
+        'Status': isPassed ? 'Passed' : 'Needs Improvement',
+        'Time Taken': formatDuration(att.timeTakenSeconds),
+        'Submitted At': att.submittedAt ? new Date(att.submittedAt).toLocaleString() : 'N/A',
+      };
+    });
+
+    const worksheet = xlsx.utils.json_to_sheet(excelRows);
+    worksheet['!cols'] = [
+      { wch: 22 },
+      { wch: 28 },
+      { wch: 28 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 14 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 18 },
+      { wch: 14 },
+      { wch: 22 },
+    ];
+
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Student Reports');
+
+    const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    const dateStr = new Date().toISOString().split('T')[0];
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=student-test-reports-${dateStr}.xlsx`);
+    res.send(buffer);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -428,4 +699,6 @@ module.exports = {
   submitAttempt,
   getAttemptResult,
   getMyHistory,
+  getTeacherStudentReports,
+  exportStudentReportsExcel,
 };

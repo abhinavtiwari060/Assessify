@@ -39,6 +39,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       : [
           { to: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
           { to: '/teacher/tests', label: 'My Tests', icon: FileCheck2 },
+          { to: '/teacher/reports', label: 'Student Reports', icon: FileSpreadsheet },
           { to: '/teacher/create-test', label: 'Create Test (MCQ)', icon: PlusCircle },
           { to: '/teacher/pdf-mcq', label: 'PDF → MCQ Extractor', icon: FileUp },
           { to: '/teacher/create-essay', label: 'Create Essay Test', icon: FileEdit },
@@ -47,6 +48,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         ]
     : [
         { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/admin/reports', label: 'Student Reports', icon: FileSpreadsheet },
         { to: '/admin/users', label: 'Manage Users', icon: Users },
         { to: '/admin/subjects', label: 'Subjects', icon: BookOpen },
         { to: '/admin/tests', label: 'Manage Tests', icon: FileCheck2 },

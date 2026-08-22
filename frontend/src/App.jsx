@@ -34,6 +34,7 @@ import CreateEssayTest from './pages/teacher/CreateEssayTest';
 import EvaluateEssay from './pages/teacher/EvaluateEssay';
 import QuestionAnalytics from './pages/teacher/QuestionAnalytics';
 import PendingApproval from './pages/teacher/PendingApproval';
+import TeacherReports from './pages/teacher/TeacherReports';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -167,6 +168,7 @@ const App = () => {
             <Route path="/teacher/pending-approval" element={<ProtectedRoute allowedRoles={['teacher']} allowPending={true}><PendingApproval /></ProtectedRoute>} />
             <Route path="/teacher/dashboard" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/teacher/tests" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><MyTests /></ProtectedRoute>} />
+            <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherReports /></ProtectedRoute>} />
             <Route path="/teacher/create-test" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest /></ProtectedRoute>} />
             <Route path="/teacher/edit-test/:id" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest isEditMode={true} /></ProtectedRoute>} />
             <Route path="/teacher/pdf-mcq" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><PdfToMcq /></ProtectedRoute>} />
@@ -178,6 +180,7 @@ const App = () => {
             {/* Admin Routes */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><TeacherReports /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
             <Route path="/admin/subjects" element={<ProtectedRoute allowedRoles={['admin']}><ManageSubjects /></ProtectedRoute>} />
             <Route path="/admin/tests" element={<ProtectedRoute allowedRoles={['admin']}><ManageTests /></ProtectedRoute>} />

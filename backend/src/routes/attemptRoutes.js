@@ -8,6 +8,8 @@ const {
   submitAttempt,
   getAttemptResult,
   getMyHistory,
+  getTeacherStudentReports,
+  exportStudentReportsExcel,
 } = require('../controllers/attemptController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -17,6 +19,8 @@ router.put('/:id/save-batch', protect, authorize('student'), saveBatchAnswers);
 router.post('/:id/violation', protect, authorize('student'), recordViolation);
 router.post('/:id/submit', protect, authorize('student'), submitAttempt);
 router.get('/history/me', protect, authorize('student'), getMyHistory);
+router.get('/reports', protect, authorize('teacher', 'admin'), getTeacherStudentReports);
+router.get('/reports/export', protect, authorize('teacher', 'admin'), exportStudentReportsExcel);
 router.get('/:id/result', protect, getAttemptResult);
 
 module.exports = router;
