@@ -9,6 +9,7 @@ import {
   BookOpen,
   BarChart3,
   ShieldCheck,
+  Clock,
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -31,20 +32,48 @@ const AdminDashboard = () => {
 
   if (loading) return <CardSkeleton />;
 
+  const pendingCount = analytics?.pendingTeachersCount || 0;
+
   return (
     <div className="space-y-6">
+      {/* Banner */}
       <div className="bg-gradient-to-r from-rose-900 via-slate-900 to-indigo-950 text-white rounded-xl p-5 sm:p-6 shadow-md space-y-2">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/30 border border-rose-400/30 text-[11px] font-medium text-rose-200">
           <ShieldCheck className="w-3.5 h-3.5" /> Platform Administration Portal
         </div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight">System Master Dashboard</h1>
         <p className="text-xs sm:text-sm text-slate-300 font-normal">
-          Manage system users, teachers, subjects, test moderation, audit logs, and platform analytics.
+          Manage system users, teachers, pending teacher approvals, subjects, test moderation, and platform analytics.
         </p>
       </div>
 
+      {/* Pending Approvals Alert Banner */}
+      {pendingCount > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-800 dark:text-amber-300">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="text-sm font-bold">
+                Pending Teacher Approvals ({pendingCount})
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400 font-normal">
+                {pendingCount} teacher registration{pendingCount > 1 ? 's are' : ' is'} waiting for administrator approval.
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/admin/users"
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all shrink-0"
+          >
+            Review & Approve
+          </Link>
+        </div>
+      )}
+
       {/* Stats Overview Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 shadow-xs space-y-1.5">
           <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Total Students</span>
@@ -66,6 +95,18 @@ const AdminDashboard = () => {
           </div>
           <div className="text-2xl font-bold text-slate-900 dark:text-white">
             {analytics?.totalTeachers || 0}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 shadow-xs space-y-1.5">
+          <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Pending Approvals</span>
+            <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center">
+              <Clock className="w-4.5 h-4.5" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+            {pendingCount}
           </div>
         </div>
 
@@ -104,8 +145,8 @@ const AdminDashboard = () => {
             <Users className="w-5.5 h-5.5" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Manage Users</h3>
-            <p className="text-xs text-slate-500 font-normal">Promote roles & toggle active status</p>
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">User & Teacher Management</h3>
+            <p className="text-xs text-slate-500 font-normal">Approve pending teachers & manage users</p>
           </div>
         </Link>
 

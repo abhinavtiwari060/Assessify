@@ -58,6 +58,20 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const checkStatus = async () => {
+    if (token) {
+      try {
+        const res = await api.get('/auth/me');
+        setUser(res.data);
+        localStorage.setItem('user', JSON.stringify(res.data));
+        return res.data;
+      } catch (err) {
+        console.error('Failed to check status:', err);
+        throw err;
+      }
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -71,6 +85,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(newUserData));
   };
 
+  const isApproved = user ? user.isApproved !== false : false;
+
   return (
     <AuthContext.Provider
       value={{
@@ -82,10 +98,12 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateUser,
+        checkStatus,
         isAuthenticated: !!token && !!user,
         isStudent: user?.role === 'student',
         isTeacher: user?.role === 'teacher',
         isAdmin: user?.role === 'admin',
+        isApproved,
       }}
     >
       {children}

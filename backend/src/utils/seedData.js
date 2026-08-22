@@ -33,6 +33,7 @@ const seedInitialData = async () => {
       email: 'teacher@platform.com',
       password: 'teacher123',
       role: 'teacher',
+      isApproved: true,
       bio: 'Senior Computer Science Lecturer & Algorithm Expert',
     });
 
@@ -41,6 +42,7 @@ const seedInitialData = async () => {
       email: 'teacher2@platform.com',
       password: 'teacher123',
       role: 'teacher',
+      isApproved: true,
       bio: 'Database Architecture Specialist & Systems Instructor',
     });
 

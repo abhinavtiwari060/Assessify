@@ -329,6 +329,7 @@ const getAdminAnalytics = async (req, res) => {
   try {
     const totalStudents = await User.countDocuments({ role: 'student' });
     const totalTeachers = await User.countDocuments({ role: 'teacher' });
+    const pendingTeachersCount = await User.countDocuments({ role: 'teacher', isApproved: false });
     const totalTests = await Test.countDocuments();
     const totalAttempts = await TestAttempt.countDocuments({ status: { $ne: 'in_progress' } });
     const totalEssays = await EssaySubmission.countDocuments();
@@ -337,6 +338,7 @@ const getAdminAnalytics = async (req, res) => {
     res.json({
       totalStudents,
       totalTeachers,
+      pendingTeachersCount,
       totalTests,
       totalAttempts,
       totalEssays,

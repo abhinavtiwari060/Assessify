@@ -38,8 +38,24 @@ const authorize = (...roles) => {
         message: `Role (${req.user ? req.user.role : 'guest'}) is not authorized to access this resource`,
       });
     }
+
+    if (req.user.role === 'teacher' && req.user.isApproved === false) {
+      return res.status(403).json({
+        message: 'Teacher account is pending admin approval',
+      });
+    }
+
     next();
   };
+};
+
+const requireApprovedTeacher = (req, res, next) => {
+  if (req.user && req.user.role === 'teacher' && req.user.isApproved === false) {
+    return res.status(403).json({
+      message: 'Teacher account is pending admin approval',
+    });
+  }
+  next();
 };
 
 const logAudit = async (req, action, details) => {
@@ -57,4 +73,4 @@ const logAudit = async (req, action, details) => {
   }
 };
 
-module.exports = { protect, authorize, logAudit };
+module.exports = { protect, authorize, requireApprovedTeacher, logAudit };

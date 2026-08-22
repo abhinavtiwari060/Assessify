@@ -54,6 +54,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isApproved: {
+      type: Boolean,
+      default: function () {
+        return this.role !== 'teacher';
+      },
+    },
   },
   {
     timestamps: true,

@@ -33,6 +33,7 @@ import PdfToMcq from './pages/teacher/PdfToMcq';
 import CreateEssayTest from './pages/teacher/CreateEssayTest';
 import EvaluateEssay from './pages/teacher/EvaluateEssay';
 import QuestionAnalytics from './pages/teacher/QuestionAnalytics';
+import PendingApproval from './pages/teacher/PendingApproval';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -42,7 +43,7 @@ import ManageTests from './pages/admin/ManageTests';
 import PlatformAnalytics from './pages/admin/PlatformAnalytics';
 import Settings from './pages/admin/Settings';
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, allowPending = false }) => {
   const { isAuthenticated, user, loading } = useAuth();
   if (loading) return null;
 
@@ -58,8 +59,24 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       return <Navigate to="/admin/login" replace />;
     }
     if (user?.role === 'student') return <Navigate to="/student/dashboard" replace />;
-    if (user?.role === 'teacher') return <Navigate to="/teacher/dashboard" replace />;
+    if (user?.role === 'teacher') {
+      return user?.isApproved === false ? (
+        <Navigate to="/teacher/pending-approval" replace />
+      ) : (
+        <Navigate to="/teacher/dashboard" replace />
+      );
+    }
     if (user?.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  // Teacher Approval Protection
+  if (user?.role === 'teacher' && user?.isApproved === false && !allowPending) {
+    return <Navigate to="/teacher/pending-approval" replace />;
+  }
+
+  // Approved teacher visiting pending page -> redirect to dashboard
+  if (user?.role === 'teacher' && user?.isApproved !== false && allowPending) {
+    return <Navigate to="/teacher/dashboard" replace />;
   }
 
   return children;
@@ -105,7 +122,11 @@ const App = () => {
                 ) : user?.role === 'student' ? (
                   <Navigate to="/student/dashboard" replace />
                 ) : user?.role === 'teacher' ? (
-                  <Navigate to="/teacher/dashboard" replace />
+                  user?.isApproved === false ? (
+                    <Navigate to="/teacher/pending-approval" replace />
+                  ) : (
+                    <Navigate to="/teacher/dashboard" replace />
+                  )
                 ) : (
                   <Navigate to="/admin/dashboard" replace />
                 )
@@ -143,6 +164,7 @@ const App = () => {
             <Route path="/student/profile" element={<ProtectedRoute allowedRoles={['student']}><Profile /></ProtectedRoute>} />
 
             {/* Teacher Routes */}
+            <Route path="/teacher/pending-approval" element={<ProtectedRoute allowedRoles={['teacher']} allowPending={true}><PendingApproval /></ProtectedRoute>} />
             <Route path="/teacher/dashboard" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/teacher/tests" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><MyTests /></ProtectedRoute>} />
             <Route path="/teacher/create-test" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest /></ProtectedRoute>} />

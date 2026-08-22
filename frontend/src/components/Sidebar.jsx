@@ -18,11 +18,11 @@ import {
   FileSpreadsheet,
   Info,
   ShieldCheck,
-  Code2,
+  Clock,
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { isStudent, isTeacher } = useAuth();
+  const { user, isStudent, isTeacher, isApproved } = useAuth();
 
   const mainLinks = isStudent
     ? [
@@ -33,15 +33,17 @@ const Sidebar = ({ isOpen, onClose }) => {
         { to: '/student/leaderboard', label: 'Leaderboard', icon: Trophy },
       ]
     : isTeacher
-    ? [
-        { to: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/teacher/tests', label: 'My Tests', icon: FileCheck2 },
-        { to: '/teacher/create-test', label: 'Create Test (MCQ)', icon: PlusCircle },
-        { to: '/teacher/pdf-mcq', label: 'PDF → MCQ Extractor', icon: FileUp },
-        { to: '/teacher/create-essay', label: 'Create Essay Test', icon: FileEdit },
-        { to: '/teacher/essays/evaluations', label: 'Essay Evaluations', icon: FileSpreadsheet },
-        { to: '/teacher/analytics', label: 'Question Analytics', icon: BarChart3 },
-      ]
+    ? !isApproved
+      ? [{ to: '/teacher/pending-approval', label: 'Approval Status', icon: Clock }]
+      : [
+          { to: '/teacher/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+          { to: '/teacher/tests', label: 'My Tests', icon: FileCheck2 },
+          { to: '/teacher/create-test', label: 'Create Test (MCQ)', icon: PlusCircle },
+          { to: '/teacher/pdf-mcq', label: 'PDF → MCQ Extractor', icon: FileUp },
+          { to: '/teacher/create-essay', label: 'Create Essay Test', icon: FileEdit },
+          { to: '/teacher/essays/evaluations', label: 'Essay Evaluations', icon: FileSpreadsheet },
+          { to: '/teacher/analytics', label: 'Question Analytics', icon: BarChart3 },
+        ]
     : [
         { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/admin/users', label: 'Manage Users', icon: Users },
