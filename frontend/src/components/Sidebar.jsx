@@ -19,6 +19,7 @@ import {
   Info,
   ShieldCheck,
   Clock,
+  Code2,
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
