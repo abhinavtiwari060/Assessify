@@ -7,22 +7,26 @@ const TestAttempt = require('../models/TestAttempt');
 
 const seedInitialData = async () => {
   try {
+    // Always ensure Admin user exists
+    let admin = await User.findOne({ email: 'abhitiwariaj@gmail.com' });
+    if (!admin) {
+      admin = await User.create({
+        name: 'Platform Admin',
+        email: 'abhitiwariaj@gmail.com',
+        password: 'Abhi8957@tiwari#9451',
+        role: 'admin',
+        bio: 'System Administrator & Moderation Lead',
+      });
+      console.log('✅ Default Admin user created: abhitiwariaj@gmail.com');
+    }
+
     const userCount = await User.countDocuments();
-    if (userCount > 0) {
+    if (userCount > 1) {
       console.log('🌱 Database already populated. Skipping initial seed.');
       return;
     }
 
     console.log('🌱 Seeding initial application database...');
-
-    // 1. Create Default Users
-    const admin = await User.create({
-      name: 'Platform Admin',
-      email: 'abhitiwariaj@gmail.com',
-      password: 'Abhi8957@tiwari#9451',
-      role: 'admin',
-      bio: 'System Administrator & Moderation Lead',
-    });
 
     const teacherA = await User.create({
       name: 'Prof. Alan Turing (Teacher A)',

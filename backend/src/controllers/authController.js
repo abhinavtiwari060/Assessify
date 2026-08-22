@@ -186,12 +186,12 @@ const adminLogin = async (req, res) => {
       return res.status(400).json({ message: 'Please enter admin email and password' });
     }
 
-    const envAdminEmail = process.env.ADMIN_EMAIL;
-    const envAdminPassword = process.env.ADMIN_PASSWORD;
+    const envAdminEmail = process.env.ADMIN_EMAIL || 'abhitiwariaj@gmail.com';
+    const envAdminPassword = process.env.ADMIN_PASSWORD || 'Abhi8957@tiwari#9451';
 
-    let user = await User.findOne({ email }).select('+password');
+    let user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
-    if (!user && envAdminEmail && email.toLowerCase() === envAdminEmail.toLowerCase()) {
+    if (!user && email.toLowerCase() === envAdminEmail.toLowerCase()) {
       if (password === envAdminPassword) {
         user = await User.create({
           name: 'Platform Admin',
