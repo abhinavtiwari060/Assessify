@@ -1,11 +1,12 @@
 import React from 'react';
 import { User, GraduationCap, Code2, Mail, Github, Linkedin, Cpu } from 'lucide-react';
+import developerPhoto from './IMG-20260817-WA0012.jpeg';
 
 const AboutDeveloper = () => {
   const developer = {
     name: 'Abhinav Kumar Tiwari',
     role: 'Full-Stack Developer',
-    photo: '/developer_photo.jpg',
+    photo: developerPhoto || '/IMG-20260817-WA0012.jpeg',
     bio: 'Software engineer passionate about building clean, efficient, and scalable web applications for education and automated evaluations.',
     education: 'MCA Student',
     email: 'abhitiwariaj@gmail.com',
