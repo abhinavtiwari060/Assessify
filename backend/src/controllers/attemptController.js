@@ -352,7 +352,8 @@ const getAttemptResult = async (req, res) => {
       .populate({
         path: 'testId',
         populate: { path: 'subjectId', select: 'name code' },
-      });
+      })
+      .lean();
 
     if (!attempt) {
       return res.status(404).json({ message: 'Attempt not found' });

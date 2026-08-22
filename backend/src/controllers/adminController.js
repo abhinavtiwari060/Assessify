@@ -19,7 +19,7 @@ const getUsers = async (req, res) => {
       ];
     }
 
-    const users = await User.find(query).select('-password').sort({ createdAt: -1 });
+    const users = await User.find(query).select('-password').sort({ createdAt: -1 }).lean();
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -89,7 +89,8 @@ const getTeachers = async (req, res) => {
   try {
     const teachers = await User.find({ role: 'teacher' })
       .select('-password')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(teachers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -103,7 +104,8 @@ const getPendingTeachers = async (req, res) => {
   try {
     const pendingTeachers = await User.find({ role: 'teacher', isApproved: false })
       .select('-password')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(pendingTeachers);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -196,7 +198,7 @@ const getAuditLogs = async (req, res) => {
     let query = {};
     if (action) query.action = action;
 
-    const logs = await AuditLog.find(query).sort({ createdAt: -1 }).limit(Number(limit));
+    const logs = await AuditLog.find(query).sort({ createdAt: -1 }).limit(Number(limit)).lean();
     res.json(logs);
   } catch (error) {
     res.status(500).json({ message: error.message });

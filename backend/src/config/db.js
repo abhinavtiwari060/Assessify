@@ -24,19 +24,27 @@ const connectDB = async () => {
     const conn = await mongoose.connect(mongoUri, options);
     console.log(`🚀 MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    // If external URI fails, attempt memory server fallback
+    console.error(`❌ Fatal Error connecting to MongoDB: ${error.message}`);
+
+    // Production safety: Do NOT fall back to MongoMemoryServer if running in production or if MONGODB_URI was provided
+    const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.MONGODB_URI);
+    if (isProduction) {
+      console.error('⛔ Production database connection failed. Exiting process cleanly.');
+      process.exit(1);
+    }
+
+    // Development local fallback
     try {
-      console.log('⚠️ Falling back to MongoMemoryServer...');
+      console.log('⚠️ Local development mode: Falling back to MongoMemoryServer...');
       mongoServer = await MongoMemoryServer.create();
       const mongoUri = mongoServer.getUri();
       const conn = await mongoose.connect(mongoUri, {
         maxPoolSize: 100,
         minPoolSize: 10,
       });
-      console.log(`🚀 MongoDB Connected (Memory Server Fallback): ${conn.connection.host}`);
+      console.log(`🚀 MongoDB Connected (Local Memory Server Fallback): ${conn.connection.host}`);
     } catch (fallbackError) {
-      console.error(`Fatal DB connection error: ${fallbackError.message}`);
+      console.error(`Fatal local DB connection error: ${fallbackError.message}`);
       process.exit(1);
     }
   }

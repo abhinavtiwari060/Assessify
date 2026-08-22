@@ -34,4 +34,8 @@ const auditLogSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for fast audit log queries and timestamp sorting
+auditLogSchema.index({ createdAt: -1 });
+auditLogSchema.index({ action: 1, createdAt: -1 });
+
 module.exports = mongoose.model('AuditLog', auditLogSchema);

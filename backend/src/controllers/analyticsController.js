@@ -24,7 +24,8 @@ const getLeaderboard = async (req, res) => {
         path: 'testId',
         select: 'title subjectId',
         populate: { path: 'subjectId', select: 'name code' },
-      });
+      })
+      .lean();
 
     if (subjectId) {
       attempts = attempts.filter(
@@ -122,18 +123,22 @@ const getStudentReportCard = async (req, res) => {
     const attempts = await TestAttempt.find({
       studentId,
       status: { $ne: 'in_progress' },
-    }).populate({
-      path: 'testId',
-      select: 'title subjectId type totalMarks',
-      populate: { path: 'subjectId', select: 'name code iconName' },
-    });
+    })
+      .populate({
+        path: 'testId',
+        select: 'title subjectId type totalMarks',
+        populate: { path: 'subjectId', select: 'name code iconName' },
+      })
+      .lean();
 
     // Fetch all Essay submissions
-    const essays = await EssaySubmission.find({ studentId }).populate({
-      path: 'testId',
-      select: 'title subjectId totalMarks',
-      populate: { path: 'subjectId', select: 'name code iconName' },
-    });
+    const essays = await EssaySubmission.find({ studentId })
+      .populate({
+        path: 'testId',
+        select: 'title subjectId totalMarks',
+        populate: { path: 'subjectId', select: 'name code iconName' },
+      })
+      .lean();
 
     let totalScoreObtained = 0;
     let totalMaxMarks = 0;
@@ -247,7 +252,7 @@ const getTeacherAnalytics = async (req, res) => {
       teacherFilter.teacherId = req.user._id;
     }
 
-    const myTests = await Test.find(teacherFilter).select('_id title type subjectId');
+    const myTests = await Test.find(teacherFilter).select('_id title type subjectId').lean();
     const myTestIds = myTests.map((t) => t._id);
 
     const totalAttempts = await TestAttempt.countDocuments({
@@ -261,46 +266,64 @@ const getTeacherAnalytics = async (req, res) => {
     });
 
     // Item/Question Difficulty Analysis for teacher's tests
-    const allQuestions = await Question.find({ testId: { $in: myTestIds } });
+    const allQuestions = await Question.find({ testId: { $in: myTestIds } })
+      .select('_id questionText testId')
+      .lean();
+
     const allCompletedAttempts = await TestAttempt.find({
       testId: { $in: myTestIds },
       status: { $ne: 'in_progress' },
+    })
+      .select('answers')
+      .lean();
+
+    // Group answer statistics in memory using a questionId Map (O(N + M) complexity)
+    const questionStatsMap = new Map();
+    allQuestions.forEach((q) => {
+      questionStatsMap.set(q._id.toString(), {
+        _id: q._id,
+        questionText: q.questionText,
+        testId: q.testId,
+        timesAnswered: 0,
+        timesCorrect: 0,
+        timesWrong: 0,
+        totalTime: 0,
+      });
     });
 
-    const questionStats = allQuestions.map((q) => {
-      let timesAnswered = 0;
-      let timesCorrect = 0;
-      let timesWrong = 0;
-      let totalTime = 0;
-
-      allCompletedAttempts.forEach((att) => {
-        const ans = att.answers.find((a) => a.questionId.toString() === q._id.toString());
-        if (ans && ans.selectedOptionIndex !== null && ans.selectedOptionIndex !== undefined) {
-          timesAnswered++;
-          totalTime += ans.timeSpentSeconds || 0;
-          if (ans.isCorrect) timesCorrect++;
-          else timesWrong++;
+    allCompletedAttempts.forEach((att) => {
+      if (!Array.isArray(att.answers)) return;
+      att.answers.forEach((ans) => {
+        if (!ans || !ans.questionId) return;
+        const qStat = questionStatsMap.get(ans.questionId.toString());
+        if (qStat && ans.selectedOptionIndex !== null && ans.selectedOptionIndex !== undefined) {
+          qStat.timesAnswered++;
+          qStat.totalTime += ans.timeSpentSeconds || 0;
+          if (ans.isCorrect) qStat.timesCorrect++;
+          else qStat.timesWrong++;
         }
       });
+    });
 
+    const questionStats = Array.from(questionStatsMap.values()).map((qStat) => {
       const correctPercentage =
-        timesAnswered > 0 ? Math.round((timesCorrect / timesAnswered) * 100) : 0;
+        qStat.timesAnswered > 0 ? Math.round((qStat.timesCorrect / qStat.timesAnswered) * 100) : 0;
       const wrongPercentage =
-        timesAnswered > 0 ? Math.round((timesWrong / timesAnswered) * 100) : 0;
+        qStat.timesAnswered > 0 ? Math.round((qStat.timesWrong / qStat.timesAnswered) * 100) : 0;
       const avgTimeSeconds =
-        timesAnswered > 0 ? Math.round(totalTime / timesAnswered) : 0;
+        qStat.timesAnswered > 0 ? Math.round(qStat.totalTime / qStat.timesAnswered) : 0;
 
       let difficultyLabel = 'Moderate';
       if (correctPercentage < 40) difficultyLabel = 'High (Hard)';
       else if (correctPercentage > 75) difficultyLabel = 'Low (Easy)';
 
       return {
-        _id: q._id,
-        questionText: q.questionText,
-        testId: q.testId,
-        timesAnswered,
-        timesCorrect,
-        timesWrong,
+        _id: qStat._id,
+        questionText: qStat.questionText,
+        testId: qStat.testId,
+        timesAnswered: qStat.timesAnswered,
+        timesCorrect: qStat.timesCorrect,
+        timesWrong: qStat.timesWrong,
         correctPercentage,
         wrongPercentage,
         avgTimeSeconds,

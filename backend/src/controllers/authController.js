@@ -248,8 +248,10 @@ const adminLogin = async (req, res) => {
 // @access  Private
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    res.json(user);
+    if (!req.user) {
+      return res.status(404).json({ message: 'User profile not found' });
+    }
+    res.json(req.user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
