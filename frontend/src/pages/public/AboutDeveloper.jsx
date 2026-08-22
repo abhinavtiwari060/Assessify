@@ -5,10 +5,11 @@ const AboutDeveloper = () => {
   const developer = {
     name: 'Abhinav Kumar Tiwari',
     role: 'Full-Stack Developer',
+    photo: '/developer_photo.jpg',
     bio: 'Software engineer passionate about building clean, efficient, and scalable web applications for education and automated evaluations.',
     education: 'MCA Student',
     email: 'abhitiwariaj@gmail.com',
-    github: 'https://github.com',
+    github: 'https://github.com/abhinavtiwari060',
     linkedin: 'https://linkedin.com',
     skills: [
       'React.js (v18)',
@@ -29,8 +30,8 @@ const AboutDeveloper = () => {
           {/* Responsive Developer Photo */}
           <div className="w-[140px] h-[140px] sm:w-[170px] sm:h-[170px] lg:w-[200px] lg:h-[200px] rounded-2xl overflow-hidden shadow-md ring-2 ring-indigo-500/20 shrink-0">
             <img
-              src="/developer_photo.jpg"
-              alt="Abhinav Kumar Tiwari"
+              src={developer.photo}
+              alt={developer.name}
               className="w-full h-full object-cover object-center"
             />
           </div>
