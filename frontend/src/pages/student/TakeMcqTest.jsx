@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -31,6 +31,50 @@ const TakeMcqTest = () => {
   const [submitting, setSubmitting] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
+  // Dirty answers tracking ref for batched autosave
+  const dirtyQuestionsRef = useRef(new Set());
+  const answersRef = useRef([]);
+  answersRef.current = answers;
+
+  // Flush dirty answers in batch to backend
+  const flushDirtyAnswers = useCallback(async () => {
+    if (!attempt || dirtyQuestionsRef.current.size === 0) return;
+
+    const dirtyQIds = Array.from(dirtyQuestionsRef.current);
+    dirtyQuestionsRef.current.clear();
+
+    const currentAns = answersRef.current;
+    const batchPayload = dirtyQIds
+      .map((qId) => {
+        const a = currentAns.find((ans) => ans.questionId === qId);
+        return {
+          questionId: qId,
+          selectedOptionIndex: a ? a.selectedOptionIndex : null,
+          timeSpentSeconds: 5,
+          isFlagged: a ? Boolean(a.isFlagged) : false,
+        };
+      })
+      .filter(Boolean);
+
+    if (batchPayload.length === 0) return;
+
+    try {
+      await api.put(`/attempts/${attempt._id}/save-batch`, { answers: batchPayload });
+    } catch (err) {
+      console.error('Batch autosave error:', err);
+      // Re-add failed IDs to dirty set for retry
+      dirtyQIds.forEach((qId) => dirtyQuestionsRef.current.add(qId));
+    }
+  }, [attempt]);
+
+  // Periodic autosave every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      flushDirtyAnswers();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [flushDirtyAnswers]);
+
   // Load Test & Start Attempt
   useEffect(() => {
     const initTest = async () => {
@@ -60,8 +104,8 @@ const TakeMcqTest = () => {
     (a) => a.questionId === currentQuestion?._id
   ) || { selectedOptionIndex: null, isFlagged: false };
 
-  // Handle Option Select
-  const handleOptionSelect = async (optionIndex) => {
+  // Handle Option Select (Local state + mark dirty)
+  const handleOptionSelect = (optionIndex) => {
     if (!currentQuestion || !attempt) return;
 
     const updatedAnswers = answers.map((a) =>
@@ -70,22 +114,11 @@ const TakeMcqTest = () => {
         : a
     );
     setAnswers(updatedAnswers);
-
-    // Autosave immediately to backend
-    try {
-      await api.put(`/attempts/${attempt._id}/save`, {
-        questionId: currentQuestion._id,
-        selectedOptionIndex: optionIndex,
-        timeSpentSeconds: 5,
-        isFlagged: currentAnswer.isFlagged,
-      });
-    } catch (err) {
-      console.error('Autosave error:', err);
-    }
+    dirtyQuestionsRef.current.add(currentQuestion._id);
   };
 
   // Clear choice
-  const handleClearChoice = async () => {
+  const handleClearChoice = () => {
     if (!currentQuestion || !attempt) return;
     const updatedAnswers = answers.map((a) =>
       a.questionId === currentQuestion._id
@@ -93,18 +126,11 @@ const TakeMcqTest = () => {
         : a
     );
     setAnswers(updatedAnswers);
-    try {
-      await api.put(`/attempts/${attempt._id}/save`, {
-        questionId: currentQuestion._id,
-        selectedOptionIndex: null,
-      });
-    } catch (err) {
-      console.error('Clear choice error:', err);
-    }
+    dirtyQuestionsRef.current.add(currentQuestion._id);
   };
 
   // Toggle Flag for review
-  const handleToggleFlag = async () => {
+  const handleToggleFlag = () => {
     if (!currentQuestion || !attempt) return;
     const newFlag = !currentAnswer.isFlagged;
     const updatedAnswers = answers.map((a) =>
@@ -113,18 +139,10 @@ const TakeMcqTest = () => {
         : a
     );
     setAnswers(updatedAnswers);
-    try {
-      await api.put(`/attempts/${attempt._id}/save`, {
-        questionId: currentQuestion._id,
-        selectedOptionIndex: currentAnswer.selectedOptionIndex,
-        isFlagged: newFlag,
-      });
-    } catch (err) {
-      console.error('Flag error:', err);
-    }
+    dirtyQuestionsRef.current.add(currentQuestion._id);
   };
 
-  // Handle Question Timer Expiration (MODE 2)
+  // Handle Question Timer Expiration
   const handleQuestionTimerUp = useCallback(() => {
     addToast(`Time expired for Question ${currentIndex + 1}. Moving to next.`, 'warning');
     if (currentIndex < questions.length - 1) {
@@ -141,6 +159,9 @@ const TakeMcqTest = () => {
     setConfirmModalOpen(false);
 
     try {
+      // Flush dirty answers before submission
+      await flushDirtyAnswers();
+
       const res = await api.post(`/attempts/${attempt._id}/submit`, { isTimerExpired });
       addToast('Test submitted successfully!', 'success');
       navigate(`/student/attempt/${attempt._id}/result`);

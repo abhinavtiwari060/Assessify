@@ -14,7 +14,14 @@ const connectDB = async () => {
       console.log(`✅ In-Memory MongoDB running at: ${mongoUri}`);
     }
 
-    const conn = await mongoose.connect(mongoUri);
+    const options = {
+      maxPoolSize: 100,
+      minPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+
+    const conn = await mongoose.connect(mongoUri, options);
     console.log(`🚀 MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
@@ -23,7 +30,10 @@ const connectDB = async () => {
       console.log('⚠️ Falling back to MongoMemoryServer...');
       mongoServer = await MongoMemoryServer.create();
       const mongoUri = mongoServer.getUri();
-      const conn = await mongoose.connect(mongoUri);
+      const conn = await mongoose.connect(mongoUri, {
+        maxPoolSize: 100,
+        minPoolSize: 10,
+      });
       console.log(`🚀 MongoDB Connected (Memory Server Fallback): ${conn.connection.host}`);
     } catch (fallbackError) {
       console.error(`Fatal DB connection error: ${fallbackError.message}`);

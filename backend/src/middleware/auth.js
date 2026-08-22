@@ -58,19 +58,21 @@ const requireApprovedTeacher = (req, res, next) => {
   next();
 };
 
-const logAudit = async (req, action, details) => {
-  try {
-    await AuditLog.create({
-      userId: req.user ? req.user._id : null,
-      userName: req.user ? req.user.name : 'System/Guest',
-      userRole: req.user ? req.user.role : 'guest',
-      action,
-      details,
-      ipAddress: req.ip || req.connection?.remoteAddress || '',
-    });
-  } catch (err) {
-    console.error('Failed to log audit event:', err.message);
-  }
+const logAudit = (req, action, details) => {
+  setImmediate(async () => {
+    try {
+      await AuditLog.create({
+        userId: req.user ? req.user._id : null,
+        userName: req.user ? req.user.name : 'System/Guest',
+        userRole: req.user ? req.user.role : 'guest',
+        action,
+        details,
+        ipAddress: req.ip || req.connection?.remoteAddress || '',
+      });
+    } catch (err) {
+      console.error('Failed to log audit event:', err.message);
+    }
+  });
 };
 
 module.exports = { protect, authorize, requireApprovedTeacher, logAudit };

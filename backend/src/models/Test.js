@@ -74,4 +74,8 @@ const testSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for fast published test queries and subject filtering
+testSchema.index({ isPublished: 1, type: 1 });
+testSchema.index({ subjectId: 1, isPublished: 1 });
+
 module.exports = mongoose.model('Test', testSchema);

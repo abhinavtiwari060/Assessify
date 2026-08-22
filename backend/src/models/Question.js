@@ -47,4 +47,7 @@ const questionSchema = new mongoose.Schema(
   }
 );
 
+// Compound index for sorted question fetching during exam loading
+questionSchema.index({ testId: 1, order: 1 });
+
 module.exports = mongoose.model('Question', questionSchema);

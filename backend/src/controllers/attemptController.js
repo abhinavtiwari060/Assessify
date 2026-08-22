@@ -3,7 +3,7 @@ const Test = require('../models/Test');
 const Question = require('../models/Question');
 const { logAudit } = require('../middleware/auth');
 
-// @desc    Start a test attempt
+// @desc    Start a test attempt (Optimized + Race-Condition Safe)
 // @route   POST /api/tests/:id/start
 // @access  Private (Student)
 const startAttempt = async (req, res) => {
@@ -11,12 +11,27 @@ const startAttempt = async (req, res) => {
     const testId = req.params.id;
     const studentId = req.user._id;
 
-    const test = await Test.findById(testId);
+    // 1. Lean Test Lookup selecting only required fields
+    const test = await Test.findById(testId)
+      .select('title isPublished maxAttempts totalMarks')
+      .lean();
+
     if (!test || !test.isPublished) {
       return res.status(404).json({ message: 'Test is not available or unpublished' });
     }
 
-    // Check completed attempts
+    // 2. Check if an attempt is already in progress (Fast Compound Index Scan)
+    const existingAttempt = await TestAttempt.findOne({
+      testId,
+      studentId,
+      status: 'in_progress',
+    }).lean();
+
+    if (existingAttempt) {
+      return res.json(existingAttempt);
+    }
+
+    // 3. Count completed attempts (Fast Index Scan)
     const completedAttempts = await TestAttempt.countDocuments({
       testId,
       studentId,
@@ -29,43 +44,56 @@ const startAttempt = async (req, res) => {
       });
     }
 
-    // Check if an attempt is currently in progress
-    let existingAttempt = await TestAttempt.findOne({
-      testId,
-      studentId,
-      status: 'in_progress',
-    });
+    // 4. Fetch questions selecting ONLY _id and marks (Lean query)
+    const questions = await Question.find({ testId })
+      .select('_id marks')
+      .sort({ order: 1 })
+      .lean();
 
-    if (existingAttempt) {
-      return res.json(existingAttempt);
-    }
-
-    // Initialize blank answers for all questions
-    const questions = await Question.find({ testId }).sort({ order: 1 });
     const blankAnswers = questions.map((q) => ({
       questionId: q._id,
       selectedOptionIndex: null,
       timeSpentSeconds: 0,
       isCorrect: false,
       marksAwarded: 0,
+      isFlagged: false,
     }));
 
-    const attempt = await TestAttempt.create({
-      testId,
-      studentId,
-      answers: blankAnswers,
-      maxMarks: test.totalMarks || questions.reduce((acc, curr) => acc + curr.marks, 0),
-      startedAt: new Date(),
-    });
+    const calculatedMaxMarks =
+      test.totalMarks || questions.reduce((acc, curr) => acc + (curr.marks || 1), 0);
 
-    await logAudit(req, 'TEST_STARTED', `Student started test "${test.title}"`);
-    res.status(201).json(attempt);
+    // 5. Try creating attempt document with duplicate key protection
+    try {
+      const attempt = await TestAttempt.create({
+        testId,
+        studentId,
+        answers: blankAnswers,
+        maxMarks: calculatedMaxMarks,
+        startedAt: new Date(),
+      });
+
+      logAudit(req, 'TEST_STARTED', `Student started test "${test.title}"`);
+      return res.status(201).json(attempt);
+    } catch (createErr) {
+      // Handle MongoDB E11000 duplicate key error (race condition safeguard)
+      if (createErr.code === 11000) {
+        const raceAttempt = await TestAttempt.findOne({
+          testId,
+          studentId,
+          status: 'in_progress',
+        }).lean();
+        if (raceAttempt) {
+          return res.json(raceAttempt);
+        }
+      }
+      throw createErr;
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Autosave answer during test
+// @desc    Autosave single answer during test
 // @route   PUT /api/attempts/:id/save
 // @access  Private (Student)
 const autoSaveAnswer = async (req, res) => {
@@ -82,14 +110,14 @@ const autoSaveAnswer = async (req, res) => {
       return res.status(400).json({ message: 'Attempt is already submitted and locked' });
     }
 
-    // Find and update specific answer entry
     const answerIndex = attempt.answers.findIndex(
       (a) => a.questionId.toString() === questionId
     );
 
     if (answerIndex !== -1) {
-      attempt.answers[answerIndex].selectedOptionIndex =
-        selectedOptionIndex !== undefined ? selectedOptionIndex : attempt.answers[answerIndex].selectedOptionIndex;
+      if (selectedOptionIndex !== undefined) {
+        attempt.answers[answerIndex].selectedOptionIndex = selectedOptionIndex;
+      }
       if (timeSpentSeconds) {
         attempt.answers[answerIndex].timeSpentSeconds += timeSpentSeconds;
       }
@@ -112,6 +140,63 @@ const autoSaveAnswer = async (req, res) => {
   }
 };
 
+// @desc    Batch Autosave answers during test (High-concurrency batching)
+// @route   PUT /api/attempts/:id/save-batch
+// @access  Private (Student)
+const saveBatchAnswers = async (req, res) => {
+  try {
+    const attemptId = req.params.id;
+    const { answers } = req.body;
+
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.json({ message: 'No answers to save', updatedCount: 0 });
+    }
+
+    const attempt = await TestAttempt.findById(attemptId);
+    if (!attempt || attempt.studentId.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ message: 'Active attempt not found' });
+    }
+
+    if (attempt.status !== 'in_progress') {
+      return res.status(400).json({ message: 'Attempt is already submitted and locked' });
+    }
+
+    const answerMap = new Map(attempt.answers.map((a) => [a.questionId.toString(), a]));
+
+    answers.forEach((incoming) => {
+      if (!incoming || !incoming.questionId) return;
+      const qIdStr = incoming.questionId.toString();
+
+      if (answerMap.has(qIdStr)) {
+        const existing = answerMap.get(qIdStr);
+        if (incoming.selectedOptionIndex !== undefined) {
+          existing.selectedOptionIndex = incoming.selectedOptionIndex;
+        }
+        if (incoming.timeSpentSeconds) {
+          existing.timeSpentSeconds += incoming.timeSpentSeconds;
+        }
+        if (incoming.isFlagged !== undefined) {
+          existing.isFlagged = Boolean(incoming.isFlagged);
+        }
+      } else {
+        const newAns = {
+          questionId: incoming.questionId,
+          selectedOptionIndex: incoming.selectedOptionIndex !== undefined ? incoming.selectedOptionIndex : null,
+          timeSpentSeconds: incoming.timeSpentSeconds || 0,
+          isFlagged: Boolean(incoming.isFlagged),
+        };
+        attempt.answers.push(newAns);
+        answerMap.set(qIdStr, newAns);
+      }
+    });
+
+    await attempt.save();
+    res.json({ message: 'Batch saved successfully', updatedCount: answers.length });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Record anti-cheating tab switch / focus loss violation
 // @route   POST /api/attempts/:id/violation
 // @access  Private (Student)
@@ -120,7 +205,7 @@ const recordViolation = async (req, res) => {
     const attemptId = req.params.id;
     const { type, details } = req.body;
 
-    const attempt = await TestAttempt.findById(attemptId).populate('testId');
+    const attempt = await TestAttempt.findById(attemptId).populate('testId', 'title');
     if (!attempt || attempt.studentId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ message: 'Active attempt not found' });
     }
@@ -136,19 +221,16 @@ const recordViolation = async (req, res) => {
     });
     attempt.violationCount += 1;
 
-    await logAudit(
+    logAudit(
       req,
       'TAB_VIOLATION',
       `Violation #${attempt.violationCount} (${type}) during test "${attempt.testId?.title}"`
     );
 
     let isAutoSubmitted = false;
-    // Strict requirement: 3rd violation triggers auto-submission!
     if (attempt.violationCount >= 3) {
       attempt.status = 'auto_submitted_violation';
       attempt.submittedAt = new Date();
-
-      // Calculate score & lock
       await evaluateAttemptScores(attempt);
       isAutoSubmitted = true;
     }
@@ -191,7 +273,7 @@ const submitAttempt = async (req, res) => {
     await evaluateAttemptScores(attempt);
     await attempt.save();
 
-    await logAudit(
+    logAudit(
       req,
       'TEST_SUBMITTED',
       `Submitted attempt for test ID ${attempt.testId} with score ${attempt.score}/${attempt.maxMarks}`
@@ -209,10 +291,14 @@ const submitAttempt = async (req, res) => {
   }
 };
 
-// Helper: Calculate scores, negative marking, and accuracy
+// Helper: Calculate scores, negative marking, and accuracy (Optimized O(1) Answer Map)
 async function evaluateAttemptScores(attempt) {
-  const test = await Test.findById(attempt.testId);
-  const questions = await Question.find({ testId: attempt.testId });
+  const test = await Test.findById(attempt.testId)
+    .select('negativeMarkingRate')
+    .lean();
+  const questions = await Question.find({ testId: attempt.testId })
+    .select('_id correctAnswerIndex marks')
+    .lean();
 
   let totalScore = 0;
   let correctCount = 0;
@@ -221,12 +307,11 @@ async function evaluateAttemptScores(attempt) {
   let totalMaxMarks = 0;
 
   const negativeRate = test ? test.negativeMarkingRate || 0 : 0;
+  const answerMap = new Map(attempt.answers.map((a) => [a.questionId.toString(), a]));
 
   questions.forEach((q) => {
     totalMaxMarks += q.marks;
-    const studentAns = attempt.answers.find(
-      (a) => a.questionId.toString() === q._id.toString()
-    );
+    const studentAns = answerMap.get(q._id.toString());
 
     if (studentAns && studentAns.selectedOptionIndex !== null && studentAns.selectedOptionIndex !== undefined) {
       attemptedCount++;
@@ -245,7 +330,6 @@ async function evaluateAttemptScores(attempt) {
     }
   });
 
-  // Ensure score doesn't go below 0
   attempt.score = Math.max(0, Math.round(totalScore * 100) / 100);
   attempt.maxMarks = totalMaxMarks;
   attempt.attemptedCount = attemptedCount;
@@ -274,7 +358,6 @@ const getAttemptResult = async (req, res) => {
       return res.status(404).json({ message: 'Attempt not found' });
     }
 
-    // Verify permission: Student owner OR Test Teacher OR Admin
     const isStudentOwner = attempt.studentId._id.toString() === req.user._id.toString();
     const isTeacherOwner =
       req.user.role === 'teacher' &&
@@ -285,13 +368,11 @@ const getAttemptResult = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to view this result' });
     }
 
-    // Fetch full questions with correct answers & explanations for post-submission review
-    const questions = await Question.find({ testId: attempt.testId._id }).sort({ order: 1 });
+    const questions = await Question.find({ testId: attempt.testId._id }).sort({ order: 1 }).lean();
+    const answerMap = new Map(attempt.answers.map((a) => [a.questionId.toString(), a]));
 
     const questionResults = questions.map((q) => {
-      const ans = attempt.answers.find(
-        (a) => a.questionId.toString() === q._id.toString()
-      );
+      const ans = answerMap.get(q._id.toString());
       return {
         _id: q._id,
         questionText: q.questionText,
@@ -329,7 +410,8 @@ const getMyHistory = async (req, res) => {
         select: 'title type subjectId durationMinutes',
         populate: { path: 'subjectId', select: 'name code iconName' },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(attempts);
   } catch (error) {
@@ -340,6 +422,7 @@ const getMyHistory = async (req, res) => {
 module.exports = {
   startAttempt,
   autoSaveAnswer,
+  saveBatchAnswers,
   recordViolation,
   submitAttempt,
   getAttemptResult,

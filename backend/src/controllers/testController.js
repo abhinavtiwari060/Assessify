@@ -7,82 +7,114 @@ const { logAudit } = require('../middleware/auth');
 // @desc    Get tests (Student gets published, Teacher gets own, Admin gets all)
 // @route   GET /api/tests
 // @access  Private
+// @desc    Get tests (Student gets published, Teacher gets own, Admin gets all) - Optimized Bulk Queries
+// @route   GET /api/tests
+// @access  Private
 const getTests = async (req, res) => {
   try {
     const { subjectId, search, type } = req.query;
     let query = {};
 
-    // Role-based filtering
     if (req.user.role === 'teacher') {
-      // STRICT TEACHER DATA ISOLATION
       query.teacherId = req.user._id;
     } else if (req.user.role === 'student') {
       query.isPublished = true;
     }
 
-    if (subjectId) {
-      query.subjectId = subjectId;
-    }
-    if (type) {
-      query.type = type;
-    }
-    if (search) {
-      query.title = { $regex: search, $options: 'i' };
-    }
+    if (subjectId) query.subjectId = subjectId;
+    if (type) query.type = type;
+    if (search) query.title = { $regex: search, $options: 'i' };
 
     const tests = await Test.find(query)
       .populate('subjectId', 'name code iconName')
       .populate('teacherId', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    // Attach question counts and student attempt stats if student
-    const testsWithMetadata = await Promise.all(
-      tests.map(async (test) => {
-        const questionCount = await Question.countDocuments({ testId: test._id });
-        let userAttempts = 0;
-        let bestScore = null;
+    if (tests.length === 0) {
+      return res.json([]);
+    }
 
-        if (req.user.role === 'student') {
-          if (test.type === 'mcq') {
-            const attempts = await TestAttempt.find({
-              testId: test._id,
-              studentId: req.user._id,
-              status: { $ne: 'in_progress' },
-            }).sort({ score: -1 });
+    const testIds = tests.map((t) => t._id);
 
-            userAttempts = attempts.length;
-            if (attempts.length > 0) {
+    // 1. Bulk aggregate question counts across all tests in 1 query
+    const questionCountsAgg = await Question.aggregate([
+      { $match: { testId: { $in: testIds } } },
+      { $group: { _id: '$testId', count: { $sum: 1 } } },
+    ]);
+    const questionCountMap = new Map(questionCountsAgg.map((q) => [q._id.toString(), q.count]));
+
+    // 2. Bulk fetch student attempts in 1 query if student
+    let studentAttemptMap = new Map();
+    let essaySubMap = new Map();
+
+    if (req.user.role === 'student') {
+      const attempts = await TestAttempt.find({
+        testId: { $in: testIds },
+        studentId: req.user._id,
+        status: { $ne: 'in_progress' },
+      })
+        .select('testId score maxMarks accuracy')
+        .sort({ score: -1 })
+        .lean();
+
+      attempts.forEach((att) => {
+        const tIdStr = att.testId.toString();
+        if (!studentAttemptMap.has(tIdStr)) {
+          studentAttemptMap.set(tIdStr, []);
+        }
+        studentAttemptMap.get(tIdStr).push(att);
+      });
+
+      const essaySubs = await EssaySubmission.find({
+        testId: { $in: testIds },
+        studentId: req.user._id,
+      }).lean();
+
+      essaySubs.forEach((es) => {
+        essaySubMap.set(es.testId.toString(), es);
+      });
+    }
+
+    // Attach statistics in memory without N+1 queries
+    const testsWithMetadata = tests.map((test) => {
+      const tIdStr = test._id.toString();
+      const questionCount = questionCountMap.get(tIdStr) || 0;
+      let userAttempts = 0;
+      let bestScore = null;
+
+      if (req.user.role === 'student') {
+        if (test.type === 'mcq') {
+          const userAtts = studentAttemptMap.get(tIdStr) || [];
+          userAttempts = userAtts.length;
+          if (userAtts.length > 0) {
+            bestScore = {
+              score: userAtts[0].score,
+              maxMarks: userAtts[0].maxMarks,
+              accuracy: userAtts[0].accuracy,
+            };
+          }
+        } else {
+          const essaySub = essaySubMap.get(tIdStr);
+          if (essaySub) {
+            userAttempts = 1;
+            if (essaySub.status === 'evaluated') {
               bestScore = {
-                score: attempts[0].score,
-                maxMarks: attempts[0].maxMarks,
-                accuracy: attempts[0].accuracy,
+                score: essaySub.marksObtained,
+                maxMarks: essaySub.maxMarks,
               };
-            }
-          } else {
-            const essaySub = await EssaySubmission.findOne({
-              testId: test._id,
-              studentId: req.user._id,
-            });
-            if (essaySub) {
-              userAttempts = 1;
-              if (essaySub.status === 'evaluated') {
-                bestScore = {
-                  score: essaySub.marksObtained,
-                  maxMarks: essaySub.maxMarks,
-                };
-              }
             }
           }
         }
+      }
 
-        return {
-          ...test.toObject(),
-          questionCount,
-          userAttempts,
-          bestScore,
-        };
-      })
-    );
+      return {
+        ...test,
+        questionCount,
+        userAttempts,
+        bestScore,
+      };
+    });
 
     res.json(testsWithMetadata);
   } catch (error) {
@@ -90,20 +122,20 @@ const getTests = async (req, res) => {
   }
 };
 
-// @desc    Get single test details
+// @desc    Get single test details (Optimized)
 // @route   GET /api/tests/:id
 // @access  Private
 const getTestById = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id)
       .populate('subjectId', 'name code iconName')
-      .populate('teacherId', 'name email');
+      .populate('teacherId', 'name email')
+      .lean();
 
     if (!test) {
       return res.status(404).json({ message: 'Test not found' });
     }
 
-    // Teacher ownership isolation check
     if (
       req.user.role === 'teacher' &&
       test.teacherId._id.toString() !== req.user._id.toString()
@@ -111,26 +143,18 @@ const getTestById = async (req, res) => {
       return res.status(403).json({ message: 'Access denied: You can only access your own created tests' });
     }
 
-    // Fetch questions
-    const questions = await Question.find({ testId: test._id }).sort({ order: 1, createdAt: 1 });
+    // Optimize DB projections: Omit correctAnswerIndex & explanation for students at database level
+    let questionQuery = Question.find({ testId: test._id }).sort({ order: 1, createdAt: 1 }).lean();
 
-    // Sanitization: If student is fetching test before or during attempt, omit correctAnswerIndex & explanation!
-    let sanitizedQuestions = questions;
     if (req.user.role === 'student') {
-      sanitizedQuestions = questions.map((q) => ({
-        _id: q._id,
-        testId: q.testId,
-        questionText: q.questionText,
-        options: q.options,
-        marks: q.marks,
-        timerSeconds: q.timerSeconds,
-        order: q.order,
-      }));
+      questionQuery = questionQuery.select('_id testId questionText options marks timerSeconds order');
     }
 
+    const questions = await questionQuery;
+
     res.json({
-      ...test.toObject(),
-      questions: sanitizedQuestions,
+      ...test,
+      questions,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -101,4 +101,14 @@ const testAttemptSchema = new mongoose.Schema(
   }
 );
 
+// Compound index for in-progress & completed queries
+testAttemptSchema.index({ testId: 1, studentId: 1, status: 1 });
+testAttemptSchema.index({ studentId: 1, status: 1 });
+
+// Strict unique partial index ensuring only ONE in-progress attempt per (testId, studentId)
+testAttemptSchema.index(
+  { testId: 1, studentId: 1 },
+  { unique: true, partialFilterExpression: { status: 'in_progress' } }
+);
+
 module.exports = mongoose.model('TestAttempt', testAttemptSchema);
