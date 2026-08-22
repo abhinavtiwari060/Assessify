@@ -19,6 +19,13 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ message: 'User account is inactive or disabled' });
       }
 
+      // Normalize isApproved boolean property (legacy teacher documents default to true)
+      if (req.user.role === 'teacher') {
+        req.user.isApproved = req.user.isApproved !== false;
+      } else {
+        req.user.isApproved = true;
+      }
+
       return next();
     } catch (error) {
       console.error('Auth verification error:', error.message);

@@ -22,11 +22,16 @@ import {
 
 const TeacherReports = () => {
   const { addToast } = useToast();
+  const addToastRef = useRef(addToast);
+  useEffect(() => {
+    addToastRef.current = addToast;
+  }, [addToast]);
 
   const [reports, setReports] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
 
   // Filters State
   const [search, setSearch] = useState('');
@@ -62,6 +67,7 @@ const TeacherReports = () => {
   // Fetch reports list
   const fetchReports = useCallback(async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const params = new URLSearchParams();
       if (search) params.append('search', search);
@@ -77,11 +83,12 @@ const TeacherReports = () => {
       setPagination(res.data.pagination || { total: 0, page: 1, limit: 10, pages: 1 });
     } catch (err) {
       console.error('Failed to fetch reports:', err);
-      addToast('Failed to load student reports', 'error');
+      const msg = err.response?.data?.message || 'Failed to load student reports';
+      setFetchError(msg);
     } finally {
       setLoading(false);
     }
-  }, [search, selectedTestId, status, startDate, endDate, page, addToast]);
+  }, [search, selectedTestId, status, startDate, endDate, page]);
 
   useEffect(() => {
     fetchReports();
@@ -266,6 +273,17 @@ const TeacherReports = () => {
       {/* Main Table Content */}
       {loading ? (
         <TableSkeleton />
+      ) : fetchError ? (
+        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-3xl p-8 text-center space-y-3">
+          <p className="text-sm font-bold text-rose-600 dark:text-rose-400">{fetchError}</p>
+          <button
+            onClick={fetchReports}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Retry Loading Reports</span>
+          </button>
+        </div>
       ) : reports.length === 0 ? (
         <EmptyState
           title="No Student Reports Found"
