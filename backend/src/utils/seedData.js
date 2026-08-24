@@ -316,6 +316,28 @@ const seedInitialData = async () => {
       submittedAt: new Date(Date.now() - 7200000 + 240000),
     });
 
+    // Migration safeguard: Ensure all tests in DB have testCode and status
+    const legacyTests = await Test.find({
+      $or: [{ testCode: { $exists: false } }, { testCode: null }, { status: { $exists: false } }, { status: null }],
+    });
+
+    if (legacyTests.length > 0) {
+      const { generateUniqueTestCode } = require('./codeGenerator');
+      for (const t of legacyTests) {
+        if (!t.testCode) {
+          t.testCode = await generateUniqueTestCode();
+        }
+        if (!t.status) {
+          t.status = t.isPublished ? 'STARTED' : 'DRAFT';
+          if (t.isPublished && !t.startedAt) {
+            t.startedAt = new Date();
+          }
+        }
+        await t.save();
+      }
+      console.log(`✅ Migrated ${legacyTests.length} existing tests with unique test codes and status.`);
+    }
+
     console.log('✅ Initial tests, questions, and sample student attempts seeded successfully!');
   } catch (error) {
     console.error('Error seeding initial data:', error);

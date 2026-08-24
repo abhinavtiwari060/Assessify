@@ -89,8 +89,13 @@ const testAttemptSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['in_progress', 'submitted', 'auto_submitted_violation', 'auto_submitted_timer'],
+      enum: ['in_progress', 'submitted', 'auto_submitted', 'auto_submitted_violation', 'auto_submitted_timer'],
       default: 'in_progress',
+    },
+    submissionType: {
+      type: String,
+      enum: ['NORMAL_SUBMISSION', 'AUTO_SUBMITTED'],
+      default: 'NORMAL_SUBMISSION',
     },
     violations: [
       {

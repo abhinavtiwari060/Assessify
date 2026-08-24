@@ -3,6 +3,8 @@ const Question = require('../models/Question');
 const TestAttempt = require('../models/TestAttempt');
 const EssaySubmission = require('../models/EssaySubmission');
 const { logAudit } = require('../middleware/auth');
+const { generateUniqueTestCode } = require('../utils/codeGenerator');
+const { evaluateAttemptScores } = require('./attemptController');
 
 // @desc    Get tests (Student gets published, Teacher gets own, Admin gets all)
 // @route   GET /api/tests
@@ -163,7 +165,7 @@ const getTestById = async (req, res) => {
       // Students don't need teacherId populated
       testQuery = Test.findById(testIdStr)
         .populate('subjectId', 'name code iconName')
-        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished subjectId')
+        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished status testCode startedAt endedAt subjectId')
         .lean();
     }
 
@@ -243,6 +245,8 @@ const createTest = async (req, res) => {
       return res.status(400).json({ message: 'Title and Subject are required' });
     }
 
+    const testCode = await generateUniqueTestCode();
+
     const newTest = await Test.create({
       title,
       description: description || '',
@@ -258,6 +262,8 @@ const createTest = async (req, res) => {
       negativeMarkingRate: negativeMarkingRate || 0,
       instructions: instructions || 'Read all questions carefully.',
       isPublished: isPublished !== undefined ? isPublished : true,
+      testCode,
+      status: 'DRAFT',
     });
 
     let totalMarks = 0;
@@ -407,10 +413,179 @@ const deleteTest = async (req, res) => {
   }
 };
 
+// @desc    Start test session (Teacher manually starts test)
+// @route   POST /api/tests/:id/start-session
+// @access  Private (Teacher / Admin)
+const startTestSession = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    if (req.user.role === 'teacher' && test.teacherId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Access denied: You can only start your own test' });
+    }
+
+    if (test.status === 'ENDED') {
+      return res.status(400).json({ message: 'Cannot start a test that has already ended' });
+    }
+
+    test.status = 'STARTED';
+    test.startedAt = new Date();
+    test.isPublished = true;
+    await test.save();
+
+    invalidateTestCache(test._id);
+    await logAudit(req, 'TEST_STARTED_BY_TEACHER', `Teacher started test "${test.title}" (Code: ${test.testCode})`);
+
+    res.json({ message: 'Test started successfully', test });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    End test session (Teacher manually ends test and auto-submits active attempts)
+// @route   POST /api/tests/:id/end-session
+// @access  Private (Teacher / Admin)
+const endTestSession = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    if (req.user.role === 'teacher' && test.teacherId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Access denied: You can only end your own test' });
+    }
+
+    // Idempotent: If already ENDED, return success
+    if (test.status === 'ENDED') {
+      return res.json({ message: 'Test is already ended', test });
+    }
+
+    test.status = 'ENDED';
+    test.endedAt = new Date();
+    await test.save();
+
+    invalidateTestCache(test._id);
+
+    // Auto-submit all active MCQ test attempts
+    const activeMcqAttempts = await TestAttempt.find({
+      testId: test._id,
+      status: 'in_progress',
+    });
+
+    for (const attempt of activeMcqAttempts) {
+      attempt.status = 'auto_submitted';
+      attempt.submissionType = 'AUTO_SUBMITTED';
+      attempt.submittedAt = new Date();
+      await evaluateAttemptScores(attempt);
+      await attempt.save();
+    }
+
+    // Auto-submit all active Essay test submissions
+    const activeEssaySubs = await EssaySubmission.find({
+      testId: test._id,
+      status: 'in_progress',
+    });
+
+    for (const sub of activeEssaySubs) {
+      sub.status = 'submitted';
+      sub.submissionType = 'AUTO_SUBMITTED';
+      sub.submittedAt = new Date();
+      await sub.save();
+    }
+
+    await logAudit(
+      req,
+      'TEST_ENDED_BY_TEACHER',
+      `Teacher ended test "${test.title}". Auto-submitted ${activeMcqAttempts.length} MCQ attempts and ${activeEssaySubs.length} Essay submissions.`
+    );
+
+    res.json({
+      message: 'Test ended successfully. Active student attempts have been auto-submitted.',
+      autoSubmittedMcqCount: activeMcqAttempts.length,
+      autoSubmittedEssayCount: activeEssaySubs.length,
+      test,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Verify 4-character test code before student starts test
+// @route   POST /api/tests/:id/verify-code
+// @access  Private (Student)
+const verifyTestCode = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const testId = req.params.id;
+    const studentId = req.user._id;
+
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ message: 'Test code is required' });
+    }
+
+    const test = await Test.findById(testId).lean();
+    if (!test) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    // 1. Check if test code matches (case insensitive check)
+    if (!test.testCode || test.testCode.toUpperCase() !== code.trim().toUpperCase()) {
+      return res.status(400).json({ message: 'Invalid test code.' });
+    }
+
+    // 2. Check test status
+    const currentStatus = test.status || 'DRAFT';
+    if (currentStatus === 'DRAFT') {
+      return res.status(400).json({ message: 'Test has not started yet.' });
+    }
+    if (currentStatus === 'ENDED') {
+      return res.status(400).json({ message: 'Test has ended.' });
+    }
+
+    // 3. Check if student already attempted/submitted
+    if (test.type === 'mcq') {
+      const completedAttempt = await TestAttempt.findOne({
+        testId,
+        studentId,
+        status: { $ne: 'in_progress' },
+      }).lean();
+
+      if (completedAttempt) {
+        return res.status(400).json({ message: 'You have already attempted this test.' });
+      }
+    } else if (test.type === 'essay') {
+      const existingEssay = await EssaySubmission.findOne({
+        testId,
+        studentId,
+      }).lean();
+
+      if (existingEssay && existingEssay.status !== 'in_progress') {
+        return res.status(400).json({ message: 'You have already attempted this test.' });
+      }
+    }
+
+    res.json({
+      verified: true,
+      message: 'Test code verified successfully.',
+      testId: test._id,
+      testTitle: test.title,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getTests,
   getTestById,
   createTest,
   updateTest,
   deleteTest,
+  startTestSession,
+  endTestSession,
+  verifyTestCode,
 };

@@ -86,6 +86,18 @@ const TakeMcqTest = () => {
       try {
         const testRes = await api.get(`/tests/${testId}`);
         setTest(testRes.data);
+
+        if (testRes.data.status === 'DRAFT') {
+          addToast('Test has not started yet.', 'warning');
+          navigate('/student/available-tests');
+          return;
+        }
+        if (testRes.data.status === 'ENDED') {
+          addToast('This test has ended.', 'warning');
+          navigate('/student/available-tests');
+          return;
+        }
+
         setQuestions(testRes.data.questions || []);
 
         const attemptRes = await api.post(`/attempts/start/${testId}`);
