@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Clock, AlertTriangle } from 'lucide-react';
 
 const Timer = ({ initialSeconds, onTimeUp, label = 'Time Remaining' }) => {
   const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
+  const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
     setSecondsLeft(initialSeconds);
+    hasTriggeredRef.current = false;
   }, [initialSeconds]);
 
   useEffect(() => {
     if (secondsLeft <= 0) {
-      if (onTimeUp) onTimeUp();
+      if (!hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+        if (onTimeUp) onTimeUp();
+      }
       return;
     }
 
@@ -18,7 +23,10 @@ const Timer = ({ initialSeconds, onTimeUp, label = 'Time Remaining' }) => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerId);
-          if (onTimeUp) onTimeUp();
+          if (!hasTriggeredRef.current) {
+            hasTriggeredRef.current = true;
+            if (onTimeUp) onTimeUp();
+          }
           return 0;
         }
         return prev - 1;

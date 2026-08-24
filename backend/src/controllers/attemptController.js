@@ -282,11 +282,22 @@ const submitAttempt = async (req, res) => {
 
     const attempt = await TestAttempt.findById(attemptId);
     if (!attempt || attempt.studentId.toString() !== req.user._id.toString()) {
-      return res.status(404).json({ message: 'Active attempt not found' });
+      return res.status(404).json({ message: 'Active attempt not found or no longer available.' });
     }
 
+    // Idempotency: If attempt is already submitted (e.g. via tab switch, timer expiry, or duplicate submit call), return success with attemptId
     if (attempt.status !== 'in_progress') {
-      return res.status(400).json({ message: 'Attempt has already been submitted' });
+      return res.json({
+        success: true,
+        message: 'Attempt has already been submitted',
+        attemptId: attempt._id,
+        resultId: attempt._id,
+        testId: attempt.testId,
+        score: attempt.score,
+        maxMarks: attempt.maxMarks,
+        accuracy: attempt.accuracy,
+        alreadySubmitted: true,
+      });
     }
 
     attempt.status = isTimerExpired ? 'auto_submitted_timer' : 'submitted';
@@ -302,8 +313,11 @@ const submitAttempt = async (req, res) => {
     );
 
     res.json({
+      success: true,
       message: 'Test submitted successfully',
       attemptId: attempt._id,
+      resultId: attempt._id,
+      testId: attempt.testId,
       score: attempt.score,
       maxMarks: attempt.maxMarks,
       accuracy: attempt.accuracy,
