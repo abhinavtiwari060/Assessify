@@ -17,15 +17,7 @@ const startAttempt = async (req, res) => {
       .lean();
 
     if (!test) {
-      return res.status(404).json({ message: 'Test not found' });
-    }
-
-    const testStatus = test.status || 'DRAFT';
-    if (testStatus === 'DRAFT') {
-      return res.status(400).json({ message: 'Test has not started yet.' });
-    }
-    if (testStatus === 'ENDED') {
-      return res.status(400).json({ message: 'Test has ended.' });
+      return res.status(404).json({ message: 'Test not found or no longer available.' });
     }
 
     // 2. Check if an attempt is already in progress (Fast Compound Index Scan)
@@ -50,6 +42,28 @@ const startAttempt = async (req, res) => {
       return res.status(400).json({
         message: 'You have already attempted this test.',
       });
+    }
+
+    // 4. MANDATORY TEST CODE VERIFICATION FOR NEW ATTEMPTS
+    const { code } = req.body || {};
+    if (!code || typeof code !== 'string' || code.trim() === '') {
+      return res.status(400).json({ message: 'Please enter the test code.' });
+    }
+
+    if (code.trim().length !== 4) {
+      return res.status(400).json({ message: 'Test code must be 4 characters.' });
+    }
+
+    const testStatus = test.status || 'DRAFT';
+    if (testStatus === 'DRAFT') {
+      return res.status(400).json({ message: 'Test has not started yet.' });
+    }
+    if (testStatus === 'ENDED') {
+      return res.status(400).json({ message: 'Test has ended.' });
+    }
+
+    if (!test.testCode || test.testCode.toUpperCase() !== code.trim().toUpperCase()) {
+      return res.status(400).json({ message: 'Invalid test code. Please enter the correct test code.' });
     }
 
     // 4. Fetch questions selecting ONLY _id and marks (Lean query)
