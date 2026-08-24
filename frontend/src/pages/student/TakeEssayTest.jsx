@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Timer from '../../components/Timer';
@@ -11,14 +11,18 @@ import { Save, Send, BookOpen, CheckCircle, ShieldAlert } from 'lucide-react';
 const TakeEssayTest = () => {
   const { id: testId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToast } = useToast();
 
+  const initialSubmissionFromState = location.state?.initialSubmission;
+  const verifiedCodeFromState = location.state?.verifiedCode;
+
   const [test, setTest] = useState(null);
-  const [submission, setSubmission] = useState(null);
-  const [essayText, setEssayText] = useState('');
-  const [wordCount, setWordCount] = useState(0);
+  const [submission, setSubmission] = useState(initialSubmissionFromState || null);
+  const [essayText, setEssayText] = useState(initialSubmissionFromState?.essayText || '');
+  const [wordCount, setWordCount] = useState(initialSubmissionFromState?.wordCount || 0);
   const [saveStatus, setSaveStatus] = useState('saved');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialSubmissionFromState);
   const [submitting, setSubmitting] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
@@ -41,12 +45,19 @@ const TakeEssayTest = () => {
           return;
         }
 
-        const subRes = await api.post(`/essays/start/${testId}`);
-        setSubmission(subRes.data);
-        setEssayText(subRes.data.essayText || '');
-        setWordCount(subRes.data.wordCount || 0);
+        let subData = initialSubmissionFromState;
+        if (!subData) {
+          const subRes = await api.post(`/essays/start/${testId}`, {
+            code: verifiedCodeFromState || '',
+          });
+          subData = subRes.data;
+        }
 
-        if (subRes.data.status !== 'in_progress') {
+        setSubmission(subData);
+        setEssayText(subData.essayText || '');
+        setWordCount(subData.wordCount || 0);
+
+        if (subData.status !== 'in_progress') {
           addToast('This essay has already been submitted', 'warning');
           navigate('/student/history');
         }
@@ -59,7 +70,7 @@ const TakeEssayTest = () => {
       }
     };
     initEssay();
-  }, [testId, navigate, addToast]);
+  }, [testId, navigate, addToast, initialSubmissionFromState, verifiedCodeFromState]);
 
   const handleTextChange = (e) => {
     const text = e.target.value;
