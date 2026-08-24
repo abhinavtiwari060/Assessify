@@ -8,6 +8,7 @@ const {
   evaluateEssay,
   getMyEssaySubmissions,
   exportEssayDocx,
+  deleteEssaySubmission,
 } = require('../controllers/essayController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -18,5 +19,6 @@ router.get('/my-submissions', protect, authorize('student'), getMyEssaySubmissio
 router.get('/teacher/submissions', protect, authorize('teacher', 'admin'), getTeacherSubmissions);
 router.post('/submissions/:id/evaluate', protect, authorize('teacher', 'admin'), evaluateEssay);
 router.get('/submissions/:id/export', protect, authorize('teacher', 'admin'), exportEssayDocx);
+router.delete('/submissions/:id', protect, authorize('teacher', 'admin'), deleteEssaySubmission);
 
 module.exports = router;

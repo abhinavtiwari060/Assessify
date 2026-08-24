@@ -12,7 +12,27 @@ const startEssay = async (req, res) => {
 
     const test = await Test.findById(testId);
     if (!test || test.type !== 'essay') {
-      return res.status(400).json({ message: 'Invalid essay test' });
+      return res.status(404).json({ message: 'Test not found or no longer available.' });
+    }
+
+    let submission = await EssaySubmission.findOne({ testId, studentId });
+
+    if (submission && submission.status !== 'in_progress') {
+      return res.status(400).json({ message: 'You have already attempted this test.' });
+    }
+
+    if (submission && submission.status === 'in_progress') {
+      return res.json(submission);
+    }
+
+    // MANDATORY CODE VERIFICATION FOR NEW ESSAY SUBMISSIONS
+    const { code } = req.body || {};
+    if (!code || typeof code !== 'string' || code.trim() === '') {
+      return res.status(400).json({ message: 'Please enter the test code.' });
+    }
+
+    if (code.trim().length !== 4) {
+      return res.status(400).json({ message: 'Test code must be 4 characters.' });
     }
 
     const testStatus = test.status || 'DRAFT';
@@ -23,22 +43,18 @@ const startEssay = async (req, res) => {
       return res.status(400).json({ message: 'Test has ended.' });
     }
 
-    let submission = await EssaySubmission.findOne({ testId, studentId });
-
-    if (submission && submission.status !== 'in_progress') {
-      return res.status(400).json({ message: 'You have already attempted this test.' });
+    if (!test.testCode || test.testCode.toUpperCase() !== code.trim().toUpperCase()) {
+      return res.status(400).json({ message: 'Invalid test code. Please enter the correct test code.' });
     }
 
-    if (!submission) {
-      submission = await EssaySubmission.create({
-        testId,
-        studentId,
-        maxMarks: test.totalMarks || 20,
-        status: 'in_progress',
-        submissionType: 'NORMAL_SUBMISSION',
-      });
-      await logAudit(req, 'ESSAY_STARTED', `Student started writing essay for test "${test.title}"`);
-    }
+    submission = await EssaySubmission.create({
+      testId,
+      studentId,
+      maxMarks: test.totalMarks || 20,
+      status: 'in_progress',
+      submissionType: 'NORMAL_SUBMISSION',
+    });
+    await logAudit(req, 'ESSAY_STARTED', `Student started writing essay for test "${test.title}"`);
 
     res.json(submission);
   } catch (error) {
@@ -425,6 +441,32 @@ const exportEssayDocx = async (req, res) => {
   }
 };
 
+// @desc    Delete essay submission (Hard delete from database)
+// @route   DELETE /api/essays/submissions/:id
+// @access  Private (Teacher / Admin)
+const deleteEssaySubmission = async (req, res) => {
+  try {
+    const submission = await EssaySubmission.findById(req.params.id).populate('testId', 'teacherId title');
+    if (!submission) {
+      return res.status(404).json({ message: 'Essay submission not found or no longer available.' });
+    }
+
+    if (
+      req.user.role === 'teacher' &&
+      submission.testId?.teacherId?.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ message: 'Access denied: You cannot delete another teacher\'s essay submission' });
+    }
+
+    await EssaySubmission.findByIdAndDelete(req.params.id);
+    await logAudit(req, 'ESSAY_DELETE', `Deleted essay submission ${req.params.id}`);
+
+    res.json({ message: 'Essay submission permanently deleted from database' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   startEssay,
   autoSaveEssay,
@@ -433,4 +475,5 @@ module.exports = {
   evaluateEssay,
   getMyEssaySubmissions,
   exportEssayDocx,
+  deleteEssaySubmission,
 };

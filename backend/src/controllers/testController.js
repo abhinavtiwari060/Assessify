@@ -110,12 +110,16 @@ const getTests = async (req, res) => {
         }
       }
 
-      return {
+      const item = {
         ...test,
         questionCount,
         userAttempts,
         bestScore,
       };
+      if (req.user.role === 'student') {
+        delete item.testCode;
+      }
+      return item;
     });
 
     res.json(testsWithMetadata);
@@ -156,16 +160,16 @@ const getTestById = async (req, res) => {
     const t0 = Date.now();
     let testQuery;
 
-    if (req.user.role === 'teacher') {
+    if (req.user.role === 'teacher' || req.user.role === 'admin') {
       testQuery = Test.findById(testIdStr)
         .populate('subjectId', 'name code iconName')
         .populate('teacherId', 'name email')
         .lean();
     } else {
-      // Students don't need teacherId populated
+      // Students MUST NOT receive testCode in single test lookup!
       testQuery = Test.findById(testIdStr)
         .populate('subjectId', 'name code iconName')
-        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished status testCode startedAt endedAt subjectId')
+        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished status startedAt endedAt subjectId')
         .lean();
     }
 
@@ -387,10 +391,10 @@ const deleteTest = async (req, res) => {
     const test = await Test.findById(req.params.id);
 
     if (!test) {
-      return res.status(404).json({ message: 'Test not found' });
+      return res.status(404).json({ message: 'Test not found or no longer available.' });
     }
 
-    // Teacher ownership check
+    // Teacher ownership check (Admin bypasses)
     if (
       req.user.role === 'teacher' &&
       test.teacherId.toString() !== req.user._id.toString()
@@ -398,16 +402,16 @@ const deleteTest = async (req, res) => {
       return res.status(403).json({ message: 'Access denied: You cannot delete another teacher\'s test' });
     }
 
-    // Delete questions, attempts, essay submissions
+    // Database Hard Cascade Delete: Delete questions, attempts, essay submissions, test document
     await Question.deleteMany({ testId: test._id });
     await TestAttempt.deleteMany({ testId: test._id });
     await EssaySubmission.deleteMany({ testId: test._id });
-    await test.deleteOne();
+    await Test.deleteOne({ _id: test._id });
 
     invalidateTestCache(test._id);
-    await logAudit(req, 'TEST_DELETE', `Deleted test "${test.title}"`);
+    await logAudit(req, 'TEST_DELETE', `Deleted test "${test.title}" and all related database records`);
 
-    res.json({ message: 'Test and associated questions/attempts removed' });
+    res.json({ message: 'Test and associated questions/attempts permanently removed from database' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

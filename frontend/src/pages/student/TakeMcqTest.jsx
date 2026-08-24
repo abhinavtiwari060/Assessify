@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Timer from '../../components/Timer';
@@ -20,14 +20,18 @@ import {
 const TakeMcqTest = () => {
   const { id: testId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToast } = useToast();
 
+  const initialAttemptFromState = location.state?.initialAttempt;
+  const verifiedCodeFromState = location.state?.verifiedCode;
+
   const [test, setTest] = useState(null);
-  const [attempt, setAttempt] = useState(null);
+  const [attempt, setAttempt] = useState(initialAttemptFromState || null);
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState(initialAttemptFromState?.answers || []);
+  const [loading, setLoading] = useState(!initialAttemptFromState);
   const [submitting, setSubmitting] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
@@ -100,9 +104,17 @@ const TakeMcqTest = () => {
 
         setQuestions(testRes.data.questions || []);
 
-        const attemptRes = await api.post(`/attempts/start/${testId}`);
-        setAttempt(attemptRes.data);
-        setAnswers(attemptRes.data.answers || []);
+        let attemptData = initialAttemptFromState;
+        if (!attemptData) {
+          // If no initial attempt passed from state, call start attempt API with code
+          const attemptRes = await api.post(`/attempts/start/${testId}`, {
+            code: verifiedCodeFromState || '',
+          });
+          attemptData = attemptRes.data;
+        }
+
+        setAttempt(attemptData);
+        setAnswers(attemptData.answers || []);
       } catch (err) {
         console.error('Failed to initialize test:', err);
         addToast(err.response?.data?.message || 'Failed to start test', 'error');
@@ -112,7 +124,7 @@ const TakeMcqTest = () => {
       }
     };
     initTest();
-  }, [testId, navigate, addToast]);
+  }, [testId, navigate, addToast, initialAttemptFromState, verifiedCodeFromState]);
 
   const currentQuestion = questions[currentIndex];
 

@@ -65,35 +65,46 @@ const AvailableTests = () => {
 
   const handleVerifyCodeSubmit = async (e) => {
     e.preventDefault();
-    if (!activeTestForCode || !enteredCode.trim()) {
-      addToast('Please enter the 4-character test code', 'warning');
+    if (!activeTestForCode) return;
+
+    const trimmed = enteredCode.trim().toUpperCase();
+
+    if (!trimmed) {
+      addToast('Please enter the test code.', 'warning');
       return;
     }
 
-    if (enteredCode.trim().length !== 4) {
-      addToast('Test code must be exactly 4 characters', 'warning');
+    if (trimmed.length !== 4) {
+      addToast('Test code must be 4 characters.', 'warning');
       return;
     }
 
     setVerifying(true);
     try {
-      const res = await api.post(`/tests/${activeTestForCode._id}/verify-code`, {
-        code: enteredCode.trim().toUpperCase(),
-      });
-
-      if (res.data.verified) {
-        addToast('Test code verified! Starting test session...', 'success');
-        const targetRoute =
-          activeTestForCode.type === 'essay'
-            ? `/student/test/essay/${activeTestForCode._id}`
-            : `/student/test/mcq/${activeTestForCode._id}`;
-        
+      if (activeTestForCode.type === 'essay') {
+        const startRes = await api.post(`/essays/start/${activeTestForCode._id}`, {
+          code: trimmed,
+        });
+        addToast('Test code verified! Starting essay session...', 'success');
+        const targetTest = activeTestForCode;
         setActiveTestForCode(null);
-        navigate(targetRoute, { state: { verifiedCode: enteredCode.trim().toUpperCase() } });
+        navigate(`/student/test/essay/${targetTest._id}`, {
+          state: { initialSubmission: startRes.data, verifiedCode: trimmed },
+        });
+      } else {
+        const startRes = await api.post(`/attempts/start/${activeTestForCode._id}`, {
+          code: trimmed,
+        });
+        addToast('Test code verified! Starting MCQ session...', 'success');
+        const targetTest = activeTestForCode;
+        setActiveTestForCode(null);
+        navigate(`/student/test/mcq/${targetTest._id}`, {
+          state: { initialAttempt: startRes.data, verifiedCode: trimmed },
+        });
       }
     } catch (err) {
       console.error(err);
-      addToast(err.response?.data?.message || 'Invalid test code', 'error');
+      addToast(err.response?.data?.message || 'Invalid test code. Please enter the correct test code.', 'error');
     } finally {
       setVerifying(false);
     }
@@ -167,7 +178,7 @@ const AvailableTests = () => {
           {filteredTests.map((test) => {
             const status = test.status || 'DRAFT';
             const isCompleted = test.hasAttempted || (test.userAttempts > 0 && test.userAttempts >= (test.maxAttempts || 1));
-            
+
             let statusText = '';
             let isStartDisabled = false;
 
@@ -196,11 +207,10 @@ const AvailableTests = () => {
                       {test.subjectId?.name || 'General'}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                        test.type === 'essay'
-                          ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
-                          : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
-                      }`}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${test.type === 'essay'
+                        ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                        }`}>
                         {test.type.toUpperCase()}
                       </span>
 
@@ -235,15 +245,14 @@ const AvailableTests = () => {
                   </div>
 
                   {/* Contextual Status Message Banner */}
-                  <div className={`p-3 rounded-2xl border text-xs font-semibold flex items-center gap-2 ${
-                    isCompleted
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
-                      : status === 'DRAFT'
+                  <div className={`p-3 rounded-2xl border text-xs font-semibold flex items-center gap-2 ${isCompleted
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300'
+                    : status === 'DRAFT'
                       ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300'
                       : status === 'ENDED'
-                      ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
-                      : 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800/60 text-indigo-800 dark:text-indigo-300'
-                  }`}>
+                        ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-300'
+                        : 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800/60 text-indigo-800 dark:text-indigo-300'
+                    }`}>
                     {isCompleted ? (
                       <CheckCircle className="w-4 h-4 shrink-0" />
                     ) : status === 'DRAFT' ? (
