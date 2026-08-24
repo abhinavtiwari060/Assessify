@@ -11,6 +11,13 @@ const seedInitialData = require('./utils/seedData');
 dotenv.config();
 
 const app = express();
+// This is for active the backend server
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "Server is running"
+  });
+});
 
 // Connect to Database
 connectDB().then(() => {
