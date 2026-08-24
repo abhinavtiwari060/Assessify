@@ -118,8 +118,11 @@ const TakeEssayTest = () => {
     addToast(`${actionName} is disabled in the essay test area.`, 'warning');
   };
 
+  const submittingRef = useRef(false);
+
   const handleFinalSubmit = async () => {
-    if (!submission || submitting) return;
+    if (!submission || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setConfirmModalOpen(false);
 
@@ -129,12 +132,24 @@ const TakeEssayTest = () => {
         timeSpentSeconds: 60,
       });
       addToast('Essay submitted successfully!', 'success');
-      navigate('/student/history');
+      navigate('/student/history', { replace: true });
     } catch (err) {
       console.error('Essay submit error:', err);
-      addToast(err.response?.data?.message || 'Failed to submit essay', 'error');
-    } finally {
+      const errMsg = err.response?.data?.message || err.message || '';
+
+      if (
+        errMsg.includes('already submitted') ||
+        errMsg.includes('already been submitted') ||
+        err.response?.status === 400
+      ) {
+        addToast('Redirecting to your submission history...', 'info');
+        navigate('/student/history', { replace: true });
+        return;
+      }
+
+      addToast(errMsg || 'Failed to submit essay', 'error');
       setSubmitting(false);
+      submittingRef.current = false;
     }
   };
 

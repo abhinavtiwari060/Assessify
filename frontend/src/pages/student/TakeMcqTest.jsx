@@ -181,24 +181,54 @@ const TakeMcqTest = () => {
     }
   }, [currentIndex, questions.length, addToast]);
 
-  // Submit test to backend
+  const submittingRef = useRef(false);
+
+  // Submit test to backend with guaranteed redirect & fallback recovery
   const handleFinalSubmit = async (isTimerExpired = false) => {
-    if (!attempt || submitting) return;
+    if (!attempt || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setConfirmModalOpen(false);
 
     try {
-      // Flush dirty answers before submission
-      await flushDirtyAnswers();
+      // Safely flush remaining dirty answers without throwing/blocking submit call
+      try {
+        await flushDirtyAnswers();
+      } catch (flushErr) {
+        console.warn('Pre-submit answer flush warning:', flushErr);
+      }
 
       const res = await api.post(`/attempts/${attempt._id}/submit`, { isTimerExpired });
-      addToast('Test submitted successfully!', 'success');
-      navigate(`/student/attempt/${attempt._id}/result`);
+      const targetAttemptId = res.data?.attemptId || res.data?.resultId || attempt._id;
+
+      addToast('Test submitted successfully! Redirecting to report...', 'success');
+      navigate(`/student/attempt/${targetAttemptId}/result`, { replace: true });
     } catch (err) {
       console.error('Submit error:', err);
-      addToast(err.response?.data?.message || 'Submission failed', 'error');
-    } finally {
+      const errMsg = err.response?.data?.message || err.message || '';
+
+      // Fallback Recovery: Check if the attempt was already saved/submitted on backend
+      if (
+        errMsg.includes('already submitted') ||
+        errMsg.includes('already been submitted') ||
+        err.response?.status === 400 ||
+        err.response?.status === 409
+      ) {
+        try {
+          const checkRes = await api.get(`/attempts/${attempt._id}/result`);
+          if (checkRes.data?.attempt) {
+            addToast('Redirecting to your test result report...', 'info');
+            navigate(`/student/attempt/${attempt._id}/result`, { replace: true });
+            return;
+          }
+        } catch (fallbackErr) {
+          console.error('Fallback check failed:', fallbackErr);
+        }
+      }
+
+      addToast(errMsg || 'Submission failed. Please try again.', 'error');
       setSubmitting(false);
+      submittingRef.current = false;
     }
   };
 

@@ -117,7 +117,14 @@ const submitEssay = async (req, res) => {
     }
 
     if (submission.status !== 'in_progress') {
-      return res.status(400).json({ message: 'Essay is already submitted' });
+      return res.json({
+        success: true,
+        message: 'Essay is already submitted',
+        submissionId: submission._id,
+        testId: submission.testId?._id || submission.testId,
+        alreadySubmitted: true,
+        submission,
+      });
     }
 
     if (submission.testId && submission.testId.status === 'ENDED') {
@@ -144,7 +151,10 @@ const submitEssay = async (req, res) => {
     );
 
     res.json({
+      success: true,
       message: 'Essay submitted successfully and sent for teacher evaluation',
+      submissionId: submission._id,
+      testId: submission.testId?._id || submission.testId,
       submission,
     });
   } catch (error) {
