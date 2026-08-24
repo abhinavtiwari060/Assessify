@@ -32,8 +32,13 @@ const essaySubmissionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['in_progress', 'submitted', 'evaluated'],
+      enum: ['in_progress', 'submitted', 'auto_submitted', 'evaluated'],
       default: 'in_progress',
+    },
+    submissionType: {
+      type: String,
+      enum: ['NORMAL_SUBMISSION', 'AUTO_SUBMITTED'],
+      default: 'NORMAL_SUBMISSION',
     },
     marksObtained: {
       type: Number,

@@ -6,7 +6,7 @@ import Timer from '../../components/Timer';
 import AntiCheatingTracker from '../../components/AntiCheatingTracker';
 import Modal from '../../components/Modal';
 import { CardSkeleton } from '../../components/LoadingSkeleton';
-import { FileEdit, Save, Send, Clock, BookOpen, CheckCircle } from 'lucide-react';
+import { Save, Send, BookOpen, CheckCircle, ShieldAlert } from 'lucide-react';
 
 const TakeEssayTest = () => {
   const { id: testId } = useParams();
@@ -29,6 +29,17 @@ const TakeEssayTest = () => {
       try {
         const testRes = await api.get(`/tests/${testId}`);
         setTest(testRes.data);
+
+        if (testRes.data.status === 'DRAFT') {
+          addToast('Test has not started yet.', 'warning');
+          navigate('/student/available-tests');
+          return;
+        }
+        if (testRes.data.status === 'ENDED') {
+          addToast('This test has ended.', 'warning');
+          navigate('/student/available-tests');
+          return;
+        }
 
         const subRes = await api.post(`/essays/start/${testId}`);
         setSubmission(subRes.data);
@@ -70,9 +81,30 @@ const TakeEssayTest = () => {
         setSaveStatus('saved');
       } catch (err) {
         console.error('Essay autosave failed:', err);
-        setSaveStatus('error');
+        if (err.response?.data?.message?.includes('ended')) {
+          addToast('Teacher has ended the test. Auto-submitting essay...', 'warning');
+          handleFinalSubmit();
+        } else {
+          setSaveStatus('error');
+        }
       }
     }, 2000);
+  };
+
+  // Anti-Copy/Paste enforcement handlers
+  const handleKeyDown = (e) => {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V' || e.key === 'x' || e.key === 'X')
+    ) {
+      e.preventDefault();
+      addToast('Copy, Paste, and Cut are disabled during the test.', 'warning');
+    }
+  };
+
+  const preventAction = (e, actionName) => {
+    e.preventDefault();
+    addToast(`${actionName} is disabled in the essay test area.`, 'warning');
   };
 
   const handleFinalSubmit = async () => {
@@ -140,7 +172,7 @@ const TakeEssayTest = () => {
 
       {/* Writing Interface Panel */}
       <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/80 pb-3">
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
             <span>Word Count: <strong className="text-slate-900 dark:text-white">{wordCount}</strong></span>
             <span>Characters: <strong className="text-slate-900 dark:text-white">{essayText.length}</strong></span>
@@ -154,11 +186,23 @@ const TakeEssayTest = () => {
           </div>
         </div>
 
-        {/* Text Area */}
+        {/* Security Warning Banner */}
+        <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-800/60">
+          <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600" />
+          <span>Copy, Paste, Cut, Right-Click, and Drag-and-Drop are disabled in this essay answer box.</span>
+        </div>
+
+        {/* Protected Text Area */}
         <textarea
           rows={15}
           value={essayText}
           onChange={handleTextChange}
+          onKeyDown={handleKeyDown}
+          onCopy={(e) => preventAction(e, 'Copying')}
+          onPaste={(e) => preventAction(e, 'Pasting')}
+          onCut={(e) => preventAction(e, 'Cutting')}
+          onContextMenu={(e) => preventAction(e, 'Right-click context menu')}
+          onDrop={(e) => preventAction(e, 'Text dragging')}
           placeholder="Begin typing your essay response here..."
           className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 leading-relaxed font-sans"
         />
@@ -166,7 +210,7 @@ const TakeEssayTest = () => {
         <div className="flex justify-end pt-2">
           <button
             onClick={() => setConfirmModalOpen(true)}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-base shadow-lg shadow-purple-600/25 transition-all"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-base shadow-lg shadow-purple-600/25 transition-all cursor-pointer"
           >
             <Send className="w-5 h-5" />
             <span>Submit Essay for Grading</span>
@@ -183,14 +227,14 @@ const TakeEssayTest = () => {
           <>
             <button
               onClick={() => setConfirmModalOpen(false)}
-              className="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold"
+              className="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold cursor-pointer"
             >
               Continue Editing
             </button>
             <button
               onClick={handleFinalSubmit}
               disabled={submitting}
-              className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md"
+              className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md cursor-pointer"
             >
               {submitting ? 'Submitting...' : 'Yes, Submit Essay'}
             </button>

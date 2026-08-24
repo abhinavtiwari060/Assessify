@@ -60,6 +60,24 @@ const testSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    testCode: {
+      type: String,
+      uppercase: true,
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ['DRAFT', 'STARTED', 'ENDED'],
+      default: 'DRAFT',
+    },
+    startedAt: {
+      type: Date,
+      default: null,
+    },
+    endedAt: {
+      type: Date,
+      default: null,
+    },
     instructions: {
       type: String,
       default: 'Read all questions carefully. Do not switch tabs during the test.',
@@ -74,8 +92,10 @@ const testSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for fast published test queries and subject filtering
+// Indexes for fast published test queries, code lookup, and subject filtering
 testSchema.index({ isPublished: 1, type: 1 });
 testSchema.index({ subjectId: 1, isPublished: 1 });
+testSchema.index({ testCode: 1 }, { unique: true, sparse: true });
+testSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Test', testSchema);

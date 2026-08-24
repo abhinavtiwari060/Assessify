@@ -15,7 +15,19 @@ const startEssay = async (req, res) => {
       return res.status(400).json({ message: 'Invalid essay test' });
     }
 
+    const testStatus = test.status || 'DRAFT';
+    if (testStatus === 'DRAFT') {
+      return res.status(400).json({ message: 'Test has not started yet.' });
+    }
+    if (testStatus === 'ENDED') {
+      return res.status(400).json({ message: 'Test has ended.' });
+    }
+
     let submission = await EssaySubmission.findOne({ testId, studentId });
+
+    if (submission && submission.status !== 'in_progress') {
+      return res.status(400).json({ message: 'You have already attempted this test.' });
+    }
 
     if (!submission) {
       submission = await EssaySubmission.create({
@@ -23,6 +35,7 @@ const startEssay = async (req, res) => {
         studentId,
         maxMarks: test.totalMarks || 20,
         status: 'in_progress',
+        submissionType: 'NORMAL_SUBMISSION',
       });
       await logAudit(req, 'ESSAY_STARTED', `Student started writing essay for test "${test.title}"`);
     }
@@ -48,6 +61,11 @@ const autoSaveEssay = async (req, res) => {
 
     if (submission.status !== 'in_progress') {
       return res.status(400).json({ message: 'Essay has already been submitted and locked' });
+    }
+
+    const test = await Test.findById(submission.testId).select('status').lean();
+    if (test && test.status === 'ENDED') {
+      return res.status(400).json({ message: 'Test has ended. Further changes are not allowed.' });
     }
 
     const text = essayText || '';
@@ -77,13 +95,17 @@ const submitEssay = async (req, res) => {
     const { id } = req.params;
     const { essayText, timeSpentSeconds } = req.body;
 
-    const submission = await EssaySubmission.findById(id).populate('testId', 'title');
+    const submission = await EssaySubmission.findById(id).populate('testId', 'title status');
     if (!submission || submission.studentId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ message: 'Essay submission not found' });
     }
 
     if (submission.status !== 'in_progress') {
       return res.status(400).json({ message: 'Essay is already submitted' });
+    }
+
+    if (submission.testId && submission.testId.status === 'ENDED') {
+      return res.status(400).json({ message: 'Test has ended. Further changes are not allowed.' });
     }
 
     if (essayText !== undefined) {
@@ -95,6 +117,7 @@ const submitEssay = async (req, res) => {
     if (timeSpentSeconds) submission.timeSpentSeconds = timeSpentSeconds;
 
     submission.status = 'submitted';
+    submission.submissionType = 'NORMAL_SUBMISSION';
     submission.submittedAt = new Date();
 
     await submission.save();
@@ -130,7 +153,7 @@ const getTeacherSubmissions = async (req, res) => {
       .populate('studentId', 'name email avatar')
       .populate({
         path: 'testId',
-        select: 'title subjectId totalMarks durationMinutes',
+        select: 'title testCode subjectId totalMarks durationMinutes status',
         populate: { path: 'subjectId', select: 'name code' },
       })
       .sort({ createdAt: -1 });
@@ -197,7 +220,7 @@ const getMyEssaySubmissions = async (req, res) => {
     const submissions = await EssaySubmission.find({ studentId: req.user._id })
       .populate({
         path: 'testId',
-        select: 'title description subjectId instructions',
+        select: 'title description subjectId instructions testCode',
         populate: { path: 'subjectId', select: 'name code' },
       })
       .populate('evaluatedBy', 'name email')
@@ -209,6 +232,199 @@ const getMyEssaySubmissions = async (req, res) => {
   }
 };
 
+// @desc    Export student essay submission to Microsoft Word (.docx)
+// @route   GET /api/essays/submissions/:id/export
+// @access  Private (Teacher / Admin)
+const exportEssayDocx = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType } = require('docx');
+
+    const submission = await EssaySubmission.findById(id)
+      .populate('studentId', 'name email rollNo')
+      .populate({
+        path: 'testId',
+        select: 'title testCode teacherId subjectId totalMarks',
+        populate: { path: 'subjectId', select: 'name code' },
+      });
+
+    if (!submission) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    // Teacher ownership check
+    if (
+      req.user.role === 'teacher' &&
+      submission.testId?.teacherId &&
+      submission.testId.teacherId.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ message: 'Access denied: You can only export essays for your own tests' });
+    }
+
+    const testTitle = submission.testId?.title || 'Essay Test';
+    const studentName = submission.studentId?.name || 'Unknown Student';
+    const studentEmail = submission.studentId?.email || 'N/A';
+    const testCode = submission.testId?.testCode || 'N/A';
+    const submissionType = submission.submissionType || 'NORMAL_SUBMISSION';
+    const submittedAtStr = submission.submittedAt
+      ? new Date(submission.submittedAt).toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : 'N/A';
+
+    const rawText = submission.essayText || 'No text submitted.';
+    const lines = rawText.split('\n');
+
+    const essayParagraphs = lines.map(
+      (line) =>
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: line,
+              size: 24, // 12pt
+              font: 'Calibri',
+            }),
+          ],
+          spacing: { after: 140 },
+        })
+    );
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              text: "STUDENT ESSAY SUBMISSION REPORT",
+              heading: HeadingLevel.HEADING_1,
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 240 },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: `Essay Test: ${testTitle}`,
+                  bold: true,
+                  size: 28,
+                  font: 'Calibri',
+                  color: '1E293B',
+                }),
+              ],
+              spacing: { after: 240 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Student Name:", bold: true })] })],
+                      width: { size: 30, type: WidthType.PERCENTAGE },
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: studentName })] })],
+                      width: { size: 70, type: WidthType.PERCENTAGE },
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Student Email / ID:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: studentEmail })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Test Code:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: testCode })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Submission Type:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: submissionType,
+                              bold: true,
+                              color: submissionType === 'AUTO_SUBMITTED' ? 'DC2626' : '166534',
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Submitted At:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: submittedAtStr })] })],
+                    }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: "Word Count:", bold: true })] })],
+                    }),
+                    new TableCell({
+                      children: [new Paragraph({ children: [new TextRun({ text: `${submission.wordCount || 0} words` })] })],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "_________________________________________________________________________________",
+                  color: "CBD5E1",
+                }),
+              ],
+              spacing: { before: 240, after: 280 },
+            }),
+
+            new Paragraph({
+              text: "Student Essay Answer",
+              heading: HeadingLevel.HEADING_2,
+              spacing: { after: 200 },
+            }),
+
+            ...essayParagraphs,
+          ],
+        },
+      ],
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    const safeStudentName = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename=Essay-${safeStudentName}-${testCode}.docx`);
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error generating DOCX:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   startEssay,
   autoSaveEssay,
@@ -216,4 +432,5 @@ module.exports = {
   getTeacherSubmissions,
   evaluateEssay,
   getMyEssaySubmissions,
+  exportEssayDocx,
 };

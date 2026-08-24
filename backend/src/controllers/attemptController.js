@@ -11,13 +11,21 @@ const startAttempt = async (req, res) => {
     const testId = req.params.id;
     const studentId = req.user._id;
 
-    // 1. Lean Test Lookup selecting only required fields
+    // 1. Lean Test Lookup selecting required fields
     const test = await Test.findById(testId)
-      .select('title isPublished maxAttempts totalMarks')
+      .select('title isPublished status testCode maxAttempts totalMarks')
       .lean();
 
-    if (!test || !test.isPublished) {
-      return res.status(404).json({ message: 'Test is not available or unpublished' });
+    if (!test) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    const testStatus = test.status || 'DRAFT';
+    if (testStatus === 'DRAFT') {
+      return res.status(400).json({ message: 'Test has not started yet.' });
+    }
+    if (testStatus === 'ENDED') {
+      return res.status(400).json({ message: 'Test has ended.' });
     }
 
     // 2. Check if an attempt is already in progress (Fast Compound Index Scan)
@@ -38,9 +46,9 @@ const startAttempt = async (req, res) => {
       status: { $ne: 'in_progress' },
     });
 
-    if (completedAttempts >= test.maxAttempts) {
+    if (completedAttempts >= (test.maxAttempts || 1)) {
       return res.status(400).json({
-        message: `You have reached the maximum allowed attempts (${test.maxAttempts}) for this test.`,
+        message: 'You have already attempted this test.',
       });
     }
 
@@ -701,4 +709,5 @@ module.exports = {
   getMyHistory,
   getTeacherStudentReports,
   exportStudentReportsExcel,
+  evaluateAttemptScores,
 };
