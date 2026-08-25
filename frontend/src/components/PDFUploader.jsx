@@ -41,9 +41,16 @@ const PDFUploader = ({ onExtracted }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      addToast(`Extracted ${res.data.totalExtracted} questions from PDF!`, 'success');
+      if (res.data.totalExtracted > 0) {
+        addToast(`Successfully extracted ${res.data.totalExtracted} question(s) from PDF!`, 'success');
+      } else if (res.data.status === 'no_text') {
+        addToast(res.data.message || 'Scanned/image PDF detected. OCR required.', 'error');
+      } else {
+        addToast(res.data.message || 'No MCQs detected in PDF file.', 'warning');
+      }
+
       if (onExtracted) {
-        onExtracted(res.data.questions, res.data.fileName);
+        onExtracted(res.data.questions, res.data.fileName, res.data);
       }
     } catch (err) {
       console.error(err);
