@@ -20,6 +20,9 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
+// Trust reverse proxies (Render, Vercel, Cloudflare) for rate limiting & IP detection
+app.set('trust proxy', 1);
+
 // Connect to Database (Seeding is an explicit operation: npm run seed)
 connectDB();
 
@@ -31,27 +34,57 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Configure Restricted CORS
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map((url) => url.trim())
-  : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'];
-
+// Dynamic & Production-Safe CORS Configuration
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow non-browser requests or allowed origin matches
-    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS policy'));
+    // Allow server-to-server requests, mobile apps, or curl (no origin header)
+    if (!origin) return callback(null, true);
+
+    const clientUrls = process.env.CLIENT_URL
+      ? process.env.CLIENT_URL.split(',').map((u) => u.trim().toLowerCase())
+      : [];
+
+    const lowerOrigin = origin.toLowerCase();
+
+    // 1. Explicit matches from CLIENT_URL environment variable
+    if (clientUrls.includes('*') || clientUrls.includes(lowerOrigin)) {
+      return callback(null, true);
     }
+
+    // 2. Allow Vercel frontend deployments (*.vercel.app)
+    if (lowerOrigin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    // 3. Allow Render backend/frontend domains (*.onrender.com)
+    if (lowerOrigin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+
+    // 4. Allow Localhost / local development ports
+    if (
+      lowerOrigin.startsWith('http://localhost:') ||
+      lowerOrigin.startsWith('http://127.0.0.1:')
+    ) {
+      return callback(null, true);
+    }
+
+    // 5. Default fallback if CLIENT_URL is not set: allow origin dynamically so preflight succeeds
+    if (!process.env.CLIENT_URL) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
 };
 
 // Rate Limiters for Security Hardening
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // Limit each IP to 30 authentication requests per windowMs
+  max: 50, // Limit each IP to 50 authentication requests per 15 mins
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many authentication attempts. Please try again later.', code: 'RATE_LIMIT_EXCEEDED' },
@@ -59,7 +92,7 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests. Please slow down.', code: 'RATE_LIMIT_EXCEEDED' },
@@ -68,6 +101,7 @@ const apiLimiter = rateLimit({
 // Middleware
 app.use(compression());
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
