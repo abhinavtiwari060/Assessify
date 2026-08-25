@@ -103,7 +103,7 @@ const PDFUploader = ({ onExtracted }) => {
           className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white shadow-lg transition-all ${
             !file || loading
               ? 'bg-slate-400 dark:bg-slate-700 cursor-not-allowed opacity-60'
-              : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-indigo-500/25'
+              : 'bg-[#58A6FF] hover:bg-[#388BFD] text-[#0D1117] cursor-pointer'
           }`}
         >
           {loading ? (

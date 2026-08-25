@@ -109,9 +109,9 @@ const AttemptResult = () => {
             </p>
           </div>
 
-          <div className="flex flex-col items-center p-5 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-900 dark:to-indigo-950/60 rounded-3xl border border-indigo-100 dark:border-indigo-800/80 min-w-52 text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Final Score</span>
-            <div className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent my-1">
+          <div className="flex flex-col items-center p-5 bg-[#21262D] rounded-3xl border border-[#30363D] min-w-52 text-center">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#8B949E]">Final Score</span>
+            <div className="text-4xl font-black text-[#58A6FF] my-1">
               {result.score} / {result.maxMarks}
             </div>
             <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-2">

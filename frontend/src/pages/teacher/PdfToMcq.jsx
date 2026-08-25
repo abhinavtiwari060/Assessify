@@ -227,9 +227,9 @@ const PdfToMcq = () => {
             <button
               onClick={handleSaveExtractedTest}
               disabled={saving}
-              className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-base shadow-lg shadow-indigo-600/30 transition-all"
+              className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#58A6FF] hover:bg-[#388BFD] disabled:opacity-50 text-[#0D1117] font-extrabold text-base shadow-md transition-all cursor-pointer"
             >
-              <Save className="w-5 h-5" />
+              <Save className="w-5 h-5 text-[#0D1117]" />
               <span>{saving ? 'Publishing Test...' : 'Publish Verified Test'}</span>
             </button>
           </div>

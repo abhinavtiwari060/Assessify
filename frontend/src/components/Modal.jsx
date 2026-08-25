@@ -13,25 +13,25 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0D1117]/80 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-[#161B22] rounded-3xl shadow-2xl border border-[#30363D] max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/80">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#30363D]">
+          <h3 className="text-lg font-extrabold text-[#F0F6FC]">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl transition-colors"
+            className="p-1.5 text-[#8B949E] hover:text-[#F0F6FC] rounded-xl transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-4 overflow-y-auto flex-1">{children}</div>
+        <div className="px-6 py-4 overflow-y-auto flex-1 text-[#F0F6FC]">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/40 flex justify-end gap-3">
+          <div className="px-6 py-4 border-t border-[#30363D] bg-[#21262D] flex justify-end gap-3">
             {footer}
           </div>
         )}

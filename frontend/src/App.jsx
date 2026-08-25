@@ -105,7 +105,7 @@ const App = () => {
   const isTestTakingPage = location.pathname.includes('/student/test/');
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#0D1117] text-[#F0F6FC] font-sans antialiased">
       {/* Top Navbar */}
       {!isAuthPage && !isTestTakingPage && (
         <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
