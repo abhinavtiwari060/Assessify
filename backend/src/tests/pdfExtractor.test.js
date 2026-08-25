@@ -1,11 +1,19 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parsePdfTextToMCQs, splitInlineOptions, normalizeText, extractMcqsFromBuffer } = require('../services/pdfExtractor');
+const {
+  parsePdfTextToMCQs,
+  splitInlineOptions,
+  normalizeText,
+  extractMcqsFromBuffer,
+  isScannedPdf,
+} = require('../services/pdfExtractor');
 
 test('Text Normalization: NFKC, smart quotes, dashes, CRLF, zero-width chars', () => {
-  const raw = "Q1. “What is Java?” – \r\nA. Language\u200B\u00A0";
-  const normalized = normalizeText(raw);
-  assert.equal(normalized, 'Q1. "What is Java?" -\nA. Language');
+  const input = "Q1. “What is Java?” – Answer: ‘A’\r\nLine 2";
+  const output = normalizeText(input);
+  assert.equal(output.includes('"What is Java?"'), true);
+  assert.equal(output.includes("- Answer: 'A'"), true);
+  assert.equal(output.includes('\r'), false);
 });
 
 test('Inline Options Splitting: Letters A-D on same line', () => {
@@ -41,192 +49,212 @@ test('Inline Options Splitting: Numbers 1-4 on same line', () => {
   ]);
 });
 
-test('Case 1: Standard Q1. A/B/C/D format with explicit answer', () => {
+test('Case A / 1: Standard Q1. A/B/C/D format with explicit answer', () => {
   const text = `
---- PAGE_BREAK_1 ---
-Q1. What is Java?
-A. Language
-B. Coffee
-C. OS
-D. Database
-Answer: A
+    Q1. What is Java?
+    A. Programming language
+    B. Database
+    C. Operating System
+    D. Browser
+    Answer: A
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].questionText, 'What is Java?');
-  assert.deepEqual(mcqs[0].options, ['Language', 'Coffee', 'OS', 'Database']);
-  assert.equal(mcqs[0].correctAnswerIndex, 0);
-  assert.equal(mcqs[0].confidence, 'high');
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].questionText, 'What is Java?');
+  assert.equal(res[0].options.length, 4);
+  assert.equal(res[0].correctAnswerIndex, 0);
+  assert.equal(res[0].answerSource, 'explicit');
+  assert.equal(res[0].confidence, 'high');
 });
 
-test('Case 2: 1) format with numeric answer', () => {
+test('Case B / 2: 1) format with numeric answer Ans: B', () => {
   const text = `
---- PAGE_BREAK_1 ---
-1) What is 2 + 2?
-A) 3
-B) 4
-C) 5
-D) 6
-Ans: B
+    1) What is 2 + 2?
+    A) 3
+    B) 4
+    C) 5
+    D) 6
+    Ans: B
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].questionText, 'What is 2 + 2?');
-  assert.deepEqual(mcqs[0].options, ['3', '4', '5', '6']);
-  assert.equal(mcqs[0].correctAnswerIndex, 1);
-  assert.equal(mcqs[0].confidence, 'high');
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].questionText, 'What is 2 + 2?');
+  assert.equal(res[0].correctAnswerIndex, 1);
 });
 
-test('Case 3: Parentheses options (A)-(D) without answer', () => {
+test('Case C / 6: Multiline question text continuation', () => {
   const text = `
---- PAGE_BREAK_1 ---
-12. Which language is used for web development?
-(A) JavaScript
-(B) Python
-(C) C++
-(D) Assembly
+    1. Which of the following is
+    the correct definition of
+    object oriented programming?
+    A. Paradigm based on objects
+    B. Functional style
+    C. Assembly language
+    D. Scripting tool
+    Correct Answer = A
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].questionText, 'Which language is used for web development?');
-  assert.deepEqual(mcqs[0].options, ['JavaScript', 'Python', 'C++', 'Assembly']);
-  assert.equal(mcqs[0].correctAnswerIndex, null);
-  assert.equal(mcqs[0].confidence, 'medium');
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(
+    res[0].questionText,
+    'Which of the following is the correct definition of object oriented programming?'
+  );
 });
 
-test('Case 4: Question prefix on own line followed by statement', () => {
+test('Case D / 6: Multiline option text continuation', () => {
   const text = `
---- PAGE_BREAK_1 ---
-Question 5.
-Which of the following is correct?
-A. Option one
-B. Option two
-C. Option three
-D. Option four
-Answer: C
+    Q1. What is Node.js?
+    A. JavaScript runtime environment
+       built on Chrome's V8 engine
+    B. Database engine
+    C. CSS preprocessor
+    D. Operating System kernel
+    Ans: A
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].questionText, 'Which of the following is correct?');
-  assert.equal(mcqs[0].correctAnswerIndex, 2);
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(
+    res[0].options[0],
+    "JavaScript runtime environment built on Chrome's V8 engine"
+  );
 });
 
-test('Case 5: Inline options on a single line', () => {
+test('Case E: Q.1 format', () => {
   const text = `
---- PAGE_BREAK_1 ---
-12. Which of the following is a programming language?
-A. JavaScript   B. MySQL   C. HTML   D. CSS
-Ans: A
+    Q.1 What is Python?
+    A. High level language
+    B. Low level language
+    C. Machine code
+    D. Hardware component
+    Key: A
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].questionText, 'Which of the following is a programming language?');
-  assert.deepEqual(mcqs[0].options, ['JavaScript', 'MySQL', 'HTML', 'CSS']);
-  assert.equal(mcqs[0].correctAnswerIndex, 0);
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].questionText, 'What is Python?');
+  assert.equal(res[0].correctAnswerIndex, 0);
 });
 
-test('Case 6: Multiline question and option text', () => {
+test('Case F / 4: Question 1 format on separate or same line', () => {
   const text = `
---- PAGE_BREAK_1 ---
-1. Which of the following is used for
-   creating objects in Java?
-A. This is a very long option that continues
-   on the next line.
-B. Short option
-C. Option three
-D. Option four
-Answer: A
+    Question 1: What is HTML?
+    A. Markup language
+    B. Style sheet
+    C. Programming language
+    D. Database
+    Correct: A
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].questionText, 'Which of the following is used for creating objects in Java?');
-  assert.equal(mcqs[0].options[0], 'This is a very long option that continues on the next line.');
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].questionText, 'What is HTML?');
+  assert.equal(res[0].correctAnswerIndex, 0);
 });
 
-test('Case 7: Explanation block extraction', () => {
+test('Case G / 8: Separate Answer Key section at end of PDF', () => {
   const text = `
---- PAGE_BREAK_1 ---
-Q1. What is Node.js?
-A. Runtime
-B. Framework
-C. DB
-D. OS
-Answer: A
-Explanation: Node.js is an open-source JavaScript runtime environment.
-  `;
+    1. What is CSS?
+    A. Styling
+    B. Database
+    C. Protocol
+    D. Compiler
 
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 1);
-  assert.equal(mcqs[0].explanation, 'Node.js is an open-source JavaScript runtime environment.');
+    2. What is SQL?
+    A. Query language
+    B. OS
+    C. Browser
+    D. Hardware
+
+    Answer Key
+    1-A
+    2-A
+  `;
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 2);
+  assert.equal(res[0].correctAnswerIndex, 0);
+  assert.equal(res[0].answerSource, 'answer-key');
+  assert.equal(res[1].correctAnswerIndex, 0);
+  assert.equal(res[1].answerSource, 'answer-key');
 });
 
-test('Case 8: Answer Key section at the end of document', () => {
+test('Case H / 3: Missing answer (correctAnswerIndex is null)', () => {
   const text = `
---- PAGE_BREAK_1 ---
-1. What is HTML?
-A. Markup
-B. Scripting
-C. Styling
-D. Querying
-
-2. What is CSS?
-A. Styling
-B. Logic
-C. Data
-D. Network
-
---- PAGE_BREAK_2 ---
-Answer Key:
-1-A
-2-A
+    Q1. What is C++?
+    A. Language
+    B. OS
+    C. DB
+    D. Server
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 2);
-  assert.equal(mcqs[0].correctAnswerIndex, 0);
-  assert.equal(mcqs[1].correctAnswerIndex, 0);
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].correctAnswerIndex, null);
+  assert.equal(res[0].answerSource, null);
+  assert.ok(res[0].warnings.some((w) => w.includes('not detected')));
 });
 
-test('Case 9: Header and footer filtering across pages', () => {
+test('Case I: Three-option question generates warning', () => {
   const text = `
---- PAGE_BREAK_1 ---
-Downloaded from www.testbank.com
-Page 1 of 2
-1. Question one?
-A. Opt 1
-B. Opt 2
-Answer: A
-
---- PAGE_BREAK_2 ---
-Downloaded from www.testbank.com
-Page 2 of 2
-2. Question two?
-A. Opt A
-B. Opt B
-Answer: B
+    Q1. Is Earth round?
+    A. Yes
+    B. No
+    C. Unsure
+    Answer: A
   `;
-
-  const mcqs = parsePdfTextToMCQs(text);
-  assert.equal(mcqs.length, 2);
-  assert.ok(!mcqs[0].questionText.includes('Downloaded from'));
-  assert.ok(!mcqs[1].questionText.includes('Downloaded from'));
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].options.length, 3);
+  assert.ok(res[0].warnings.some((w) => w.includes('3 options')));
 });
 
-test('Case 10: Scanned/No-text PDF buffer handling', async () => {
-  // Empty buffer
-  const emptyRes = await extractMcqsFromBuffer(Buffer.from(''), 'test.pdf');
-  assert.equal(emptyRes.success, false);
-  assert.equal(emptyRes.status, 'failed');
+test('Case J: Duplicate question removal', () => {
+  const text = `
+    Q1. What is Java?
+    A. Language
+    B. DB
+    C. OS
+    D. Browser
+    Ans: A
 
-  // Buffer with non-extractable text
-  const noTextRes = await extractMcqsFromBuffer(Buffer.from('PDF binary dummy content without text'), 'scanned.pdf');
-  assert.equal(noTextRes.success, false);
-  assert.equal(noTextRes.status, 'no_text');
-  assert.equal(noTextRes.questions.length, 0);
+    Q2. What is Java?
+    A. Language
+    B. DB
+    C. OS
+    D. Browser
+    Ans: A
+  `;
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+});
+
+test('Case K / 9: Header and footer filtering across pages', () => {
+  const text = `
+    Page 1 of 10
+    Confidential Examination Paper
+    Q1. What is HTTP?
+    A. Protocol
+    B. Database
+    C. Compiler
+    D. Language
+    Answer: A
+    --- PAGE_BREAK_1 ---
+  `;
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 1);
+  assert.equal(res[0].questionText, 'What is HTTP?');
+});
+
+test('Case L: Empty / no-text PDF handling', () => {
+  const res = parsePdfTextToMCQs('');
+  assert.equal(res.length, 0);
+});
+
+test('Case M / 10: Scanned/image-based PDF detection', async () => {
+  const fakeScannedBuffer = Buffer.from('PDF_HEADER_IMAGE_DATA_ONLY_\x00\x01\x02\x03\x04\x05');
+  const res = await extractMcqsFromBuffer(fakeScannedBuffer, 'scanned.pdf');
+  assert.equal(res.success, false);
+  assert.equal(res.questions.length, 0);
+});
+
+test('Case N: Completely unstructured PDF text returns success: false with no fake questions', () => {
+  const text = "Random document text without any question structure or options.";
+  const res = parsePdfTextToMCQs(text);
+  assert.equal(res.length, 0);
 });

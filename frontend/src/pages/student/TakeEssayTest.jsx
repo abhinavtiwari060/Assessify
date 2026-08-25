@@ -236,9 +236,9 @@ const TakeEssayTest = () => {
         <div className="flex justify-end pt-2">
           <button
             onClick={() => setConfirmModalOpen(true)}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-base shadow-lg shadow-purple-600/25 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#3FB950] hover:bg-[#2ea043] text-[#0D1117] font-extrabold text-base shadow-md transition-all cursor-pointer"
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-5 h-5 text-[#0D1117]" />
             <span>Submit Essay for Grading</span>
           </button>
         </div>

@@ -66,7 +66,7 @@ const ReportCard = () => {
         {/* Header Header Info */}
         <div className="flex flex-col sm:flex-row items-center justify-between pb-8 border-b border-slate-200 dark:border-slate-700 gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+            <div className="w-16 h-16 rounded-2xl bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-black text-2xl shadow-xs">
               {student.name ? student.name.charAt(0).toUpperCase() : 'S'}
             </div>
             <div>

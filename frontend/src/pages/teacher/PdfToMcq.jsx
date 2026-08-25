@@ -4,13 +4,11 @@ import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import PDFUploader from '../../components/PDFUploader';
 import {
-  FileText,
-  CheckCircle,
-  PlusCircle,
-  Trash2,
-  Save,
-  AlertTriangle,
   Sparkles,
+  Save,
+  Trash2,
+  AlertTriangle,
+  Scan,
 } from 'lucide-react';
 
 const PdfToMcq = () => {
@@ -19,6 +17,7 @@ const PdfToMcq = () => {
 
   const [subjects, setSubjects] = useState([]);
   const [extractedQuestions, setExtractedQuestions] = useState([]);
+  const [extractionMeta, setExtractionMeta] = useState(null);
   const [testTitle, setTestTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [warnings, setWarnings] = useState([]);
@@ -38,11 +37,28 @@ const PdfToMcq = () => {
     fetchSubjects();
   }, []);
 
-  const handleExtracted = (questions, fileName, meta) => {
-    setExtractedQuestions(questions || []);
-    setTestTitle(fileName.replace(/\.pdf$/i, '') + ' MCQ Assessment');
+  const handleExtracted = (questionsOrMeta, fileNameParam, metaParam) => {
+    let qList = [];
+    let meta = null;
+    let name = '';
+
+    if (Array.isArray(questionsOrMeta)) {
+      qList = questionsOrMeta;
+      name = fileNameParam || '';
+      meta = metaParam || null;
+    } else if (questionsOrMeta && typeof questionsOrMeta === 'object') {
+      meta = questionsOrMeta;
+      qList = questionsOrMeta.questions || [];
+      name = questionsOrMeta.fileName || fileNameParam || '';
+    }
+
+    setExtractedQuestions(qList);
+    setExtractionMeta(meta);
     setWarnings(meta?.warnings || []);
     setExtractionStatus(meta?.status || null);
+    if (name) {
+      setTestTitle(name.replace(/\.pdf$/i, '') + ' MCQ Assessment');
+    }
   };
 
   const handleQuestionChange = (qIdx, text) => {
@@ -60,6 +76,9 @@ const PdfToMcq = () => {
   const handleCorrectAnsChange = (qIdx, optIdx) => {
     const updated = [...extractedQuestions];
     updated[qIdx].correctAnswerIndex = optIdx;
+    updated[qIdx].warnings = (updated[qIdx].warnings || []).filter(
+      (w) => !w.includes('not detected')
+    );
     setExtractedQuestions(updated);
   };
 
@@ -74,16 +93,20 @@ const PdfToMcq = () => {
     }
 
     if (extractedQuestions.length === 0) {
-      addToast('No questions to save', 'error');
+      addToast('No questions available to save', 'error');
       return;
     }
 
-    // Verify all questions have a valid correct answer index selected
+    // Check if any questions have missing answer selection
     const missingAnsIdx = extractedQuestions.findIndex(
       (q) => q.correctAnswerIndex === null || q.correctAnswerIndex === undefined || q.correctAnswerIndex < 0
     );
+
     if (missingAnsIdx !== -1) {
-      addToast(`Question #${missingAnsIdx + 1} does not have a correct answer selected. Please select one.`, 'error');
+      addToast(
+        `Question #${missingAnsIdx + 1} does not have a correct answer selected. Please select one.`,
+        'error'
+      );
       return;
     }
 
@@ -100,7 +123,10 @@ const PdfToMcq = () => {
         isPublished: true,
       });
 
-      addToast(`Test "${testTitle}" created with ${extractedQuestions.length} verified questions!`, 'success');
+      addToast(
+        `Test "${testTitle}" created with ${extractedQuestions.length} verified questions!`,
+        'success'
+      );
       navigate('/teacher/tests');
     } catch (err) {
       console.error(err);
@@ -111,28 +137,44 @@ const PdfToMcq = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-          <Sparkles className="w-8 h-8 text-indigo-500" />
-          PDF → MCQ Automatic Extractor
+    <div className="space-y-8 max-w-5xl mx-auto pb-12 text-[#F0F6FC]">
+      {/* Page Header */}
+      <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 shadow-sm space-y-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#21262D] border border-[#30363D] text-xs font-bold text-[#58A6FF]">
+          <Sparkles className="w-3.5 h-3.5" /> Automatic PDF-to-MCQ Parsing Engine
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          PDF → MCQ Extraction Pipeline
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Upload any text-based question paper PDF to auto-generate structured MCQs. Always review extracted content before publishing.
+        <p className="text-xs sm:text-sm text-[#8B949E] max-w-2xl leading-relaxed">
+          Upload any text-based question paper PDF to auto-extract structured MCQs. Review confidence scores, warnings, and options before publishing.
         </p>
       </div>
 
       {/* Upload Component */}
       <PDFUploader onExtracted={handleExtracted} />
 
-      {/* Warnings & Status Banner */}
+      {/* Scanned PDF Warning Banner */}
+      {extractionMeta && (extractionMeta.requiresOCR || extractionMeta.status === 'no_text') && (
+        <div className="bg-[#F85149]/15 border border-[#F85149]/30 rounded-2xl p-5 flex items-start gap-3 text-[#F85149] animate-in fade-in duration-300">
+          <Scan className="w-6 h-6 text-[#F85149] shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="text-base font-extrabold">Scanned / Image-Based PDF Detected</h4>
+            <p className="text-xs text-[#8B949E] leading-relaxed">
+              This PDF contains image scans or non-extractable text ({extractionMeta.textLength || 0} characters found). No fake questions were generated. OCR pre-processing is required for image-based PDFs.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Global Warnings & Status Banner */}
       {warnings.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-2 text-amber-900 dark:text-amber-200 text-xs animate-in fade-in duration-300">
-          <div className="font-bold flex items-center gap-2 text-amber-600 dark:text-amber-400">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
+        <div className="bg-[#D29922]/15 border border-[#D29922]/30 rounded-2xl p-4 space-y-2 text-[#D29922] text-xs animate-in fade-in duration-300">
+          <div className="font-bold flex items-center gap-2 text-[#F0F6FC]">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-[#D29922]" />
             <span>Extraction Warnings & Status ({extractionStatus || 'Notice'})</span>
           </div>
-          <ul className="list-disc pl-5 space-y-1">
+          <ul className="list-disc pl-5 space-y-1 text-[#8B949E]">
             {warnings.map((w, idx) => (
               <li key={idx}>{w}</li>
             ))}
@@ -143,25 +185,54 @@ const PdfToMcq = () => {
       {/* Extracted Review Editor Section */}
       {extractedQuestions.length > 0 && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Save Test Configuration</h3>
+          {/* Metadata Statistics Bar */}
+          {extractionMeta?.statistics && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-4 space-y-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Total Parsed</span>
+                <div className="text-2xl font-extrabold text-[#F0F6FC]">{extractedQuestions.length}</div>
+              </div>
+              <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-4 space-y-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">High Confidence</span>
+                <div className="text-2xl font-extrabold text-[#3FB950]">
+                  {extractionMeta.statistics.highConfidence || 0}
+                </div>
+              </div>
+              <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-4 space-y-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Medium / Low</span>
+                <div className="text-2xl font-extrabold text-[#D29922]">
+                  {(extractionMeta.statistics.mediumConfidence || 0) + (extractionMeta.statistics.lowConfidence || 0)}
+                </div>
+              </div>
+              <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-4 space-y-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Missing Answer</span>
+                <div className="text-2xl font-extrabold text-[#F85149]">
+                  {extractedQuestions.filter((q) => q.correctAnswerIndex === null).length}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Test Configuration */}
+          <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 shadow-sm space-y-4">
+            <h3 className="text-lg font-extrabold text-[#F0F6FC]">Save Test Configuration</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Test Title</label>
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Test Title</label>
                 <input
                   type="text"
                   value={testTitle}
                   onChange={(e) => setTestTitle(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white"
+                  className="w-full bg-[#21262D] border border-[#30363D] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#F0F6FC] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Target Subject</label>
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Target Subject</label>
                 <select
                   value={subjectId}
                   onChange={(e) => setSubjectId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white"
+                  className="w-full bg-[#21262D] border border-[#30363D] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#F0F6FC] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
                 >
                   {subjects.map((sub) => (
                     <option key={sub._id} value={sub._id}>
@@ -173,95 +244,130 @@ const PdfToMcq = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+          {/* Extracted Questions List */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-extrabold text-[#F0F6FC]">
               Extracted Questions Editor ({extractedQuestions.length})
             </h3>
 
-            {extractedQuestions.map((q, qIdx) => (
-              <div
-                key={qIdx}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4"
-              >
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-white">Question #{qIdx + 1}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      q.confidence === 'high'
-                        ? 'bg-emerald-500/10 text-emerald-600'
-                        : q.confidence === 'low'
-                        ? 'bg-rose-500/10 text-rose-600'
-                        : 'bg-amber-500/10 text-amber-600'
-                    }`}>
-                      Confidence: {q.confidence || 'Medium'}
-                    </span>
-                    {q.sourcePage && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300">
-                        Page {q.sourcePage}
+            {extractedQuestions.map((q, qIdx) => {
+              const confidenceColor =
+                q.confidence === 'high'
+                  ? 'bg-[#3FB950]/15 text-[#3FB950] border-[#3FB950]/30'
+                  : q.confidence === 'medium'
+                  ? 'bg-[#D29922]/15 text-[#D29922] border-[#D29922]/30'
+                  : 'bg-[#F85149]/15 text-[#F85149] border-[#F85149]/30';
+
+              const missingAns = q.correctAnswerIndex === null || q.correctAnswerIndex === undefined;
+
+              return (
+                <div
+                  key={qIdx}
+                  className="bg-[#161B22] rounded-2xl p-6 border border-[#30363D] shadow-sm space-y-4"
+                >
+                  <div className="flex items-center justify-between border-b border-[#30363D] pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-[#F0F6FC]">Question #{qIdx + 1}</span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${confidenceColor}`}>
+                        Confidence: {q.confidence || 'Medium'}
                       </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleRemoveQuestion(qIdx)}
-                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Question Text</label>
-                  <textarea
-                    rows={2}
-                    value={q.questionText}
-                    onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm font-medium text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {q.options.map((opt, optIdx) => {
-                    const isCorrect = q.correctAnswerIndex === optIdx;
-                    return (
-                      <div
-                        key={optIdx}
-                        className={`flex items-center gap-3 p-3 rounded-2xl border ${
-                          isCorrect
-                            ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40'
-                            : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`pdf-ans-${qIdx}`}
-                          checked={isCorrect}
-                          onChange={() => handleCorrectAnsChange(qIdx, optIdx)}
-                          className="w-4 h-4 text-emerald-600"
-                        />
-                        <span className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold flex items-center justify-center">
-                          {String.fromCharCode(65 + optIdx)}
+                      {q.sourcePage && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#21262D] border border-[#30363D] text-[#8B949E]">
+                          Page {q.sourcePage}
                         </span>
-                        <input
-                          type="text"
-                          value={opt}
-                          onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
-                          className="flex-1 bg-transparent border-none text-sm font-medium text-slate-900 dark:text-white focus:outline-none"
-                        />
+                      )}
+                      {q.answerSource && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#58A6FF]/15 text-[#58A6FF] border border-[#58A6FF]/30">
+                          Source: {q.answerSource}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleRemoveQuestion(qIdx)}
+                      className="p-1.5 text-[#F85149] hover:bg-[#21262D] rounded-xl transition-colors cursor-pointer"
+                      title="Remove Question"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Warnings List */}
+                  {q.warnings && q.warnings.length > 0 && (
+                    <div className="p-3 bg-[#D29922]/10 border border-[#D29922]/30 rounded-xl space-y-1 text-xs text-[#D29922]">
+                      <div className="font-bold text-[#F0F6FC] flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#D29922]" /> Review Warnings:
                       </div>
-                    );
-                  })}
+                      <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-[#8B949E]">
+                        {q.warnings.map((w, wIdx) => (
+                          <li key={wIdx}>{w}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Question Text</label>
+                    <textarea
+                      rows={2}
+                      value={q.questionText}
+                      onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
+                      className="w-full bg-[#21262D] border border-[#30363D] rounded-xl p-3 text-xs sm:text-sm font-medium text-[#F0F6FC] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+                    />
+                  </div>
+
+                  {/* Missing Answer Alert */}
+                  {missingAns && (
+                    <div className="p-2.5 bg-[#F85149]/10 border border-[#F85149]/30 rounded-xl text-xs text-[#F85149] font-bold flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Select the correct answer option radio button below:</span>
+                    </div>
+                  )}
+
+                  {/* Options List */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {q.options.map((opt, optIdx) => {
+                      const isCorrect = q.correctAnswerIndex === optIdx;
+                      return (
+                        <div
+                          key={optIdx}
+                          className={`flex items-center gap-3 p-3 rounded-xl border ${
+                            isCorrect
+                              ? 'border-[#3FB950] bg-[#3FB950]/10'
+                              : 'border-[#30363D] bg-[#21262D]'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name={`pdf-ans-${qIdx}`}
+                            checked={isCorrect}
+                            onChange={() => handleCorrectAnsChange(qIdx, optIdx)}
+                            className="w-4 h-4 text-[#3FB950] cursor-pointer"
+                          />
+                          <span className="w-6 h-6 rounded-lg bg-[#161B22] border border-[#30363D] text-xs font-bold text-[#F0F6FC] flex items-center justify-center shrink-0">
+                            {String.fromCharCode(65 + optIdx)}
+                          </span>
+                          <input
+                            type="text"
+                            value={opt}
+                            onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
+                            className="flex-1 bg-transparent border-none text-xs sm:text-sm font-medium text-[#F0F6FC] focus:outline-none"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="flex justify-end pt-4">
             <button
               onClick={handleSaveExtractedTest}
               disabled={saving}
-              className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold text-base shadow-lg shadow-indigo-600/30 transition-all"
+              className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-[#58A6FF] hover:bg-[#388BFD] disabled:opacity-50 text-[#0D1117] font-extrabold text-base shadow-md transition-all cursor-pointer"
             >
-              <Save className="w-5 h-5" />
+              <Save className="w-5 h-5 text-[#0D1117]" />
               <span>{saving ? 'Publishing Test...' : 'Publish Verified Test'}</span>
             </button>
           </div>

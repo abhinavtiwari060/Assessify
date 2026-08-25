@@ -45,7 +45,7 @@ const Profile = () => {
 
       <form onSubmit={handleSave} className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-6">
         <div className="flex items-center gap-4 pb-6 border-b border-slate-100 dark:border-slate-700">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 rounded-2xl bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-black text-2xl">
             {name.charAt(0).toUpperCase()}
           </div>
           <div>

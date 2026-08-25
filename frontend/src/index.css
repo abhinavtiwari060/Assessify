@@ -4,7 +4,9 @@
 
 @layer base {
   body {
-    @apply antialiased bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100;
+    @apply antialiased bg-[#0D1117] text-[#F0F6FC];
+    background-color: #0D1117;
+    color: #F0F6FC;
   }
 }
 
@@ -14,15 +16,21 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-slate-100 dark:bg-slate-800;
+  background: #161B22;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-600 rounded-full hover:bg-slate-400 dark:hover:bg-slate-500;
+  background: #30363D;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
 }
 
-/* Custom Glassmorphism utility */
+/* Custom glass panel replaced with solid dark developer surface */
 .glass-panel {
-  @apply bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-sm;
+  background-color: #161B22;
+  border: 1px solid #30363D;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Print styling for student report cards */

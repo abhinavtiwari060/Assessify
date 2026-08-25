@@ -1,8 +1,34 @@
 /**
  * OCR Provider Adapter Module
- * Allows plugging in OCR engines (e.g. Tesseract.js, AWS Textract, Google Cloud Vision)
- * when scanned or image-only PDFs are detected.
+ * Provides OCR capabilities and plug points for scanned/image-based PDF files.
+ * Supports tesseract.js dynamic integration and cloud OCR plugin adapters.
  */
+
+/**
+ * Attempts to perform OCR on a PDF buffer using tesseract.js if installed.
+ * 
+ * @param {Buffer} pdfBuffer 
+ * @returns {Promise<{ text: string, performedOcr: boolean }>}
+ */
+const performOcr = async (pdfBuffer) => {
+  try {
+    const tesseract = require('tesseract.js');
+    if (tesseract && typeof tesseract.recognize === 'function') {
+      const result = await tesseract.recognize(pdfBuffer, 'eng');
+      return {
+        text: result.data.text || '',
+        performedOcr: true,
+      };
+    }
+  } catch (err) {
+    // Tesseract not installed or failed
+  }
+
+  return {
+    text: '',
+    performedOcr: false,
+  };
+};
 
 /**
  * Attempt OCR on a PDF buffer if an OCR provider is configured.
@@ -10,11 +36,17 @@
  * @returns {Promise<{ text: string, pages: Array<{ pageNum: number, text: string }> } | null>}
  */
 const extractTextWithOcr = async (pdfBuffer) => {
-  // Plug point for future OCR implementations.
-  // Return null if no OCR provider is installed/configured.
+  const res = await performOcr(pdfBuffer);
+  if (res.performedOcr && res.text) {
+    return {
+      text: res.text,
+      pages: [{ pageNum: 1, text: res.text }],
+    };
+  }
   return null;
 };
 
 module.exports = {
+  performOcr,
   extractTextWithOcr,
 };

@@ -394,9 +394,9 @@ const TakeMcqTest = () => {
           <button
             onClick={() => setConfirmModalOpen(true)}
             disabled={submitting}
-            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 text-white font-bold text-base shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 px-6 rounded-2xl bg-[#3FB950] hover:bg-[#2ea043] disabled:opacity-50 text-[#0D1117] font-extrabold text-base shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-5 h-5 text-[#0D1117]" />
             <span>{submitting ? 'Submitting...' : 'Finish & Submit Test'}</span>
           </button>
         </div>

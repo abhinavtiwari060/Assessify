@@ -257,7 +257,7 @@ const ManageUsers = () => {
                       {/* User Info */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-black text-sm shadow-xs shrink-0">
                             {u.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
