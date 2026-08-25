@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Clock,
   KeyRound,
+  Trophy,
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -189,6 +190,19 @@ const AdminDashboard = () => {
           <div>
             <h3 className="font-bold text-[var(--text-main)] text-sm sm:text-base">Password Resets</h3>
             <p className="text-xs text-[var(--text-sub)] font-normal">Review user reset requests</p>
+          </div>
+        </Link>
+
+        <Link
+          to="/admin/leaderboard"
+          className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs hover:border-[#FA8128]/50 transition-all flex items-center gap-3.5 group cursor-pointer"
+        >
+          <div className="w-11 h-11 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] text-[#FA8128] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <Trophy className="w-5.5 h-5.5 text-[#FA8128]" />
+          </div>
+          <div>
+            <h3 className="font-bold text-[var(--text-main)] text-sm sm:text-base">Leaderboard Reset</h3>
+            <p className="text-xs text-[var(--text-sub)] font-normal">View & reset rankings</p>
           </div>
         </Link>
 

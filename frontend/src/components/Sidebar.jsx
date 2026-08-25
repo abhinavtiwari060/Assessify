@@ -49,6 +49,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         ]
     : [
         { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/admin/leaderboard', label: 'Leaderboard', icon: Trophy },
         { to: '/admin/password-resets', label: 'Password Resets', icon: KeyRound },
         { to: '/admin/reports', label: 'Student Reports', icon: FileSpreadsheet },
         { to: '/admin/users', label: 'Manage Users', icon: Users },
