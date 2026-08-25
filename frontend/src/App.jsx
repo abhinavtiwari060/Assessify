@@ -111,109 +111,117 @@ const App = () => {
         <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       )}
 
-      <div className="flex-1 flex">
-        {/* Compact Sidebar */}
+      <div className="flex-1 flex relative w-full min-h-[calc(100vh-3.5rem)] sm:min-h-[calc(100vh-4rem)]">
+        {/* Fixed Left Sidebar */}
         {!isAuthPage && !isTestTakingPage && (
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
 
         {/* Main Content Area */}
         <main
-          className={`flex-1 p-3 sm:p-5 max-w-7xl mx-auto w-full ${
-            isAuthPage || isTestTakingPage ? 'p-0 sm:p-0 max-w-none' : ''
+          className={`flex-1 min-w-0 w-full transition-all duration-200 ${
+            !isAuthPage && !isTestTakingPage ? 'lg:pl-56' : ''
           }`}
         >
-          <Suspense fallback={<CardSkeleton />}>
-            <Routes>
-              {/* Default Landing Redirect */}
-              <Route
-                path="/"
-                element={
-                  !isAuthenticated ? (
-                    <Navigate to="/login" replace />
-                  ) : user?.mustChangePassword ? (
-                    <Navigate to="/change-password" replace />
-                  ) : user?.role === 'student' ? (
-                    <Navigate to="/student/dashboard" replace />
-                  ) : user?.role === 'teacher' ? (
-                    user?.isApproved === false ? (
-                      <Navigate to="/teacher/pending-approval" replace />
+          <div
+            className={`w-full min-w-0 ${
+              isAuthPage || isTestTakingPage
+                ? 'p-0'
+                : 'p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto'
+            }`}
+          >
+            <Suspense fallback={<CardSkeleton />}>
+              <Routes>
+                {/* Default Landing Redirect */}
+                <Route
+                  path="/"
+                  element={
+                    !isAuthenticated ? (
+                      <Navigate to="/login" replace />
+                    ) : user?.mustChangePassword ? (
+                      <Navigate to="/change-password" replace />
+                    ) : user?.role === 'student' ? (
+                      <Navigate to="/student/dashboard" replace />
+                    ) : user?.role === 'teacher' ? (
+                      user?.isApproved === false ? (
+                        <Navigate to="/teacher/pending-approval" replace />
+                      ) : (
+                        <Navigate to="/teacher/dashboard" replace />
+                      )
                     ) : (
-                      <Navigate to="/teacher/dashboard" replace />
+                      <Navigate to="/admin/dashboard" replace />
                     )
-                  ) : (
-                    <Navigate to="/admin/dashboard" replace />
-                  )
-                }
-              />
+                  }
+                />
 
-              {/* Public Pages */}
-              <Route path="/about" element={<About />} />
-              <Route path="/about-developer" element={<AboutDeveloper />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                {/* Public Pages */}
+                <Route path="/about" element={<About />} />
+                <Route path="/about-developer" element={<AboutDeveloper />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
-              {/* Auth Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route
-                path="/change-password"
-                element={
-                  <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']} allowMustChange={true}>
-                    <ChangePassword />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/login"
-                element={
-                  isAuthenticated && user?.role === 'admin' ? (
-                    <Navigate to="/admin/dashboard" replace />
-                  ) : (
-                    <AdminLogin />
-                  )
-                }
-              />
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route
+                  path="/change-password"
+                  element={
+                    <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']} allowMustChange={true}>
+                      <ChangePassword />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/login"
+                  element={
+                    isAuthenticated && user?.role === 'admin' ? (
+                      <Navigate to="/admin/dashboard" replace />
+                    ) : (
+                      <AdminLogin />
+                    )
+                  }
+                />
 
-              {/* Student Routes */}
-              <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
-              <Route path="/student/available-tests" element={<ProtectedRoute allowedRoles={['student']}><AvailableTests /></ProtectedRoute>} />
-              <Route path="/student/test/mcq/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeMcqTest /></ProtectedRoute>} />
-              <Route path="/student/test/essay/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeEssayTest /></ProtectedRoute>} />
-              <Route path="/student/attempt/:id/result" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><AttemptResult /></ProtectedRoute>} />
-              <Route path="/student/history" element={<ProtectedRoute allowedRoles={['student']}><TestHistory /></ProtectedRoute>} />
-              <Route path="/student/report-card" element={<ProtectedRoute allowedRoles={['student']}><ReportCard /></ProtectedRoute>} />
-              <Route path="/student/leaderboard" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><Leaderboard /></ProtectedRoute>} />
-              <Route path="/student/profile" element={<ProtectedRoute allowedRoles={['student']}><Profile /></ProtectedRoute>} />
+                {/* Student Routes */}
+                <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
+                <Route path="/student/available-tests" element={<ProtectedRoute allowedRoles={['student']}><AvailableTests /></ProtectedRoute>} />
+                <Route path="/student/test/mcq/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeMcqTest /></ProtectedRoute>} />
+                <Route path="/student/test/essay/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeEssayTest /></ProtectedRoute>} />
+                <Route path="/student/attempt/:id/result" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><AttemptResult /></ProtectedRoute>} />
+                <Route path="/student/history" element={<ProtectedRoute allowedRoles={['student']}><TestHistory /></ProtectedRoute>} />
+                <Route path="/student/report-card" element={<ProtectedRoute allowedRoles={['student']}><ReportCard /></ProtectedRoute>} />
+                <Route path="/student/leaderboard" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><Leaderboard /></ProtectedRoute>} />
+                <Route path="/student/profile" element={<ProtectedRoute allowedRoles={['student']}><Profile /></ProtectedRoute>} />
 
-              {/* Teacher Routes */}
-              <Route path="/teacher/pending-approval" element={<ProtectedRoute allowedRoles={['teacher']} allowPending={true}><PendingApproval /></ProtectedRoute>} />
-              <Route path="/teacher/dashboard" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherDashboard /></ProtectedRoute>} />
-              <Route path="/teacher/tests" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><MyTests /></ProtectedRoute>} />
-              <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherReports /></ProtectedRoute>} />
-              <Route path="/teacher/create-test" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest /></ProtectedRoute>} />
-              <Route path="/teacher/edit-test/:id" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest isEditMode={true} /></ProtectedRoute>} />
-              <Route path="/teacher/pdf-mcq" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><PdfToMcq /></ProtectedRoute>} />
-              <Route path="/teacher/create-essay" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateEssayTest /></ProtectedRoute>} />
-              <Route path="/teacher/essays/evaluations" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><EvaluateEssay /></ProtectedRoute>} />
-              <Route path="/teacher/analytics" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><QuestionAnalytics /></ProtectedRoute>} />
-              <Route path="/teacher/profile" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><Profile /></ProtectedRoute>} />
+                {/* Teacher Routes */}
+                <Route path="/teacher/pending-approval" element={<ProtectedRoute allowedRoles={['teacher']} allowPending={true}><PendingApproval /></ProtectedRoute>} />
+                <Route path="/teacher/dashboard" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherDashboard /></ProtectedRoute>} />
+                <Route path="/teacher/tests" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><MyTests /></ProtectedRoute>} />
+                <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherReports /></ProtectedRoute>} />
+                <Route path="/teacher/create-test" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest /></ProtectedRoute>} />
+                <Route path="/teacher/edit-test/:id" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest isEditMode={true} /></ProtectedRoute>} />
+                <Route path="/teacher/pdf-mcq" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><PdfToMcq /></ProtectedRoute>} />
+                <Route path="/teacher/create-essay" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateEssayTest /></ProtectedRoute>} />
+                <Route path="/teacher/essays/evaluations" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><EvaluateEssay /></ProtectedRoute>} />
+                <Route path="/teacher/analytics" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><QuestionAnalytics /></ProtectedRoute>} />
+                <Route path="/teacher/profile" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><Profile /></ProtectedRoute>} />
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/password-resets" element={<ProtectedRoute allowedRoles={['admin']}><PasswordResetRequests /></ProtectedRoute>} />
-              <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><TeacherReports /></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
-              <Route path="/admin/subjects" element={<ProtectedRoute allowedRoles={['admin']}><ManageSubjects /></ProtectedRoute>} />
-              <Route path="/admin/tests" element={<ProtectedRoute allowedRoles={['admin']}><ManageTests /></ProtectedRoute>} />
-              <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><PlatformAnalytics /></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><Settings /></ProtectedRoute>} />
+                {/* Admin Routes */}
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/password-resets" element={<ProtectedRoute allowedRoles={['admin']}><PasswordResetRequests /></ProtectedRoute>} />
+                <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><TeacherReports /></ProtectedRoute>} />
+                <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
+                <Route path="/admin/subjects" element={<ProtectedRoute allowedRoles={['admin']}><ManageSubjects /></ProtectedRoute>} />
+                <Route path="/admin/tests" element={<ProtectedRoute allowedRoles={['admin']}><ManageTests /></ProtectedRoute>} />
+                <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><PlatformAnalytics /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><Settings /></ProtectedRoute>} />
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </div>
         </main>
       </div>
     </div>
