@@ -74,7 +74,7 @@ const AttemptResult = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           to="/student/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[var(--text-main)] hover:text-[#F59E0B] bg-[var(--bg-card)] px-4 py-2 rounded-xl border border-[var(--border)] shadow-xs transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-[var(--text-main)] hover:text-[#FA8128] bg-[var(--bg-card)] px-4 py-2 rounded-xl border border-[var(--border)] shadow-xs transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Dashboard</span>
@@ -82,7 +82,7 @@ const AttemptResult = () => {
 
         <Link
           to="/student/history"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#F59E0B] hover:text-[#D97706] bg-[#F59E0B]/10 px-4 py-2 rounded-xl border border-[#F59E0B]/30 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-[#FA8128] hover:text-[#E06D1A] bg-[#FA8128]/10 px-4 py-2 rounded-xl border border-[#FA8128]/30 transition-colors"
         >
           <Trophy className="w-4 h-4" />
           <span>View All Results</span>
@@ -93,7 +93,7 @@ const AttemptResult = () => {
       <div className="bg-[var(--bg-card)] rounded-2xl p-8 border border-[var(--border)] shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
           <div className="space-y-2 text-center md:text-left">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg-sub)] text-[#FA8128] border border-[var(--border)]">
               {result.testId?.subjectId?.name || 'Subject Test'}
             </span>
             <h1 className="text-3xl font-extrabold text-[var(--text-main)]">
@@ -109,10 +109,10 @@ const AttemptResult = () => {
 
           <div className="flex flex-col items-center p-5 bg-[var(--bg-sub)] rounded-2xl border border-[var(--border)] min-w-52 text-center">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Final Score</span>
-            <div className="text-4xl font-black text-[#F59E0B] my-1">
+            <div className="text-4xl font-black text-[#FA8128] my-1">
               {result.score} / {result.maxMarks}
             </div>
-            <div className="text-sm font-bold text-[#F59E0B] mb-2">
+            <div className="text-sm font-bold text-[#FA8128] mb-2">
               {percentage}%
             </div>
             <span className={`text-xs font-bold px-3.5 py-1 rounded-full border ${
@@ -133,9 +133,9 @@ const AttemptResult = () => {
             <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Total Qs</div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 space-y-1">
-            <Award className="w-4 h-4 text-[#F59E0B] mx-auto" />
-            <div className="text-xl font-extrabold text-[#F59E0B]">{attemptedCount}</div>
+          <div className="p-3.5 rounded-xl bg-[#FA8128]/10 border border-[#FA8128]/30 space-y-1">
+            <Award className="w-4 h-4 text-[#FA8128] mx-auto" />
+            <div className="text-xl font-extrabold text-[#FA8128]">{attemptedCount}</div>
             <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Attempted</div>
           </div>
 
@@ -157,9 +157,9 @@ const AttemptResult = () => {
             <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Unanswered</div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 space-y-1">
-            <Clock className="w-4 h-4 text-[#F59E0B] mx-auto" />
-            <div className="text-xl font-extrabold text-[#F59E0B]">{formatTime(result.timeTakenSeconds)}</div>
+          <div className="p-3.5 rounded-xl bg-[#FA8128]/10 border border-[#FA8128]/30 space-y-1">
+            <Clock className="w-4 h-4 text-[#FA8128] mx-auto" />
+            <div className="text-xl font-extrabold text-[#FA8128]">{formatTime(result.timeTakenSeconds)}</div>
             <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Time Taken</div>
           </div>
         </div>
@@ -233,7 +233,7 @@ const AttemptResult = () => {
 
                 {q.explanation && (
                   <div className="bg-[var(--bg-sub)] rounded-xl p-4 text-xs text-[var(--text-sub)] border border-[var(--border)]">
-                    <strong className="text-[#F59E0B]">Explanation: </strong>
+                    <strong className="text-[#FA8128]">Explanation: </strong>
                     {q.explanation}
                   </div>
                 )}

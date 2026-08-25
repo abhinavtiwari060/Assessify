@@ -129,9 +129,9 @@ const AdminLogin = () => {
           <div className="pt-3 border-t border-[var(--border)] text-center font-normal">
             <Link
               to="/login"
-              className="text-xs text-[var(--text-sub)] hover:text-[#F59E0B] transition-colors inline-flex items-center gap-1.5 font-semibold"
+              className="text-xs text-[var(--text-sub)] hover:text-[#FA8128] transition-colors inline-flex items-center gap-1.5 font-semibold"
             >
-              <GraduationCap className="w-4 h-4 text-[#F59E0B]" />
+              <GraduationCap className="w-4 h-4 text-[#FA8128]" />
               <span>Standard Student / Teacher Portal Sign In →</span>
             </Link>
           </div>

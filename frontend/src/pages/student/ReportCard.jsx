@@ -50,9 +50,9 @@ const ReportCard = () => {
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs shadow-xs transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-xs shadow-xs transition-colors cursor-pointer"
         >
-          <Printer className="w-4 h-4 text-[#0A0A0A]" />
+          <Printer className="w-4 h-4 text-white" />
           <span>Print / Export PDF</span>
         </button>
       </div>
@@ -62,7 +62,7 @@ const ReportCard = () => {
         {/* Header Header Info */}
         <div className="flex flex-col sm:flex-row items-center justify-between pb-8 border-b border-[var(--border)] gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black text-2xl shadow-xs">
+            <div className="w-14 h-14 rounded-2xl bg-[#FA8128] text-white flex items-center justify-center font-black text-2xl shadow-xs">
               {student.name ? student.name.charAt(0).toUpperCase() : 'S'}
             </div>
             <div>
@@ -77,7 +77,7 @@ const ReportCard = () => {
           </div>
 
           <div className="text-right space-y-1">
-            <div className="flex items-center gap-2 text-base font-bold text-[#F59E0B] justify-end">
+            <div className="flex items-center gap-2 text-base font-bold text-[#FA8128] justify-end">
               <GraduationCap className="w-5 h-5" /> Assessify Platform
             </div>
             <p className="text-xs text-[var(--text-muted)]">Generated on {new Date().toLocaleDateString()}</p>
@@ -98,7 +98,7 @@ const ReportCard = () => {
 
           <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
             <div className="text-[11px] font-bold uppercase text-[var(--text-muted)]">Total Points</div>
-            <div className="text-3xl font-extrabold text-[#F59E0B]">{summary.totalScoreObtained}</div>
+            <div className="text-3xl font-extrabold text-[#FA8128]">{summary.totalScoreObtained}</div>
           </div>
 
           <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
@@ -110,7 +110,7 @@ const ReportCard = () => {
         {/* Subject-Wise Performance Breakdown */}
         <div className="space-y-4">
           <h3 className="text-base font-extrabold text-[var(--text-main)] flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-[#F59E0B]" />
+            <BookOpen className="w-4 h-4 text-[#FA8128]" />
             Subject Proficiency Analysis
           </h3>
 
@@ -128,7 +128,7 @@ const ReportCard = () => {
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                     sub.status === 'Strong'
                       ? 'bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30'
-                      : 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                   }`}>
                     {sub.status}
                   </span>
@@ -141,7 +141,7 @@ const ReportCard = () => {
 
                 <div className="w-full bg-[var(--bg-card)] border border-[var(--border)] h-2 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${sub.accuracy >= 75 ? 'bg-[#22C55E]' : 'bg-[#F59E0B]'}`}
+                    className={`h-full rounded-full ${sub.accuracy >= 75 ? 'bg-[#22C55E]' : 'bg-[#FA8128]'}`}
                     style={{ width: `${sub.accuracy}%` }}
                   ></div>
                 </div>
@@ -154,7 +154,7 @@ const ReportCard = () => {
         {report?.evaluatedEssays?.length > 0 && (
           <div className="space-y-4 pt-4 border-t border-[var(--border)]">
             <h3 className="text-base font-extrabold text-[var(--text-main)] flex items-center gap-2">
-              <Award className="w-4 h-4 text-[#F59E0B]" />
+              <Award className="w-4 h-4 text-[#FA8128]" />
               Evaluated Essays & Teacher Feedback
             </h3>
 
@@ -166,7 +166,7 @@ const ReportCard = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs text-[var(--text-main)]">{essay.testTitle}</span>
-                    <span className="text-xs font-extrabold text-[#F59E0B]">
+                    <span className="text-xs font-extrabold text-[#FA8128]">
                       {essay.marksObtained} / {essay.maxMarks} Marks
                     </span>
                   </div>

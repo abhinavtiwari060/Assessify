@@ -79,7 +79,7 @@ const CreateEssayTest = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Impact of Artificial Intelligence on Software Architecture"
-            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           />
         </div>
 
@@ -89,7 +89,7 @@ const CreateEssayTest = () => {
             required
             value={subjectId}
             onChange={(e) => setSubjectId(e.target.value)}
-            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           >
             {subjects.map((sub) => (
               <option key={sub._id} value={sub._id}>
@@ -107,7 +107,7 @@ const CreateEssayTest = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Detail the essay question prompt, word count guidance, and key evaluation criteria..."
-            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm text-[var(--text-main)] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm text-[var(--text-main)] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           />
         </div>
 
@@ -141,9 +141,9 @@ const CreateEssayTest = () => {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50"
           >
-            <Save className="w-4 h-4 text-[#0A0A0A]" />
+            <Save className="w-4 h-4 text-white" />
             <span>{saving ? 'Publishing...' : 'Publish Essay Test'}</span>
           </button>
         </div>

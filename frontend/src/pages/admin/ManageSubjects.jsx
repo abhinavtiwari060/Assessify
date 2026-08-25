@@ -90,17 +90,17 @@ const ManageSubjects = () => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
             Subjects & Categories Directory
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-[var(--text-sub)] mt-1">
             Manage standard subjects (Java, Python, DBMS, DSA, Aptitude, English, GK) and custom subjects.
           </p>
         </div>
 
         <button
           onClick={handleOpenCreate}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-bold text-sm shadow-md cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
           <span>Add Custom Subject</span>
@@ -116,31 +116,31 @@ const ManageSubjects = () => {
           {subjects.map((sub) => (
             <div
               key={sub._id}
-              className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4 flex flex-col justify-between"
+              className="bg-[var(--bg-card)] rounded-3xl p-6 border border-[var(--border)] shadow-sm space-y-4 flex flex-col justify-between"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">
                     {sub.code}
                   </span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleOpenEdit(sub)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg"
+                      className="p-1.5 text-[var(--text-muted)] hover:text-[#FA8128] rounded-lg cursor-pointer"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(sub._id, sub.name)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                      className="p-1.5 text-[var(--text-muted)] hover:text-rose-600 rounded-lg cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{sub.name}</h3>
-                <p className="text-xs text-slate-500 line-clamp-3">{sub.description || 'Subject category for assessments.'}</p>
+                <h3 className="text-xl font-bold text-[var(--text-main)]">{sub.name}</h3>
+                <p className="text-xs text-[var(--text-sub)] line-clamp-3">{sub.description || 'Subject category for assessments.'}</p>
               </div>
             </div>
           ))}
@@ -156,14 +156,14 @@ const ManageSubjects = () => {
           <>
             <button
               onClick={() => setModalOpen(false)}
-              className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold"
+              className="px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-sub)] text-[var(--text-main)] text-xs font-semibold cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md"
+              className="px-6 py-2 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-bold text-xs shadow-md cursor-pointer"
             >
               {saving ? 'Saving...' : 'Save Subject'}
             </button>
@@ -172,37 +172,37 @@ const ManageSubjects = () => {
       >
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Subject Name</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-sub)]">Subject Name</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Artificial Intelligence"
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-2xl px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Unique Code</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-sub)]">Unique Code</label>
             <input
               type="text"
               required
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="e.g. AI501"
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 text-sm font-bold uppercase text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-2xl px-4 py-2.5 text-sm font-bold uppercase text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Description</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-sub)]">Description</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Detailed description of subject syllabus or domain..."
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-xs text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-2xl p-3 text-xs text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
         </div>

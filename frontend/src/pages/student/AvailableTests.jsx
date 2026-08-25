@@ -132,7 +132,7 @@ const AvailableTests = () => {
             placeholder="Search tests by title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           />
         </div>
 
@@ -141,7 +141,7 @@ const AvailableTests = () => {
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
-            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs font-bold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs font-bold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           >
             <option value="">All Subjects</option>
             {subjects.map((sub) => (
@@ -154,7 +154,7 @@ const AvailableTests = () => {
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs font-bold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs font-bold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           >
             <option value="">All Test Types</option>
             <option value="mcq">MCQ Tests</option>
@@ -194,11 +194,11 @@ const AvailableTests = () => {
             return (
               <div
                 key={test._id}
-                className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs hover:border-[#F59E0B]/50 transition-all flex flex-col justify-between"
+                className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs hover:border-[#FA8128]/50 transition-all flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-md text-xs font-bold bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold bg-[var(--bg-sub)] text-[#FA8128] border border-[var(--border)]">
                       {test.subjectId?.name || 'General'}
                     </span>
                     <div className="flex items-center gap-1.5">
@@ -212,7 +212,7 @@ const AvailableTests = () => {
                           COMPLETED
                         </span>
                       ) : status === 'DRAFT' ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">
                           NOT STARTED
                         </span>
                       ) : status === 'STARTED' ? (
@@ -241,10 +241,10 @@ const AvailableTests = () => {
                     isCompleted
                       ? 'bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E]'
                       : status === 'DRAFT'
-                      ? 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]'
+                      ? 'bg-[#FA8128]/10 border-[#FA8128]/30 text-[#FA8128]'
                       : status === 'ENDED'
                       ? 'bg-[#EF4444]/10 border-[#EF4444]/30 text-[#EF4444]'
-                      : 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]'
+                      : 'bg-[#FA8128]/10 border-[#FA8128]/30 text-[#FA8128]'
                   }`}>
                     {isCompleted ? (
                       <CheckCircle className="w-4 h-4 shrink-0 text-[#22C55E]" />
@@ -260,19 +260,19 @@ const AvailableTests = () => {
 
                   <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-sub)] pt-3 border-t border-[var(--border)]">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-[#F59E0B]" />
+                      <Clock className="w-4 h-4 text-[#FA8128]" />
                       <span>{test.timerMode === 'none' ? 'No Timer' : `${test.durationMinutes || 30} mins`}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <BookOpen className="w-4 h-4 text-[#F59E0B]" />
+                      <BookOpen className="w-4 h-4 text-[#FA8128]" />
                       <span>{test.type === 'essay' ? '1 Essay Topic' : `${test.questionCount} Questions`}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Award className="w-4 h-4 text-[#F59E0B]" />
+                      <Award className="w-4 h-4 text-[#FA8128]" />
                       <span>Passing: {test.passingPercentage || 40}%</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Layers className="w-4 h-4 text-[#F59E0B]" />
+                      <Layers className="w-4 h-4 text-[#FA8128]" />
                       <span>Attempts: {test.userAttempts || 0} / {test.maxAttempts}</span>
                     </div>
                   </div>
@@ -313,9 +313,9 @@ const AvailableTests = () => {
                   ) : (
                     <button
                       onClick={() => handleOpenCodeModal(test)}
-                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-sm shadow-xs transition-all cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-bold text-sm shadow-xs transition-all cursor-pointer"
                     >
-                      <PlayCircle className="w-4 h-4" />
+                      <PlayCircle className="w-4 h-4 text-white" />
                       <span>Start Test</span>
                     </button>
                   )}
@@ -345,7 +345,7 @@ const AvailableTests = () => {
                 type="button"
                 onClick={handleVerifyCodeSubmit}
                 disabled={verifying || enteredCode.trim().length !== 4}
-                className="px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#0A0A0A] font-bold text-xs shadow-md cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] disabled:opacity-50 text-white font-bold text-xs shadow-md cursor-pointer"
               >
                 {verifying ? 'Verifying...' : 'Verify & Start Test'}
               </button>
@@ -353,7 +353,7 @@ const AvailableTests = () => {
           }
         >
           <form onSubmit={handleVerifyCodeSubmit} className="space-y-6 text-center py-2">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--bg-sub)] text-[#F59E0B] flex items-center justify-center border border-[var(--border)]">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--bg-sub)] text-[#FA8128] flex items-center justify-center border border-[var(--border)]">
               <KeyRound className="w-8 h-8" />
             </div>
 
@@ -378,7 +378,7 @@ const AvailableTests = () => {
                 value={enteredCode}
                 onChange={(e) => setEnteredCode(e.target.value.toUpperCase())}
                 placeholder="e.g. A7K2"
-                className="w-48 text-center uppercase tracking-widest font-mono text-2xl font-black bg-[var(--bg-sub)] border-2 border-[#F59E0B] rounded-2xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:ring-4 focus:ring-[#F59E0B]/20"
+                className="w-48 text-center uppercase tracking-widest font-mono text-2xl font-black bg-[var(--bg-sub)] border-2 border-[#FA8128] rounded-2xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:ring-4 focus:ring-[#FA8128]/20"
               />
             </div>
           </form>

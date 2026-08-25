@@ -44,7 +44,7 @@ const Navbar = ({ onToggleSidebar }) => {
     if (isAdmin)
       return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30">ADMIN</span>;
     if (isTeacher)
-      return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">TEACHER</span>;
+      return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">TEACHER</span>;
     return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">STUDENT</span>;
   };
 
@@ -65,14 +65,14 @@ const Navbar = ({ onToggleSidebar }) => {
             </button>
 
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black shadow-xs group-hover:bg-[#D97706] transition-colors">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FA8128] text-white flex items-center justify-center font-black shadow-xs group-hover:bg-[#E06D1A] transition-colors">
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-base sm:text-lg font-black text-[var(--text-main)] tracking-tight">
                   Assessify
                 </span>
-                <span className="hidden sm:inline-block text-[11px] font-bold text-[#F59E0B] uppercase tracking-wider">
+                <span className="hidden sm:inline-block text-[11px] font-bold text-[#FA8128] uppercase tracking-wider">
                   EdTech
                 </span>
               </div>
@@ -87,7 +87,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/student/dashboard"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/student/dashboard')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -98,7 +98,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/student/available-tests"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/student/available-tests')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -109,7 +109,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/student/history"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/student/history')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -120,7 +120,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/student/leaderboard"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/student/leaderboard')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -136,7 +136,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/teacher/dashboard"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/teacher/dashboard')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -147,7 +147,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/teacher/tests"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/teacher/tests')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -158,11 +158,11 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/teacher/pdf-mcq"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/teacher/pdf-mcq')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#FA8128]" />
                   <span>PDF to MCQ</span>
                 </Link>
               </>
@@ -174,7 +174,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   to="/admin/dashboard"
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive('/admin/dashboard')
-                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      ? 'bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30'
                       : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
                   }`}
                 >
@@ -197,7 +197,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-2 sm:gap-2.5 p-1 sm:p-1.5 rounded-xl hover:bg-[var(--bg-sub)] transition-colors cursor-pointer"
                 >
-                  <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-lg bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black text-xs sm:text-sm">
+                  <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-lg bg-[#FA8128] text-white flex items-center justify-center font-black text-xs sm:text-sm">
                     {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className="hidden md:flex flex-col text-left">
@@ -232,7 +232,7 @@ const Navbar = ({ onToggleSidebar }) => {
                       onClick={() => setDropdownOpen(false)}
                       className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-[var(--text-main)] hover:bg-[var(--bg-sub)] transition-colors"
                     >
-                      <User className="w-4 h-4 text-[#F59E0B]" />
+                      <User className="w-4 h-4 text-[#FA8128]" />
                       <span>My Profile</span>
                     </Link>
 
@@ -242,7 +242,7 @@ const Navbar = ({ onToggleSidebar }) => {
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-[var(--text-main)] hover:bg-[var(--bg-sub)] transition-colors"
                       >
-                        <Award className="w-4 h-4 text-[#F59E0B]" />
+                        <Award className="w-4 h-4 text-[#FA8128]" />
                         <span>My Report Card</span>
                       </Link>
                     )}
