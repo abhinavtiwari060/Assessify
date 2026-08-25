@@ -60,6 +60,14 @@ const userSchema = new mongoose.Schema(
         return this.role !== 'teacher';
       },
     },
+    mustChangePassword: {
+      type: Boolean,
+      default: false,
+    },
+    temporaryPasswordExpiresAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

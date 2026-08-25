@@ -8,6 +8,8 @@ const {
   deleteUser,
   updateUserRole,
   toggleUserStatus,
+  getPasswordResetRequests,
+  processPasswordReset,
   getAuditLogs,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
@@ -23,6 +25,9 @@ router.get('/teachers', getTeachers);
 router.get('/teachers/pending', getPendingTeachers);
 router.patch('/teachers/:id/approve', approveTeacher);
 router.put('/teachers/:id/approve', approveTeacher);
+
+router.get('/password-resets', getPasswordResetRequests);
+router.post('/password-resets/:id/reset', processPasswordReset);
 
 router.get('/audit-logs', getAuditLogs);
 

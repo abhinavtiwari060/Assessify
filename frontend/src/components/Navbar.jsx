@@ -1,27 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import ThemeToggle from './ThemeToggle';
 import {
   GraduationCap,
-  Sun,
-  Moon,
   LogOut,
   User,
   Menu,
   ChevronDown,
   Award,
   SlidersHorizontal,
+  LayoutDashboard,
+  BookOpen,
+  Trophy,
+  BarChart2,
 } from 'lucide-react';
 
 const Navbar = ({ onToggleSidebar }) => {
   const { user, logout, isStudent, isTeacher, isAdmin } = useAuth();
-  const { isDarkMode, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -40,83 +41,181 @@ const Navbar = ({ onToggleSidebar }) => {
 
   const getRoleBadge = () => {
     if (isAdmin)
-      return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20">ADMIN</span>;
+      return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30">ADMIN</span>;
     if (isTeacher)
-      return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">TEACHER</span>;
-    return <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">STUDENT</span>;
+      return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">TEACHER</span>;
+    return <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">STUDENT</span>;
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <header className="sticky top-0 z-40 bg-[var(--bg-card)] border-b border-[var(--border)] transition-colors">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Left Section: Mobile Menu + Branding */}
           <div className="flex items-center gap-3">
             <button
               onClick={onToggleSidebar}
-              className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg lg:hidden transition-colors"
+              className="p-1.5 text-[var(--text-sub)] hover:bg-[var(--bg-sub)] hover:text-[var(--text-main)] rounded-xl lg:hidden transition-colors cursor-pointer"
               title="Toggle Menu"
             >
               <Menu className="w-5 h-5" />
             </button>
 
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black shadow-xs group-hover:bg-[#D97706] transition-colors">
                 <GraduationCap className="w-5 h-5" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-base sm:text-lg font-bold bg-gradient-to-r from-indigo-600 to-blue-500 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
+                <span className="text-base sm:text-lg font-black text-[var(--text-main)] tracking-tight">
                   Assessify
                 </span>
-                <span className="hidden sm:inline-block text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Platform
+                <span className="hidden sm:inline-block text-[11px] font-bold text-[#F59E0B] uppercase tracking-wider">
+                  EdTech
                 </span>
               </div>
             </Link>
           </div>
 
+          {/* Center Section: Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {isStudent && (
+              <>
+                <Link
+                  to="/student/dashboard"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/student/dashboard')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  to="/student/available-tests"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/student/available-tests')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Tests</span>
+                </Link>
+                <Link
+                  to="/student/history"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/student/history')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <BarChart2 className="w-3.5 h-3.5" />
+                  <span>Results</span>
+                </Link>
+                <Link
+                  to="/student/leaderboard"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/student/leaderboard')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                  <span>Leaderboard</span>
+                </Link>
+              </>
+            )}
+
+            {isTeacher && (
+              <>
+                <Link
+                  to="/teacher/dashboard"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/teacher/dashboard')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>Dashboard</span>
+                </Link>
+                <Link
+                  to="/teacher/tests"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/teacher/tests')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>My Tests</span>
+                </Link>
+                <Link
+                  to="/teacher/pdf-mcq"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/teacher/pdf-mcq')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <span>PDF to MCQ</span>
+                </Link>
+              </>
+            )}
+
+            {isAdmin && (
+              <>
+                <Link
+                  to="/admin/dashboard"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive('/admin/dashboard')
+                      ? 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-[var(--bg-sub)]'
+                  }`}
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>Master Console</span>
+                </Link>
+              </>
+            )}
+          </nav>
+
           {/* Right Section: Theme Toggle + User Profile & Logout */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
-              title="Toggle dark / light theme"
-            >
-              {isDarkMode ? (
-                <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
-              )}
-            </button>
+            <ThemeToggle />
 
             {/* User Profile Dropdown */}
             {user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 sm:gap-2.5 p-1 sm:p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center gap-2 sm:gap-2.5 p-1 sm:p-1.5 rounded-xl hover:bg-[var(--bg-sub)] transition-colors cursor-pointer"
                 >
-                  <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-sm">
+                  <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-lg bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black text-xs sm:text-sm">
                     {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div className="hidden md:flex flex-col text-left">
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white leading-tight truncate max-w-[120px]">
+                    <span className="text-xs sm:text-sm font-bold text-[var(--text-main)] leading-tight truncate max-w-[120px]">
                       {user.name}
                     </span>
                     <span className="mt-0.5">{getRoleBadge()}</span>
                   </div>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[var(--text-muted)] hidden sm:block" />
                 </button>
 
                 {/* Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-52 sm:w-56 rounded-xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 py-1.5 z-50 animate-in fade-in duration-150">
-                    <div className="px-3.5 py-2 border-b border-slate-100 dark:border-slate-700/80">
-                      <p className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white truncate">
+                  <div className="absolute right-0 mt-2 w-52 sm:w-56 rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] shadow-xl py-1.5 z-50 animate-in fade-in duration-150">
+                    <div className="px-3.5 py-2 border-b border-[var(--border)]">
+                      <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate">
                         {user.name}
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                      <p className="text-[11px] text-[var(--text-muted)] truncate">
                         {user.email}
                       </p>
                     </div>
@@ -130,9 +229,9 @@ const Navbar = ({ onToggleSidebar }) => {
                           : '/admin/settings'
                       }
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
+                      className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-[var(--text-main)] hover:bg-[var(--bg-sub)] transition-colors"
                     >
-                      <User className="w-4 h-4 text-indigo-500" />
+                      <User className="w-4 h-4 text-[#F59E0B]" />
                       <span>My Profile</span>
                     </Link>
 
@@ -140,9 +239,9 @@ const Navbar = ({ onToggleSidebar }) => {
                       <Link
                         to="/student/report-card"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
+                        className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-[var(--text-main)] hover:bg-[var(--bg-sub)] transition-colors"
                       >
-                        <Award className="w-4 h-4 text-amber-500" />
+                        <Award className="w-4 h-4 text-[#F59E0B]" />
                         <span>My Report Card</span>
                       </Link>
                     )}
@@ -151,18 +250,18 @@ const Navbar = ({ onToggleSidebar }) => {
                       <Link
                         to="/admin/settings"
                         onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors"
+                        className="flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-[var(--text-main)] hover:bg-[var(--bg-sub)] transition-colors"
                       >
-                        <SlidersHorizontal className="w-4 h-4 text-rose-500" />
+                        <SlidersHorizontal className="w-4 h-4 text-[#EF4444]" />
                         <span>Settings</span>
                       </Link>
                     )}
 
-                    <div className="border-t border-slate-100 dark:border-slate-700/80 my-1"></div>
+                    <div className="border-t border-[var(--border)] my-1"></div>
 
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-left transition-colors font-medium"
+                      className="w-full flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm text-[#EF4444] hover:bg-[#EF4444]/10 text-left transition-colors font-bold cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Sign Out</span>
@@ -174,7 +273,7 @@ const Navbar = ({ onToggleSidebar }) => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className="px-3.5 py-1.5 text-xs font-bold text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] rounded-xl transition-colors"
                 >
                   Sign In
                 </Link>
