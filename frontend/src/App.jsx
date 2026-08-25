@@ -8,6 +8,8 @@ import Sidebar from './components/Sidebar';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import AdminLogin from './pages/auth/AdminLogin';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ChangePassword from './pages/auth/ChangePassword';
 
 // Public Informational Pages
 import About from './pages/public/About';
@@ -42,9 +44,10 @@ import ManageUsers from './pages/admin/ManageUsers';
 import ManageSubjects from './pages/admin/ManageSubjects';
 import ManageTests from './pages/admin/ManageTests';
 import PlatformAnalytics from './pages/admin/PlatformAnalytics';
+import PasswordResetRequests from './pages/admin/PasswordResetRequests';
 import Settings from './pages/admin/Settings';
 
-const ProtectedRoute = ({ children, allowedRoles, allowPending = false }) => {
+const ProtectedRoute = ({ children, allowedRoles, allowPending = false, allowMustChange = false }) => {
   const { isAuthenticated, user, loading } = useAuth();
   if (loading) return null;
 
@@ -53,6 +56,11 @@ const ProtectedRoute = ({ children, allowedRoles, allowPending = false }) => {
       return <Navigate to="/admin/login" replace />;
     }
     return <Navigate to="/login" replace />;
+  }
+
+  // Forced Password Change Protection
+  if (user?.mustChangePassword && !allowMustChange) {
+    return <Navigate to="/change-password" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
@@ -91,7 +99,9 @@ const App = () => {
   const isAuthPage =
     location.pathname === '/login' ||
     location.pathname === '/register' ||
-    location.pathname === '/admin/login';
+    location.pathname === '/admin/login' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/change-password';
   const isTestTakingPage = location.pathname.includes('/student/test/');
 
   return (
@@ -120,6 +130,8 @@ const App = () => {
               element={
                 !isAuthenticated ? (
                   <Navigate to="/login" replace />
+                ) : user?.mustChangePassword ? (
+                  <Navigate to="/change-password" replace />
                 ) : user?.role === 'student' ? (
                   <Navigate to="/student/dashboard" replace />
                 ) : user?.role === 'teacher' ? (
@@ -142,6 +154,15 @@ const App = () => {
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route
+              path="/change-password"
+              element={
+                <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']} allowMustChange={true}>
+                  <ChangePassword />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin/login"
               element={
@@ -180,6 +201,7 @@ const App = () => {
             {/* Admin Routes */}
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/password-resets" element={<ProtectedRoute allowedRoles={['admin']}><PasswordResetRequests /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={['admin']}><TeacherReports /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
             <Route path="/admin/subjects" element={<ProtectedRoute allowedRoles={['admin']}><ManageSubjects /></ProtectedRoute>} />

@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Clock,
   Code2,
+  KeyRound,
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -48,6 +49,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         ]
     : [
         { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { to: '/admin/password-resets', label: 'Password Resets', icon: KeyRound },
         { to: '/admin/reports', label: 'Student Reports', icon: FileSpreadsheet },
         { to: '/admin/users', label: 'Manage Users', icon: Users },
         { to: '/admin/subjects', label: 'Subjects', icon: BookOpen },

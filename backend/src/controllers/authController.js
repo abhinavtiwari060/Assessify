@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const PasswordResetRequest = require('../models/PasswordResetRequest');
 const { logAudit } = require('../middleware/auth');
 
 const generateToken = (id) => {
@@ -31,7 +32,6 @@ const registerUser = async (req, res) => {
       }
     }
 
-    // Default to student if invalid role provided
     const userRole = ['student', 'teacher', 'admin'].includes(role) ? role : 'student';
 
     const user = await User.create({
@@ -52,6 +52,7 @@ const registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         isApproved: user.isApproved !== false,
+        mustChangePassword: false,
         rollNo: user.rollNo || '',
         bio: user.bio,
         token: generateToken(user._id),
@@ -125,6 +126,7 @@ const googleAuth = async (req, res) => {
       email: user.email,
       role: user.role,
       isApproved: user.isApproved !== false,
+      mustChangePassword: Boolean(user.mustChangePassword),
       rollNo: user.rollNo || '',
       avatar: user.avatar,
       bio: user.bio,
@@ -149,11 +151,18 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Please enter email and password' });
     }
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
     if (user && (await user.matchPassword(password))) {
       if (!user.isActive) {
         return res.status(403).json({ message: 'Your account has been deactivated. Please contact support.' });
+      }
+
+      // Check if temporary password has expired
+      if (user.temporaryPasswordExpiresAt && Date.now() > new Date(user.temporaryPasswordExpiresAt).getTime()) {
+        return res.status(401).json({
+          message: 'Your temporary password has expired. Please submit a new forgot password request to the administrator.',
+        });
       }
 
       req.user = user;
@@ -165,6 +174,7 @@ const loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         isApproved: user.isApproved !== false,
+        mustChangePassword: Boolean(user.mustChangePassword),
         rollNo: user.rollNo || '',
         avatar: user.avatar,
         bio: user.bio,
@@ -233,9 +243,103 @@ const adminLogin = async (req, res) => {
       email: user.email,
       role: user.role,
       isApproved: user.isApproved !== false,
+      mustChangePassword: Boolean(user.mustChangePassword),
       rollNo: user.rollNo || '',
       avatar: user.avatar,
       bio: user.bio,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Submit forgot password request
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ message: 'Please enter a valid email address' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
+
+    if (user && user.isActive && ['student', 'teacher', 'admin'].includes(user.role)) {
+      // Check if user already has a pending request
+      let existingReq = await PasswordResetRequest.findOne({ userId: user._id, status: 'PENDING' });
+
+      if (existingReq) {
+        existingReq.requestedAt = new Date();
+        await existingReq.save();
+      } else {
+        await PasswordResetRequest.create({
+          userId: user._id,
+          email: user.email,
+          userName: user.name,
+          role: user.role,
+          status: 'PENDING',
+          requestedAt: new Date(),
+        });
+      }
+
+      await logAudit(req, 'PASSWORD_RESET_REQUESTED', `User ${user.email} (${user.role}) requested password reset`);
+    }
+
+    // Always return generic response to prevent email enumeration
+    res.json({
+      message: 'Your password reset request has been submitted to the administrator.',
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Failed to submit password reset request. Please try again.' });
+  }
+};
+
+// @desc    Change password (for forced temp password reset or normal update)
+// @route   POST /api/auth/change-password
+// @access  Private
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'New password and confirmation do not match' });
+    }
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (currentPassword) {
+      const isMatch = await user.matchPassword(currentPassword);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Current/temporary password is incorrect' });
+      }
+    }
+
+    user.password = newPassword;
+    user.mustChangePassword = false;
+    user.temporaryPasswordExpiresAt = null;
+
+    await user.save();
+    await logAudit(req, 'PASSWORD_CHANGED', `User ${user.email} changed their password`);
+
+    res.json({
+      message: 'Password updated successfully!',
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      mustChangePassword: false,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -293,6 +397,7 @@ const updateProfile = async (req, res) => {
         email: updatedUser.email,
         role: updatedUser.role,
         isApproved: updatedUser.isApproved !== false,
+        mustChangePassword: Boolean(updatedUser.mustChangePassword),
         rollNo: updatedUser.rollNo || '',
         avatar: updatedUser.avatar,
         bio: updatedUser.bio,
@@ -309,4 +414,13 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, googleAuth, loginUser, adminLogin, getMe, updateProfile };
+module.exports = {
+  registerUser,
+  googleAuth,
+  loginUser,
+  adminLogin,
+  forgotPassword,
+  changePassword,
+  getMe,
+  updateProfile,
+};
