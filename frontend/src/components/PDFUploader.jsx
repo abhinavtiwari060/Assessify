@@ -41,20 +41,28 @@ const PDFUploader = ({ onExtracted }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (res.data.success) {
-        addToast(`Extracted ${res.data.questionCount} questions from PDF!`, 'success');
-      } else if (res.data.requiresOCR) {
+      const data = res.data;
+      const count = data.questionCount || data.totalExtracted || (data.questions ? data.questions.length : 0);
+
+      if (data.success && count > 0) {
+        addToast(`Successfully extracted ${count} question(s) from PDF!`, 'success');
+      } else if (data.requiresOCR || data.status === 'no_text') {
         addToast('This PDF appears to be scanned/image-based. OCR is required.', 'warning');
       } else {
-        addToast(res.data.error || 'Could not extract valid MCQs from PDF', 'error');
+        addToast(data.error || data.message || 'No valid MCQs could be detected from PDF', 'error');
       }
 
       if (onExtracted) {
-        onExtracted(res.data);
+        onExtracted(data.questions || [], data.fileName || file.name, data);
       }
     } catch (err) {
       console.error(err);
-      addToast(err.response?.data?.error || err.response?.data?.message || 'Failed to extract questions from PDF', 'error');
+      addToast(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          'Failed to extract questions from PDF',
+        'error'
+      );
     } finally {
       setLoading(false);
     }

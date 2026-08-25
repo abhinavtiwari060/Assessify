@@ -8,11 +8,7 @@ import {
   Save,
   Trash2,
   AlertTriangle,
-  FileCheck2,
-  HelpCircle,
   Scan,
-  CheckCircle2,
-  Clock,
 } from 'lucide-react';
 
 const PdfToMcq = () => {
@@ -24,6 +20,8 @@ const PdfToMcq = () => {
   const [extractionMeta, setExtractionMeta] = useState(null);
   const [testTitle, setTestTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [warnings, setWarnings] = useState([]);
+  const [extractionStatus, setExtractionStatus] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -39,17 +37,27 @@ const PdfToMcq = () => {
     fetchSubjects();
   }, []);
 
-  const handleExtracted = (resultData) => {
-    setExtractionMeta(resultData);
+  const handleExtracted = (questionsOrMeta, fileNameParam, metaParam) => {
+    let qList = [];
+    let meta = null;
+    let name = '';
 
-    if (resultData.success && resultData.questions) {
-      setExtractedQuestions(resultData.questions);
-      setTestTitle(
-        (resultData.fileName ? resultData.fileName.replace('.pdf', '') : 'PDF') +
-          ' MCQ Assessment'
-      );
-    } else {
-      setExtractedQuestions([]);
+    if (Array.isArray(questionsOrMeta)) {
+      qList = questionsOrMeta;
+      name = fileNameParam || '';
+      meta = metaParam || null;
+    } else if (questionsOrMeta && typeof questionsOrMeta === 'object') {
+      meta = questionsOrMeta;
+      qList = questionsOrMeta.questions || [];
+      name = questionsOrMeta.fileName || fileNameParam || '';
+    }
+
+    setExtractedQuestions(qList);
+    setExtractionMeta(meta);
+    setWarnings(meta?.warnings || []);
+    setExtractionStatus(meta?.status || null);
+    if (name) {
+      setTestTitle(name.replace(/\.pdf$/i, '') + ' MCQ Assessment');
     }
   };
 
@@ -90,13 +98,13 @@ const PdfToMcq = () => {
     }
 
     // Check if any questions have missing answer selection
-    const missingAnswerCount = extractedQuestions.filter(
-      (q) => q.correctAnswerIndex === null || q.correctAnswerIndex === undefined
-    ).length;
+    const missingAnsIdx = extractedQuestions.findIndex(
+      (q) => q.correctAnswerIndex === null || q.correctAnswerIndex === undefined || q.correctAnswerIndex < 0
+    );
 
-    if (missingAnswerCount > 0) {
+    if (missingAnsIdx !== -1) {
       addToast(
-        `${missingAnswerCount} question(s) require a correct answer selection before publishing.`,
+        `Question #${missingAnsIdx + 1} does not have a correct answer selected. Please select one.`,
         'error'
       );
       return;
@@ -147,7 +155,7 @@ const PdfToMcq = () => {
       <PDFUploader onExtracted={handleExtracted} />
 
       {/* Scanned PDF Warning Banner */}
-      {extractionMeta && extractionMeta.requiresOCR && (
+      {extractionMeta && (extractionMeta.requiresOCR || extractionMeta.status === 'no_text') && (
         <div className="bg-[#F85149]/15 border border-[#F85149]/30 rounded-2xl p-5 flex items-start gap-3 text-[#F85149] animate-in fade-in duration-300">
           <Scan className="w-6 h-6 text-[#F85149] shrink-0 mt-0.5" />
           <div className="space-y-1">
@@ -159,16 +167,18 @@ const PdfToMcq = () => {
         </div>
       )}
 
-      {/* Failed Extraction Banner */}
-      {extractionMeta && !extractionMeta.success && !extractionMeta.requiresOCR && (
-        <div className="bg-[#D29922]/15 border border-[#D29922]/30 rounded-2xl p-5 flex items-start gap-3 text-[#D29922] animate-in fade-in duration-300">
-          <AlertTriangle className="w-6 h-6 text-[#D29922] shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h4 className="text-base font-extrabold">Extraction Failed</h4>
-            <p className="text-xs text-[#8B949E] leading-relaxed">
-              {extractionMeta.error || 'No valid MCQs could be detected from the extracted PDF text.'}
-            </p>
+      {/* Global Warnings & Status Banner */}
+      {warnings.length > 0 && (
+        <div className="bg-[#D29922]/15 border border-[#D29922]/30 rounded-2xl p-4 space-y-2 text-[#D29922] text-xs animate-in fade-in duration-300">
+          <div className="font-bold flex items-center gap-2 text-[#F0F6FC]">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-[#D29922]" />
+            <span>Extraction Warnings & Status ({extractionStatus || 'Notice'})</span>
           </div>
+          <ul className="list-disc pl-5 space-y-1 text-[#8B949E]">
+            {warnings.map((w, idx) => (
+              <li key={idx}>{w}</li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -261,6 +271,11 @@ const PdfToMcq = () => {
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${confidenceColor}`}>
                         Confidence: {q.confidence || 'Medium'}
                       </span>
+                      {q.sourcePage && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#21262D] border border-[#30363D] text-[#8B949E]">
+                          Page {q.sourcePage}
+                        </span>
+                      )}
                       {q.answerSource && (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#58A6FF]/15 text-[#58A6FF] border border-[#58A6FF]/30">
                           Source: {q.answerSource}

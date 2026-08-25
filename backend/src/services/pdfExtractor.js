@@ -1,26 +1,138 @@
 const pdfParse = require('pdf-parse');
-const { performOcr } = require('./ocrProvider');
+const { performOcr, extractTextWithOcr } = require('./ocrProvider');
 
 /**
- * Normalizes Unicode text (NFKC), smart quotes, dashes, CRLF line endings.
+ * Normalizes text: NFKC Unicode, smart quotes, dashes, zero-width characters,
+ * CRLF to LF, and collapses excessive spaces/tabs while preserving line breaks.
  */
-function normalizeText(text) {
+const normalizeText = (text) => {
   if (!text) return '';
+
   return text
     .normalize('NFKC')
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/[\u2013\u2014]/g, '-')
-    .replace(/\u2026/g, '...')
-    .replace(/\u00A0/g, ' ')
     .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
-}
+    .replace(/\r/g, '\n')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’`]/g, "'")
+    .replace(/[–—―]/g, '-')
+    .replace(/[\u200B\u200C\u200D\uFEFF]/g, '')
+    .replace(/\u00A0/g, ' ')
+    .split('\n')
+    .map((line) => line.replace(/[ \t]+/g, ' ').trim())
+    .join('\n');
+};
 
 /**
- * Detects if PDF appears to be scanned/image-based or lacks readable text.
+ * Renders page content preserving vertical structure and injecting page boundary markers.
  */
-function isScannedPdf(rawText) {
+const customPageRender = (pageData) => {
+  return pageData.getTextContent({ normalizeWhitespace: false }).then((textContent) => {
+    let lastY = null;
+    let pageText = '';
+
+    for (const item of textContent.items) {
+      if (!item || !item.str) continue;
+
+      if (lastY === null || Math.abs(lastY - item.transform[5]) < 3) {
+        pageText += item.str;
+      } else {
+        pageText += '\n' + item.str;
+      }
+      lastY = item.transform[5];
+    }
+
+    const pageNum = pageData.pageIndex + 1;
+    return `\n--- PAGE_BREAK_${pageNum} ---\n` + pageText;
+  });
+};
+
+/**
+ * Identifies and filters out headers, footers, and page numbers repeating across pages.
+ */
+const filterHeadersAndFooters = (pages) => {
+  if (!pages || pages.length === 0) return [];
+  if (pages.length < 2) return pages;
+
+  const lineFrequency = new Map();
+  const totalPages = pages.length;
+
+  pages.forEach((page) => {
+    const uniqueLinesInPage = new Set(page.lines);
+    uniqueLinesInPage.forEach((line) => {
+      if (line.length > 0) {
+        lineFrequency.set(line, (lineFrequency.get(line) || 0) + 1);
+      }
+    });
+  });
+
+  const headerFooterRegex = /^(?:Page\s*\d+(?:\s*of\s*\d+)?|\d+|\w+\s*-\s*\d+|Downloaded\s+from.*|Copyright.*|https?:\/\/.*)$/i;
+
+  return pages.map((page) => {
+    const filteredLines = page.lines.filter((line) => {
+      if (headerFooterRegex.test(line)) return false;
+      const count = lineFrequency.get(line) || 0;
+      if (totalPages >= 3 && count / totalPages >= 0.5) {
+        if (!/^(?:Q\d+|\d+[\.\)]|[A-D1-4][\.\)])/i.test(line)) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    return { ...page, lines: filteredLines };
+  });
+};
+
+/**
+ * Splits inline options appearing on the same line into separate lines.
+ * E.g., "A. Java  B. Python  C. C++  D. Ruby" -> ["A. Java", "B. Python", "C. C++", "D. Ruby"]
+ */
+const splitInlineOptions = (line) => {
+  if (!line || line.trim().length === 0) return [line];
+
+  const markerRegex = /(?:^|\s+)(?:([A-Ea-e1-6])[\.\:\)\-]|[\(\[\{]([A-Ea-e1-6])[\)\]\}])\s*/g;
+  const matches = [];
+  let match;
+
+  while ((match = markerRegex.exec(line)) !== null) {
+    matches.push({
+      index: match.index,
+      marker: (match[1] || match[2]).toUpperCase(),
+      length: match[0].length,
+    });
+  }
+
+  if (matches.length <= 1) return [line];
+
+  let isSequence = true;
+  for (let i = 0; i < matches.length - 1; i++) {
+    const charCode1 = matches[i].marker.charCodeAt(0);
+    const charCode2 = matches[i + 1].marker.charCodeAt(0);
+    if (charCode2 !== charCode1 + 1) {
+      isSequence = false;
+      break;
+    }
+  }
+
+  if (!isSequence) return [line];
+
+  const result = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = i < matches.length - 1 ? matches[i + 1].index : line.length;
+    const chunk = line.substring(start, end).trim();
+    if (chunk.length > 0) {
+      result.push(chunk);
+    }
+  }
+
+  return result.length > 0 ? result : [line];
+};
+
+/**
+ * Detects if PDF text is scanned / image-based.
+ */
+const isScannedPdf = (rawText) => {
   if (!rawText || rawText.trim().length < 50) return true;
   const clean = rawText.replace(/\s+/g, '');
   if (clean.length < 30) return true;
@@ -28,62 +140,99 @@ function isScannedPdf(rawText) {
   const letterMatches = clean.match(/[\p{L}\p{N}]/gu) || [];
   const letterRatio = letterMatches.length / clean.length;
   return letterRatio < 0.25;
-}
+};
 
 /**
- * Filters common PDF header/footer/page number noise.
+ * Patterns & Helper detectors
  */
-function isHeaderFooterOrNoise(line) {
-  const trimmed = line.trim();
-  if (!trimmed) return true;
-  if (/^--- PAGE \d+ ---$/i.test(trimmed)) return true;
-  if (/^Page \d+(?: of \d+)?$/i.test(trimmed)) return true;
-  if (/^\d+\s*\/\s*\d+$/i.test(trimmed)) return true;
-  if (/^(?:Confidential|Copyright|All Rights Reserved|Printed on|Document ID)[\.\:]?/i.test(trimmed)) return true;
-  return false;
-}
+const detectQuestionStart = (line) => {
+  const qRegex = /^(?:Q(?:uestion|\.)?\s*(\d+)|Que(?:st|\.)?\s*(\d+)|(\d{1,3})|[\(\[](\d{1,3})[\)\]])[\.\:\)\-]?\s*(.*)/i;
+  const match = line.match(qRegex);
+  if (!match) return null;
 
-/**
- * Splits inline options present on a single line (e.g. "A. Red B. Blue C. Green D. Yellow").
- */
-function splitInlineOptions(line) {
-  const inlineOptionMarkerRegex = /(?:^|\s+)(?:([A-E1-5])[\.\:\)\-]|[\(\[\{]([A-E1-5])[\)\]\}])\s+/g;
-  const matches = [...line.matchAll(inlineOptionMarkerRegex)];
+  const qNum = match[1] || match[2] || match[3] || match[4] || '';
+  const text = match[5] ? match[5].trim() : '';
 
-  if (matches.length >= 2) {
-    const parts = [];
-    for (let i = 0; i < matches.length; i++) {
-      const currentMatch = matches[i];
-      const nextMatch = matches[i + 1];
-      const startIdx = currentMatch.index;
-      const endIdx = nextMatch ? nextMatch.index : line.length;
+  return { qNum, text };
+};
 
-      const optionContent = line.substring(startIdx, endIdx).trim();
-      if (optionContent) {
-        parts.push(optionContent);
+const detectOptionStart = (line, activeOptionsCount = 0) => {
+  const letterRegex = /^(?:([A-Ea-e])[\.\:\)\-]|[\(\[\{]([A-Ea-e])[\)\]\}])\s*(.*)/;
+  const letterMatch = line.match(letterRegex);
+  if (letterMatch) {
+    const letter = (letterMatch[1] || letterMatch[2]).toUpperCase();
+    return { marker: letter, text: letterMatch[3] ? letterMatch[3].trim() : '' };
+  }
+
+  if (activeOptionsCount > 0 || line.startsWith('1.') || line.startsWith('1)')) {
+    const numRegex = /^(?:([1-6])[\.\:\)\-]|[\(\[\{]([1-6])[\)\]\}])\s*(.*)/;
+    const numMatch = line.match(numRegex);
+    if (numMatch) {
+      const numStr = numMatch[1] || numMatch[2];
+      const letter = String.fromCharCode(64 + parseInt(numStr, 10));
+      return { marker: letter, text: numMatch[3] ? numMatch[3].trim() : '' };
+    }
+  }
+
+  return null;
+};
+
+const detectAnswer = (line) => {
+  const ansRegex = /^(?:Ans(?:wer)?|Correct\s*Answer|Correct|Key)[\s\:\=\-]*[\(\[\{]?([A-Ea-e1-6])[\)\]\}]?/i;
+  const match = line.match(ansRegex);
+  if (!match) return null;
+
+  const rawAns = match[1].toUpperCase();
+  let index = null;
+
+  if (['A', '1'].includes(rawAns)) index = 0;
+  else if (['B', '2'].includes(rawAns)) index = 1;
+  else if (['C', '3'].includes(rawAns)) index = 2;
+  else if (['D', '4'].includes(rawAns)) index = 3;
+  else if (['E', '5'].includes(rawAns)) index = 4;
+  else if (['F', '6'].includes(rawAns)) index = 5;
+
+  return index;
+};
+
+const detectExplanation = (line) => {
+  const expRegex = /^(?:Explanation|Solution|Sol|Exp)[\s\:\=\-]\s*(.*)/i;
+  const match = line.match(expRegex);
+  if (!match) return null;
+  return match[1] ? match[1].trim() : '';
+};
+
+const detectAnswerKeyHeader = (line) => {
+  return /^(?:Answer\s*Key|Answers|ANSWER\s*SHEET|Key\s*Sheet)[\:\s]*$/i.test(line);
+};
+
+const parseAnswerKeySection = (lines) => {
+  const ansMap = new Map();
+  const pairRegex = /(?:Q(?:uestion|\.)?\s*|\b)(\d{1,3})[\s\.\:\)\-]*[\(\[\{]?([A-Ea-e1-6])[\)\]\}]?(?=\s+|$)/gi;
+
+  lines.forEach((line) => {
+    let match;
+    while ((match = pairRegex.exec(line)) !== null) {
+      const qNum = match[1];
+      const char = match[2].toUpperCase();
+      let index = null;
+      if (['A', '1'].includes(char)) index = 0;
+      else if (['B', '2'].includes(char)) index = 1;
+      else if (['C', '3'].includes(char)) index = 2;
+      else if (['D', '4'].includes(char)) index = 3;
+      else if (['E', '5'].includes(char)) index = 4;
+
+      if (index !== null) {
+        ansMap.set(qNum, index);
       }
     }
-    return parts;
-  }
-  return [line];
-}
+  });
+
+  return ansMap;
+};
 
 /**
- * Maps option letter or number string to 0-based index.
- */
-function parseOptionLetterOrNum(charStr) {
-  if (!charStr) return null;
-  const upper = charStr.trim().toUpperCase();
-  if (['A', '1'].includes(upper)) return 0;
-  if (['B', '2'].includes(upper)) return 1;
-  if (['C', '3'].includes(upper)) return 2;
-  if (['D', '4'].includes(upper)) return 3;
-  if (['E', '5'].includes(upper)) return 4;
-  return null;
-}
-
-/**
- * Parses raw text into structured MCQ objects using a robust state machine parser.
+ * Core State Machine Parser to extract MCQs from raw/normalized page text.
  */
 function parsePdfTextToMCQs(rawText) {
   const normalized = normalizeText(rawText);
@@ -91,232 +240,270 @@ function parsePdfTextToMCQs(rawText) {
     return [];
   }
 
-  const rawLines = normalized.split('\n');
-  const lines = [];
+  const pageSegments = normalized.split(/\n?--- PAGE_BREAK_(\d+) ---\n?/);
+  const pages = [];
 
-  // Expand lines with inline options
-  for (const rLine of rawLines) {
-    const trimmed = rLine.trim();
-    if (isHeaderFooterOrNoise(trimmed)) continue;
+  if (pageSegments.length > 1) {
+    if (pageSegments[0].trim().length > 0) {
+      const lines = pageSegments[0]
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      const expandedLines = [];
+      lines.forEach((line) => {
+        const split = splitInlineOptions(line);
+        expandedLines.push(...split);
+      });
+      pages.push({ pageNum: 1, lines: expandedLines });
+    }
 
-    const inlineParts = splitInlineOptions(trimmed);
-    for (const part of inlineParts) {
-      if (part.trim()) {
-        lines.push(part.trim());
+    for (let i = 1; i < pageSegments.length; i += 2) {
+      const pageNum = parseInt(pageSegments[i], 10) || (pages.length + 1);
+      const content = pageSegments[i + 1] || '';
+      if (content.trim().length > 0) {
+        const lines = content
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
+
+        const expandedLines = [];
+        lines.forEach((line) => {
+          const split = splitInlineOptions(line);
+          expandedLines.push(...split);
+        });
+
+        pages.push({ pageNum, lines: expandedLines });
       }
     }
+  } else {
+    const lines = normalized
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+    const expandedLines = [];
+    lines.forEach((line) => {
+      const split = splitInlineOptions(line);
+      expandedLines.push(...split);
+    });
+
+    pages.push({ pageNum: 1, lines: expandedLines });
   }
 
+  const cleanPages = filterHeadersAndFooters(pages);
   const extractedQuestions = [];
-  const answerKeyMap = new Map(); // Maps questionNumber -> optionIndex
   let currentQuestion = null;
-  let inAnswerKeySection = false;
+  let currentState = 'IDLE';
+  const answerKeyLines = [];
 
-  // Regex patterns
-  const questionHeaderRegex = /^(?:Q(?:uestion)?(?:\s*No\.?)?\s*[\:\.]?\s*(\d+)[\.\:\)\-]?|\b(\d+)[\.\:\)\-])\s*(.*)/i;
-  const optionRegex = /^(?:([A-E1-5])[\.\:\)\-]|[\(\[\{]([A-E1-5])[\)\]\}])\s*(.*)/i;
-  const answerRegex = /^(?:Ans(?:wer)?|Correct\s*Answer|Key|Correct)[\:\=\s]+[\(\[\{]?([A-E1-5])[\)\]\}]?/i;
-  const explanationRegex = /^(?:Explanation|Note|Details)[\:\=]\s*(.*)/i;
-  const answerKeySectionHeaderRegex = /^(?:Answer\s*Keys?|Answers|Key\s*Sheet)$/i;
-
-  const pushCurrentQuestion = () => {
-    if (currentQuestion && currentQuestion.options.length >= 2) {
-      extractedQuestions.push(currentQuestion);
+  const finalizeQuestion = () => {
+    if (currentQuestion) {
+      if (currentQuestion.questionText.trim().length > 0 && currentQuestion.options.length >= 2) {
+        extractedQuestions.push(currentQuestion);
+      }
+      currentQuestion = null;
     }
-    currentQuestion = null;
   };
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  cleanPages.forEach((page) => {
+    page.lines.forEach((line) => {
+      if (detectAnswerKeyHeader(line) || currentState === 'ANSWER_KEY') {
+        currentState = 'ANSWER_KEY';
+        finalizeQuestion();
+        answerKeyLines.push(line);
+        return;
+      }
 
-    // Detect start of Answer Key section at end of PDF
-    if (answerKeySectionHeaderRegex.test(line)) {
-      pushCurrentQuestion();
-      inAnswerKeySection = true;
-      continue;
-    }
+      const ansIndex = detectAnswer(line);
+      if (ansIndex !== null && currentQuestion) {
+        currentQuestion.correctAnswerIndex = ansIndex;
+        currentQuestion.answerSource = 'explicit';
+        currentState = 'ANSWER';
+        return;
+      }
 
-    if (inAnswerKeySection) {
-      // Parse answer key format (e.g. 1-A 2-C 3-B or 1. A 2. B)
-      const keyPairMatches = [...line.matchAll(/(?:(\d+)[\.\:\)\-]*\s*[\:\=\-]?\s*([A-E1-5]))/gi)];
-      for (const kMatch of keyPairMatches) {
-        const qNum = parseInt(kMatch[1], 10);
-        const optIdx = parseOptionLetterOrNum(kMatch[2]);
-        if (!isNaN(qNum) && optIdx !== null) {
-          answerKeyMap.set(qNum, optIdx);
+      const expText = detectExplanation(line);
+      if (expText !== null && currentQuestion) {
+        currentQuestion.explanation = expText;
+        currentState = 'EXPLANATION';
+        return;
+      }
+
+      const qStart = detectQuestionStart(line);
+      if (qStart) {
+        if (currentQuestion && (currentQuestion.options.length >= 2 || currentState === 'OPTION')) {
+          finalizeQuestion();
+        }
+
+        if (!currentQuestion) {
+          currentQuestion = {
+            questionNumber: parseInt(qStart.qNum, 10) || (extractedQuestions.length + 1),
+            qNum: qStart.qNum,
+            questionText: qStart.text,
+            options: [],
+            correctAnswerIndex: null,
+            answerSource: null,
+            explanation: '',
+            confidence: 'medium',
+            sourcePage: page.pageNum,
+            warnings: [],
+          };
+          currentState = 'QUESTION';
+          return;
         }
       }
-      continue;
-    }
 
-    // 1. Check for Explanation line
-    const expMatch = line.match(explanationRegex);
-    if (expMatch && currentQuestion) {
-      currentQuestion.explanation = expMatch[1] || line;
-      continue;
-    }
-
-    // 2. Check for explicit Answer line inside question block
-    const ansMatch = line.match(answerRegex);
-    if (ansMatch && currentQuestion) {
-      const optIdx = parseOptionLetterOrNum(ansMatch[1]);
-      if (optIdx !== null) {
-        currentQuestion.correctAnswerIndex = optIdx;
-        currentQuestion.answerSource = 'explicit';
+      const optStart = detectOptionStart(
+        line,
+        currentQuestion ? currentQuestion.options.length : 0
+      );
+      if (optStart && currentQuestion) {
+        currentQuestion.options.push(optStart.text);
+        currentState = 'OPTION';
+        return;
       }
-      continue;
-    }
 
-    // 3. Check for new Question header
-    const qMatch = line.match(questionHeaderRegex);
-    if (qMatch) {
-      pushCurrentQuestion();
-
-      const qNum = parseInt(qMatch[1] || qMatch[2], 10);
-      const qText = qMatch[3] ? qMatch[3].trim() : '';
-
-      currentQuestion = {
-        questionNumber: !isNaN(qNum) ? qNum : extractedQuestions.length + 1,
-        questionText: qText,
-        options: [],
-        correctAnswerIndex: null,
-        answerSource: null,
-        explanation: 'Extracted from uploaded PDF',
-        confidence: 'medium',
-        warnings: [],
-      };
-      continue;
-    }
-
-    // 4. Check for Option line
-    const optMatch = line.match(optionRegex);
-    if (optMatch && currentQuestion) {
-      const optText = optMatch[3] ? optMatch[3].trim() : line;
-      currentQuestion.options.push(optText);
-      continue;
-    }
-
-    // 5. Continuation lines (multi-line questions or multi-line options)
-    if (currentQuestion) {
-      if (currentQuestion.options.length === 0) {
-        currentQuestion.questionText = (currentQuestion.questionText + ' ' + line).trim();
-      } else {
-        const lastIdx = currentQuestion.options.length - 1;
-        currentQuestion.options[lastIdx] = (currentQuestion.options[lastIdx] + ' ' + line).trim();
+      if (currentQuestion) {
+        if (currentState === 'QUESTION' && currentQuestion.options.length === 0) {
+          currentQuestion.questionText += (currentQuestion.questionText ? ' ' : '') + line;
+        } else if (currentState === 'OPTION' && currentQuestion.options.length > 0) {
+          const lastIdx = currentQuestion.options.length - 1;
+          currentQuestion.options[lastIdx] += ' ' + line;
+        } else if (currentState === 'EXPLANATION') {
+          currentQuestion.explanation += ' ' + line;
+        }
       }
-    }
+    });
+  });
+
+  finalizeQuestion();
+
+  if (answerKeyLines.length > 0) {
+    const ansMap = parseAnswerKeySection(answerKeyLines);
+    extractedQuestions.forEach((q, idx) => {
+      if (q.correctAnswerIndex === null) {
+        if (q.qNum && ansMap.has(q.qNum)) {
+          q.correctAnswerIndex = ansMap.get(q.qNum);
+          q.answerSource = 'answer-key';
+        } else if (ansMap.has(String(idx + 1))) {
+          q.correctAnswerIndex = ansMap.get(String(idx + 1));
+          q.answerSource = 'answer-key';
+        }
+      }
+    });
   }
 
-  // Push the final question
-  pushCurrentQuestion();
-
-  // Apply Answer Key section matches if question has no explicit answer
-  for (const q of extractedQuestions) {
-    if (q.correctAnswerIndex === null && answerKeyMap.has(q.questionNumber)) {
-      q.correctAnswerIndex = answerKeyMap.get(q.questionNumber);
-      q.answerSource = 'answer-key';
-    }
-  }
-
-  // Deduplicate questions based on normalized question text
+  // Deduplicate and process warnings & confidence
   const uniqueQuestions = [];
   const seenTexts = new Set();
 
-  for (const q of extractedQuestions) {
-    const cleanKey = q.questionText.toLowerCase().replace(/[^\w]/g, '');
-    if (!cleanKey || seenTexts.has(cleanKey)) continue;
+  extractedQuestions.forEach((q) => {
+    const qText = q.questionText.replace(/^[:\-]/, '').trim();
+    const options = q.options.map((opt) => opt.trim()).filter((opt) => opt.length > 0);
+    const cleanKey = qText.toLowerCase().replace(/[^\w]/g, '');
+
+    if (!cleanKey || seenTexts.has(cleanKey)) return;
     seenTexts.add(cleanKey);
 
-    // Generate warnings & calculate confidence
-    q.warnings = [];
-    if (q.options.length < 4) {
-      q.warnings.push(`Only ${q.options.length} options detected. Expected 4.`);
+    const warnings = [];
+    if (options.length < 4) {
+      warnings.push(`Only ${options.length} options detected. Expected 4.`);
     }
     if (q.correctAnswerIndex === null) {
-      q.warnings.push('Correct answer was not detected from the PDF.');
+      warnings.push('Correct answer was not detected from the PDF.');
     }
-    if (q.questionText.length < 10) {
-      q.warnings.push('Question text is very short.');
-    }
-
-    // Determine confidence score
-    if (
-      q.questionText.length >= 10 &&
-      q.options.length >= 4 &&
-      q.correctAnswerIndex !== null &&
-      q.warnings.length === 0
-    ) {
-      q.confidence = 'high';
-    } else if (q.options.length >= 3 && q.questionText.length >= 10 && q.warnings.length <= 1) {
-      q.confidence = 'medium';
-    } else {
-      q.confidence = 'low';
+    if (qText.length < 10) {
+      warnings.push('Question text is very short.');
     }
 
-    uniqueQuestions.push(q);
-  }
+    let confidence = 'medium';
+    if (qText.length >= 10 && options.length >= 4 && q.correctAnswerIndex !== null && warnings.length === 0) {
+      confidence = 'high';
+    } else if (options.length < 2 || qText.length < 5 || warnings.length > 1) {
+      confidence = 'low';
+    }
+
+    uniqueQuestions.push({
+      questionNumber: q.questionNumber || uniqueQuestions.length + 1,
+      questionText: qText,
+      options,
+      correctAnswerIndex: q.correctAnswerIndex,
+      answerSource: q.answerSource || null,
+      explanation: q.explanation.trim() || 'Extracted from uploaded PDF',
+      confidence,
+      warnings,
+      sourcePage: q.sourcePage,
+    });
+  });
 
   return uniqueQuestions;
 }
 
 /**
- * Main PDF buffer extraction entry point.
+ * Main Buffer Extractor entry point
  */
-const extractMcqsFromBuffer = async (pdfBuffer) => {
+const extractMcqsFromBuffer = async (pdfBuffer, fileName = '') => {
   try {
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      return {
+        success: false,
+        status: 'failed',
+        message: 'Empty file buffer provided',
+        fileName,
+        pageCount: 0,
+        textLength: 0,
+        questionCount: 0,
+        totalExtracted: 0,
+        questions: [],
+        warnings: ['Provided PDF buffer is empty.'],
+      };
+    }
+
     let text = '';
-    let pageCount = 1;
+    let pageCount = 0;
 
     try {
-      const renderPage = (pageData) => {
-        return pageData.getTextContent().then((textContent) => {
-          let lastY, pageText = '';
-          for (let item of textContent.items) {
-            if (lastY == item.transform[4] || !lastY) {
-              pageText += item.str + ' ';
-            } else {
-              pageText += '\n' + item.str + ' ';
-            }
-            lastY = item.transform[4];
-          }
-          return `\n--- PAGE ${pageData.pageIndex + 1} ---\n` + pageText;
-        });
-      };
-
-      const data = await pdfParse(pdfBuffer, { pagerender: renderPage });
+      const data = await pdfParse(pdfBuffer, { pagerender: customPageRender });
       text = data.text || '';
       pageCount = data.numpages || 1;
     } catch (parseError) {
-      console.warn('pdfParse failed on buffer, trying fallback OCR provider:', parseError.message);
-      const ocrResult = await performOcr(pdfBuffer);
-      if (ocrResult.performedOcr && ocrResult.text) {
+      console.warn('pdfParse failed on buffer:', parseError.message);
+    }
+
+    const trimmedText = text.replace(/--- PAGE_BREAK_\d+ ---/g, '').trim();
+
+    if (isScannedPdf(trimmedText)) {
+      const ocrResult = await extractTextWithOcr(pdfBuffer) || await performOcr(pdfBuffer);
+      if (ocrResult && ocrResult.text) {
         text = ocrResult.text;
+      } else {
+        return {
+          success: false,
+          status: 'no_text',
+          requiresOCR: true,
+          message: 'This PDF appears to be scanned/image-based and contains no extractable text. OCR processing is required.',
+          fileName,
+          pageCount: pageCount || 1,
+          textLength: 0,
+          questionCount: 0,
+          totalExtracted: 0,
+          questions: [],
+          warnings: ['This PDF appears to be scanned or image-based and requires OCR.'],
+          error: 'This PDF appears to be scanned/image-based. OCR is required.',
+        };
       }
     }
 
-    // Check if PDF is scanned or lacks text
-    if (isScannedPdf(text)) {
-      return {
-        success: false,
-        requiresOCR: true,
-        textLength: text.length,
-        pageCount,
-        questions: [],
-        error: 'This PDF appears to be scanned/image-based. OCR is required.',
-      };
-    }
-
     const questions = parsePdfTextToMCQs(text);
+    const warnings = [];
 
     if (questions.length === 0) {
-      return {
-        success: false,
-        requiresOCR: false,
-        textLength: text.length,
-        pageCount,
-        questions: [],
-        error: 'No valid MCQs could be detected from the extracted PDF text.',
-      };
+      warnings.push('No valid multiple-choice questions could be detected in this document.');
+    } else {
+      const missingAnsCount = questions.filter((q) => q.correctAnswerIndex === null).length;
+      if (missingAnsCount > 0) {
+        warnings.push(`${missingAnsCount} question(s) extracted without explicit answer keys. Please review and select correct answers.`);
+      }
     }
 
     const statistics = {
@@ -326,22 +513,45 @@ const extractMcqsFromBuffer = async (pdfBuffer) => {
       withoutAnswer: questions.filter((q) => q.correctAnswerIndex === null).length,
     };
 
+    const status = questions.length > 0 ? (warnings.length > 0 ? 'partial' : 'success') : 'failed';
+
     return {
-      success: true,
-      textLength: text.length,
+      success: questions.length > 0,
+      status,
+      message: questions.length > 0
+        ? `Successfully extracted ${questions.length} question(s) from PDF.`
+        : 'Could not extract valid MCQs from the provided document format.',
+      fileName,
       pageCount,
+      textLength: text.length,
       questionCount: questions.length,
+      totalExtracted: questions.length,
       statistics,
       questions,
+      warnings,
     };
   } catch (error) {
-    console.error('PDF extraction service error:', error);
+    console.error('PDF extraction error:', error);
     return {
       success: false,
+      status: 'failed',
+      message: error.message || 'Could not parse text from this PDF file.',
+      fileName,
+      pageCount: 0,
+      textLength: 0,
+      questionCount: 0,
+      totalExtracted: 0,
       questions: [],
+      warnings: [error.message || 'PDF processing encountered a fatal error.'],
       error: error.message || 'Could not parse text from this PDF file.',
     };
   }
 };
 
-module.exports = { extractMcqsFromBuffer, parsePdfTextToMCQs, normalizeText, isScannedPdf };
+module.exports = {
+  extractMcqsFromBuffer,
+  parsePdfTextToMCQs,
+  splitInlineOptions,
+  normalizeText,
+  isScannedPdf,
+};

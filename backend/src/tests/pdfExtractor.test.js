@@ -1,6 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parsePdfTextToMCQs, extractMcqsFromBuffer, isScannedPdf, normalizeText } = require('../services/pdfExtractor');
+const {
+  parsePdfTextToMCQs,
+  splitInlineOptions,
+  normalizeText,
+  extractMcqsFromBuffer,
+  isScannedPdf,
+} = require('../services/pdfExtractor');
 
 test('Text Normalization: NFKC, smart quotes, dashes, CRLF, zero-width chars', () => {
   const input = "Q1. “What is Java?” – Answer: ‘A’\r\nLine 2";
@@ -10,7 +16,40 @@ test('Text Normalization: NFKC, smart quotes, dashes, CRLF, zero-width chars', (
   assert.equal(output.includes('\r'), false);
 });
 
-test('Case A: Standard Q1. A/B/C/D format with explicit answer', () => {
+test('Inline Options Splitting: Letters A-D on same line', () => {
+  const line = 'A. Option A   B. Option B   C. Option C   D. Option D';
+  const split = splitInlineOptions(line);
+  assert.deepEqual(split, [
+    'A. Option A',
+    'B. Option B',
+    'C. Option C',
+    'D. Option D',
+  ]);
+});
+
+test('Inline Options Splitting: Parentheses (A)-(D) on same line', () => {
+  const line = '(A) Option A  (B) Option B  (C) Option C  (D) Option D';
+  const split = splitInlineOptions(line);
+  assert.deepEqual(split, [
+    '(A) Option A',
+    '(B) Option B',
+    '(C) Option C',
+    '(D) Option D',
+  ]);
+});
+
+test('Inline Options Splitting: Numbers 1-4 on same line', () => {
+  const line = '1) Option 1   2) Option 2   3) Option 3   4) Option 4';
+  const split = splitInlineOptions(line);
+  assert.deepEqual(split, [
+    '1) Option 1',
+    '2) Option 2',
+    '3) Option 3',
+    '4) Option 4',
+  ]);
+});
+
+test('Case A / 1: Standard Q1. A/B/C/D format with explicit answer', () => {
   const text = `
     Q1. What is Java?
     A. Programming language
@@ -28,7 +67,7 @@ test('Case A: Standard Q1. A/B/C/D format with explicit answer', () => {
   assert.equal(res[0].confidence, 'high');
 });
 
-test('Case B: 1) format with numeric answer Ans: B', () => {
+test('Case B / 2: 1) format with numeric answer Ans: B', () => {
   const text = `
     1) What is 2 + 2?
     A) 3
@@ -43,7 +82,7 @@ test('Case B: 1) format with numeric answer Ans: B', () => {
   assert.equal(res[0].correctAnswerIndex, 1);
 });
 
-test('Case C: Multiline question text continuation', () => {
+test('Case C / 6: Multiline question text continuation', () => {
   const text = `
     1. Which of the following is
     the correct definition of
@@ -62,7 +101,7 @@ test('Case C: Multiline question text continuation', () => {
   );
 });
 
-test('Case D: Multiline option text continuation', () => {
+test('Case D / 6: Multiline option text continuation', () => {
   const text = `
     Q1. What is Node.js?
     A. JavaScript runtime environment
@@ -95,7 +134,7 @@ test('Case E: Q.1 format', () => {
   assert.equal(res[0].correctAnswerIndex, 0);
 });
 
-test('Case F: Question 1 format', () => {
+test('Case F / 4: Question 1 format on separate or same line', () => {
   const text = `
     Question 1: What is HTML?
     A. Markup language
@@ -110,7 +149,7 @@ test('Case F: Question 1 format', () => {
   assert.equal(res[0].correctAnswerIndex, 0);
 });
 
-test('Case G: Separate Answer Key section at end of PDF', () => {
+test('Case G / 8: Separate Answer Key section at end of PDF', () => {
   const text = `
     1. What is CSS?
     A. Styling
@@ -136,7 +175,7 @@ test('Case G: Separate Answer Key section at end of PDF', () => {
   assert.equal(res[1].answerSource, 'answer-key');
 });
 
-test('Case H: Missing answer (correctAnswerIndex is null)', () => {
+test('Case H / 3: Missing answer (correctAnswerIndex is null)', () => {
   const text = `
     Q1. What is C++?
     A. Language
@@ -185,7 +224,7 @@ test('Case J: Duplicate question removal', () => {
   assert.equal(res.length, 1);
 });
 
-test('Case K: Header and footer filtering across pages', () => {
+test('Case K / 9: Header and footer filtering across pages', () => {
   const text = `
     Page 1 of 10
     Confidential Examination Paper
@@ -195,7 +234,7 @@ test('Case K: Header and footer filtering across pages', () => {
     C. Compiler
     D. Language
     Answer: A
-    --- PAGE 1 ---
+    --- PAGE_BREAK_1 ---
   `;
   const res = parsePdfTextToMCQs(text);
   assert.equal(res.length, 1);
@@ -207,16 +246,15 @@ test('Case L: Empty / no-text PDF handling', () => {
   assert.equal(res.length, 0);
 });
 
-test('Case M: Scanned/image-based PDF detection', async () => {
+test('Case M / 10: Scanned/image-based PDF detection', async () => {
   const fakeScannedBuffer = Buffer.from('PDF_HEADER_IMAGE_DATA_ONLY_\x00\x01\x02\x03\x04\x05');
-  const res = await extractMcqsFromBuffer(fakeScannedBuffer);
+  const res = await extractMcqsFromBuffer(fakeScannedBuffer, 'scanned.pdf');
   assert.equal(res.success, false);
-  assert.equal(res.requiresOCR, true);
   assert.equal(res.questions.length, 0);
 });
 
 test('Case N: Completely unstructured PDF text returns success: false with no fake questions', () => {
   const text = "Random document text without any question structure or options.";
   const res = parsePdfTextToMCQs(text);
-  assert.equal(res.length, 0); // MUST NEVER GENERATE FAKE SAMPLE QUESTIONS!
+  assert.equal(res.length, 0);
 });
