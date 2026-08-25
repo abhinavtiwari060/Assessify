@@ -75,9 +75,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-56 bg-[var(--bg-card)] border-r border-[var(--border)] transition-transform duration-200 transform ${
+        className={`fixed top-0 left-0 z-40 h-full w-56 bg-[var(--bg-card)] border-r border-[var(--border)] transition-transform duration-200 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 lg:static lg:z-10 flex flex-col`}
+        } lg:translate-x-0 lg:top-14 sm:lg:top-16 lg:h-[calc(100vh-3.5rem)] sm:lg:h-[calc(100vh-4rem)] lg:z-30 flex flex-col`}
       >
         {/* Mobile Header Inside Sidebar */}
         <div className="h-14 px-4 border-b border-[var(--border)] flex items-center justify-between lg:hidden">
