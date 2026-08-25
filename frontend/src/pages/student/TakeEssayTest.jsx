@@ -236,7 +236,8 @@ const TakeEssayTest = () => {
         <div className="flex justify-end pt-2">
           <button
             onClick={() => setConfirmModalOpen(true)}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-base shadow-md transition-all cursor-pointer"
+            disabled={submitting}
+            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-base shadow-md transition-all cursor-pointer disabled:opacity-50"
           >
             <Send className="w-5 h-5 text-white" />
             <span>Submit Essay for Grading</span>
@@ -253,14 +254,15 @@ const TakeEssayTest = () => {
           <>
             <button
               onClick={() => setConfirmModalOpen(false)}
-              className="px-5 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--text-main)] bg-[var(--bg-sub)] cursor-pointer"
+              disabled={submitting}
+              className="px-5 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--text-main)] bg-[var(--bg-sub)] cursor-pointer disabled:opacity-50"
             >
               Continue Editing
             </button>
             <button
               onClick={handleFinalSubmit}
               disabled={submitting}
-              className="px-6 py-2 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-xs shadow-md cursor-pointer"
+              className="px-6 py-2 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-xs shadow-md cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Submitting...' : 'Yes, Submit Essay'}
             </button>

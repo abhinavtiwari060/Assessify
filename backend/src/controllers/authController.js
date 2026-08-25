@@ -4,7 +4,10 @@ const PasswordResetRequest = require('../models/PasswordResetRequest');
 const { logAudit } = require('../middleware/auth');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret_key_12345', {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
@@ -14,13 +17,13 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, bio, rollNo } = req.body;
+    const { name, email, password, bio, rollNo } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please enter all required fields' });
     }
 
-    const userExists = await User.findOne({ email });
+    const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
@@ -32,11 +35,13 @@ const registerUser = async (req, res) => {
       }
     }
 
-    const userRole = ['student', 'teacher', 'admin'].includes(role) ? role : 'student';
+    // SECURITY HARDENING: Public registration endpoint must ALWAYS enforce role = 'student'.
+    // Clients must NEVER be able to self-assign 'admin' or 'teacher' roles via public registration.
+    const userRole = 'student';
 
     const user = await User.create({
       name,
-      email,
+      email: email.toLowerCase(),
       password,
       role: userRole,
       rollNo: rollNo ? rollNo.trim() : undefined,
@@ -79,7 +84,8 @@ const googleAuth = async (req, res) => {
       return res.status(400).json({ message: 'Google account email is required' });
     }
 
-    let user = await User.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+    let user = await User.findOne({ email: cleanEmail });
 
     if (user) {
       if (!user.isActive) {
@@ -102,11 +108,12 @@ const googleAuth = async (req, res) => {
         }
       }
 
-      const userRole = ['student', 'teacher', 'admin'].includes(role) ? role : 'student';
+      // SECURITY HARDENING: Never allow client to request role = 'admin' via Google auth
+      const userRole = (role === 'teacher') ? 'teacher' : 'student';
 
       user = await User.create({
-        name: name || email.split('@')[0],
-        email,
+        name: name || cleanEmail.split('@')[0],
+        email: cleanEmail,
         password: Math.random().toString(36).slice(-10) + 'A1!',
         role: userRole,
         rollNo: rollNo ? rollNo.trim() : undefined,
@@ -114,7 +121,7 @@ const googleAuth = async (req, res) => {
         firebaseUid: firebaseUid || '',
         avatar: avatar || '',
       });
-      await logAudit(req, 'GOOGLE_REGISTER', `User signed up via Google Auth (${email})`);
+      await logAudit(req, 'GOOGLE_REGISTER', `User signed up via Google Auth (${cleanEmail})`);
     }
 
     req.user = user;
@@ -199,16 +206,16 @@ const adminLogin = async (req, res) => {
       return res.status(400).json({ message: 'Please enter admin email and password' });
     }
 
-    const envAdminEmail = process.env.ADMIN_EMAIL || 'abhitiwariaj@gmail.com';
-    const envAdminPassword = process.env.ADMIN_PASSWORD || 'Abhi8957@tiwari#9451';
+    const envAdminEmail = process.env.ADMIN_EMAIL;
+    const envAdminPassword = process.env.ADMIN_PASSWORD;
 
     let user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
-    if (!user && email.toLowerCase() === envAdminEmail.toLowerCase()) {
+    if (!user && envAdminEmail && envAdminPassword && email.toLowerCase() === envAdminEmail.toLowerCase()) {
       if (password === envAdminPassword) {
         user = await User.create({
           name: 'Platform Admin',
-          email: envAdminEmail,
+          email: envAdminEmail.toLowerCase(),
           password: envAdminPassword,
           role: 'admin',
           bio: 'System Administrator',

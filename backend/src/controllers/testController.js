@@ -223,11 +223,66 @@ const getTestById = async (req, res) => {
   }
 };
 
+const validateTestData = (data, isUpdate = false) => {
+  const errors = [];
+  if (!isUpdate || data.title !== undefined) {
+    if (!data.title || typeof data.title !== 'string' || !data.title.trim()) {
+      errors.push('Title is required');
+    }
+  }
+  if (!isUpdate || data.subjectId !== undefined) {
+    if (!data.subjectId) {
+      errors.push('Subject ID is required');
+    }
+  }
+  if (data.durationMinutes !== undefined && (typeof data.durationMinutes !== 'number' || data.durationMinutes <= 0)) {
+    errors.push('Duration must be a positive number');
+  }
+  if (data.maxAttempts !== undefined && (typeof data.maxAttempts !== 'number' || data.maxAttempts < 1)) {
+    errors.push('Max attempts must be at least 1');
+  }
+  if (data.passingPercentage !== undefined && (typeof data.passingPercentage !== 'number' || data.passingPercentage < 0 || data.passingPercentage > 100)) {
+    errors.push('Passing percentage must be between 0 and 100');
+  }
+  if (data.negativeMarkingRate !== undefined && (typeof data.negativeMarkingRate !== 'number' || data.negativeMarkingRate < 0)) {
+    errors.push('Negative marking rate cannot be negative');
+  }
+
+  if (Array.isArray(data.questions)) {
+    data.questions.forEach((q, idx) => {
+      if (!q.questionText || typeof q.questionText !== 'string' || !q.questionText.trim()) {
+        errors.push(`Question #${idx + 1}: Statement text is required`);
+      }
+      if (!Array.isArray(q.options) || q.options.length < 2) {
+        errors.push(`Question #${idx + 1}: At least 2 options are required`);
+      } else {
+        if (
+          typeof q.correctAnswerIndex !== 'number' ||
+          !Number.isInteger(q.correctAnswerIndex) ||
+          q.correctAnswerIndex < 0 ||
+          q.correctAnswerIndex >= q.options.length
+        ) {
+          errors.push(`Question #${idx + 1}: Invalid correct answer choice`);
+        }
+      }
+      if (q.marks !== undefined && (typeof q.marks !== 'number' || q.marks <= 0)) {
+        errors.push(`Question #${idx + 1}: Marks must be a positive number`);
+      }
+    });
+  }
+  return errors;
+};
+
 // @desc    Create new test
 // @route   POST /api/tests
 // @access  Private (Teacher / Admin)
 const createTest = async (req, res) => {
   try {
+    const validationErrors = validateTestData(req.body, false);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ message: validationErrors.join('. ') });
+    }
+
     const {
       title,
       description,
@@ -244,10 +299,6 @@ const createTest = async (req, res) => {
       isPublished,
       questions,
     } = req.body;
-
-    if (!title || !subjectId) {
-      return res.status(400).json({ message: 'Title and Subject are required' });
-    }
 
     const testCode = await generateUniqueTestCode();
 
@@ -322,6 +373,20 @@ const updateTest = async (req, res) => {
       test.teacherId.toString() !== req.user._id.toString()
     ) {
       return res.status(403).json({ message: 'Access denied: You cannot edit another teacher\'s test' });
+    }
+
+    // LOCKED TEST LIFECYCLE CHECK: Once a test has started or ended, critical exam fields cannot be mutated.
+    if (test.status === 'STARTED' || test.status === 'ENDED') {
+      const criticalFields = ['questions', 'durationMinutes', 'perQuestionSeconds', 'maxAttempts', 'passingPercentage', 'negativeMarkingRate', 'type'];
+      const hasCriticalChange = criticalFields.some((f) => req.body[f] !== undefined);
+      if (hasCriticalChange) {
+        return res.status(400).json({ message: `Cannot modify questions or grading rules of an active or ended test (${test.status}).` });
+      }
+    }
+
+    const validationErrors = validateTestData(req.body, true);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ message: validationErrors.join('. ') });
     }
 
     const fields = [

@@ -171,21 +171,18 @@ const TakeMcqTest = () => {
     dirtyQuestionsRef.current.add(currentQuestion._id);
   };
 
-  // Handle Question Timer Expiration
-  const handleQuestionTimerUp = useCallback(() => {
-    addToast(`Time expired for Question ${currentIndex + 1}. Moving to next.`, 'warning');
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      handleFinalSubmit();
-    }
-  }, [currentIndex, questions.length, addToast]);
+  const attemptRef = useRef(attempt);
+  attemptRef.current = attempt;
+  const questionsRef = useRef(questions);
+  questionsRef.current = questions;
+  const currentIndexRef = useRef(currentIndex);
+  currentIndexRef.current = currentIndex;
 
   const submittingRef = useRef(false);
 
   // Submit test to backend with guaranteed redirect & fallback recovery
-  const handleFinalSubmit = async (isTimerExpired = false) => {
-    if (!attempt || submittingRef.current) return;
+  const handleFinalSubmit = useCallback(async (isTimerExpired = false) => {
+    if (!attemptRef.current || submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
     setConfirmModalOpen(false);
@@ -198,8 +195,9 @@ const TakeMcqTest = () => {
         console.warn('Pre-submit answer flush warning:', flushErr);
       }
 
-      const res = await api.post(`/attempts/${attempt._id}/submit`, { isTimerExpired });
-      const targetAttemptId = res.data?.attemptId || res.data?.resultId || attempt._id;
+      const currentAttempt = attemptRef.current;
+      const res = await api.post(`/attempts/${currentAttempt._id}/submit`, { isTimerExpired });
+      const targetAttemptId = res.data?.attemptId || res.data?.resultId || currentAttempt._id;
 
       addToast('Test submitted successfully! Redirecting to report...', 'success');
       navigate(`/student/attempt/${targetAttemptId}/result`, { replace: true });
@@ -215,11 +213,14 @@ const TakeMcqTest = () => {
         err.response?.status === 409
       ) {
         try {
-          const checkRes = await api.get(`/attempts/${attempt._id}/result`);
-          if (checkRes.data?.attempt) {
-            addToast('Redirecting to your test result report...', 'info');
-            navigate(`/student/attempt/${attempt._id}/result`, { replace: true });
-            return;
+          const currentAttempt = attemptRef.current;
+          if (currentAttempt) {
+            const checkRes = await api.get(`/attempts/${currentAttempt._id}/result`);
+            if (checkRes.data?.attempt) {
+              addToast('Redirecting to your test result report...', 'info');
+              navigate(`/student/attempt/${currentAttempt._id}/result`, { replace: true });
+              return;
+            }
           }
         } catch (fallbackErr) {
           console.error('Fallback check failed:', fallbackErr);
@@ -230,7 +231,19 @@ const TakeMcqTest = () => {
       setSubmitting(false);
       submittingRef.current = false;
     }
-  };
+  }, [flushDirtyAnswers, navigate, addToast]);
+
+  // Handle Question Timer Expiration (Ref-safe against stale closures)
+  const handleQuestionTimerUp = useCallback(() => {
+    const cIdx = currentIndexRef.current;
+    const totalQ = questionsRef.current.length;
+    addToast(`Time expired for Question ${cIdx + 1}.`, 'warning');
+    if (cIdx < totalQ - 1) {
+      setCurrentIndex(cIdx + 1);
+    } else {
+      handleFinalSubmit(true);
+    }
+  }, [addToast, handleFinalSubmit]);
 
   if (loading) {
     return <QuestionSkeleton />;
