@@ -73,7 +73,6 @@ const essaySubmissionSchema = new mongoose.Schema(
   }
 );
 
-essaySubmissionSchema.index({ testId: 1, studentId: 1 });
 essaySubmissionSchema.index({ studentId: 1, status: 1 });
 essaySubmissionSchema.index(
   { testId: 1, studentId: 1 },

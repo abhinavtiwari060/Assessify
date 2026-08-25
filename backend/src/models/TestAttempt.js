@@ -6,13 +6,11 @@ const testAttemptSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Test',
       required: true,
-      index: true,
     },
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     answers: [
       {
