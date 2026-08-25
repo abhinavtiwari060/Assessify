@@ -14,6 +14,7 @@ import {
   BookOpen,
   Trophy,
   BarChart2,
+  Sparkles,
 } from 'lucide-react';
 
 const Navbar = ({ onToggleSidebar }) => {
