@@ -8,11 +8,9 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  ShieldAlert,
   ArrowLeft,
   Award,
   HelpCircle,
-  RotateCcw,
 } from 'lucide-react';
 
 const AttemptResult = () => {
@@ -50,7 +48,7 @@ const AttemptResult = () => {
   if (!result) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-[lg] font-bold">Result details not found</h3>
+        <h3 className="text-lg font-bold text-[var(--text-main)]">Result details not found</h3>
       </div>
     );
   }
@@ -71,12 +69,12 @@ const AttemptResult = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+    <div className="space-y-8 max-w-5xl mx-auto pb-12 text-[var(--text-main)]">
       {/* Top Banner Navigation Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           to="/student/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-[var(--text-main)] hover:text-[#F59E0B] bg-[var(--bg-card)] px-4 py-2 rounded-xl border border-[var(--border)] shadow-xs transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Dashboard</span>
@@ -84,7 +82,7 @@ const AttemptResult = () => {
 
         <Link
           to="/student/history"
-          className="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-[#F59E0B] hover:text-[#D97706] bg-[#F59E0B]/10 px-4 py-2 rounded-xl border border-[#F59E0B]/30 transition-colors"
         >
           <Trophy className="w-4 h-4" />
           <span>View All Results</span>
@@ -92,33 +90,35 @@ const AttemptResult = () => {
       </div>
 
       {/* Main Score Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-xl space-y-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-700/80">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-8 border border-[var(--border)] shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-[var(--border)]">
           <div className="space-y-2 text-center md:text-left">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
               {result.testId?.subjectId?.name || 'Subject Test'}
             </span>
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
+            <h1 className="text-3xl font-extrabold text-[var(--text-main)]">
               {result.testId?.title}
             </h1>
-            <p className="text-xs text-slate-500">
-              Student: <strong className="text-slate-800 dark:text-slate-200">{result.studentId?.name}</strong> ({result.studentId?.email})
+            <p className="text-xs text-[var(--text-sub)]">
+              Student: <strong className="text-[var(--text-main)]">{result.studentId?.name}</strong> ({result.studentId?.email})
             </p>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[var(--text-muted)]">
               Submitted on {new Date(result.submittedAt || result.createdAt).toLocaleString()}
             </p>
           </div>
 
-          <div className="flex flex-col items-center p-5 bg-[#21262D] rounded-3xl border border-[#30363D] min-w-52 text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#8B949E]">Final Score</span>
-            <div className="text-4xl font-black text-[#58A6FF] my-1">
+          <div className="flex flex-col items-center p-5 bg-[var(--bg-sub)] rounded-2xl border border-[var(--border)] min-w-52 text-center">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Final Score</span>
+            <div className="text-4xl font-black text-[#F59E0B] my-1">
               {result.score} / {result.maxMarks}
             </div>
-            <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-2">
+            <div className="text-sm font-bold text-[#F59E0B] mb-2">
               {percentage}%
             </div>
-            <span className={`text-xs font-bold px-3.5 py-1 rounded-full ${
-              isPassed ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/20 text-rose-600 dark:text-rose-400'
+            <span className={`text-xs font-bold px-3.5 py-1 rounded-full border ${
+              isPassed
+                ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
+                : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30'
             }`}>
               {isPassed ? 'PASSED' : 'NEEDS IMPROVEMENT'}
             </span>
@@ -127,47 +127,47 @@ const AttemptResult = () => {
 
         {/* Detailed Metrics Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 space-y-1">
-            <HelpCircle className="w-4 h-4 text-slate-500 mx-auto" />
-            <div className="text-xl font-extrabold text-slate-800 dark:text-slate-200">{totalQuestions}</div>
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Total Qs</div>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
+            <HelpCircle className="w-4 h-4 text-[var(--text-muted)] mx-auto" />
+            <div className="text-xl font-extrabold text-[var(--text-main)]">{totalQuestions}</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Total Qs</div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 space-y-1">
-            <Award className="w-4 h-4 text-indigo-500 mx-auto" />
-            <div className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{attemptedCount}</div>
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Attempted</div>
+          <div className="p-3.5 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 space-y-1">
+            <Award className="w-4 h-4 text-[#F59E0B] mx-auto" />
+            <div className="text-xl font-extrabold text-[#F59E0B]">{attemptedCount}</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Attempted</div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
-            <div className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{result.correctCount}</div>
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Correct</div>
+          <div className="p-3.5 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/30 space-y-1">
+            <CheckCircle2 className="w-4 h-4 text-[#22C55E] mx-auto" />
+            <div className="text-xl font-extrabold text-[#22C55E]">{result.correctCount}</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Correct</div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-1">
-            <XCircle className="w-4 h-4 text-rose-500 mx-auto" />
-            <div className="text-xl font-extrabold text-rose-600 dark:text-rose-400">{result.wrongCount}</div>
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Wrong</div>
+          <div className="p-3.5 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/30 space-y-1">
+            <XCircle className="w-4 h-4 text-[#EF4444] mx-auto" />
+            <div className="text-xl font-extrabold text-[#EF4444]">{result.wrongCount}</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Wrong</div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-500/10 border border-slate-500/20 space-y-1">
-            <HelpCircle className="w-4 h-4 text-slate-400 mx-auto" />
-            <div className="text-xl font-extrabold text-slate-600 dark:text-slate-400">{unansweredCount}</div>
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Unanswered</div>
+          <div className="p-3.5 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
+            <HelpCircle className="w-4 h-4 text-[var(--text-muted)] mx-auto" />
+            <div className="text-xl font-extrabold text-[var(--text-muted)]">{unansweredCount}</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Unanswered</div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-            <Clock className="w-4 h-4 text-amber-500 mx-auto" />
-            <div className="text-xl font-extrabold text-amber-600 dark:text-amber-400">{formatTime(result.timeTakenSeconds)}</div>
-            <div className="text-[10px] font-semibold text-slate-500 uppercase">Time Taken</div>
+          <div className="p-3.5 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/30 space-y-1">
+            <Clock className="w-4 h-4 text-[#F59E0B] mx-auto" />
+            <div className="text-xl font-extrabold text-[#F59E0B]">{formatTime(result.timeTakenSeconds)}</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Time Taken</div>
           </div>
         </div>
       </div>
 
       {/* Question Breakdown Review */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Question-by-Question Review</h3>
+        <h3 className="text-xl font-extrabold text-[var(--text-main)]">Question-by-Question Review</h3>
         <div className="space-y-4">
           {questions.map((q, idx) => {
             const isCorrect = q.isCorrect;
@@ -176,28 +176,28 @@ const AttemptResult = () => {
             return (
               <div
                 key={q._id}
-                className={`bg-white dark:bg-slate-800 rounded-3xl p-6 border transition-all ${
+                className={`bg-[var(--bg-card)] rounded-2xl p-6 border transition-all ${
                   isCorrect
-                    ? 'border-emerald-200 dark:border-emerald-900/60'
+                    ? 'border-[#22C55E]/30 bg-[#22C55E]/5'
                     : isUnattempted
-                    ? 'border-slate-200 dark:border-slate-700'
-                    : 'border-rose-200 dark:border-rose-900/60'
+                    ? 'border-[var(--border)]'
+                    : 'border-[#EF4444]/30 bg-[#EF4444]/5'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-400">Q{idx + 1} ({q.marks} marks)</span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                  <span className="text-xs font-bold text-[var(--text-muted)]">Q{idx + 1} ({q.marks} marks)</span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                     isCorrect
-                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                      ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
                       : isUnattempted
-                      ? 'bg-slate-200 text-slate-600'
-                      : 'bg-rose-500/20 text-rose-600 dark:text-rose-400'
+                      ? 'bg-[var(--bg-sub)] text-[var(--text-muted)] border-[var(--border)]'
+                      : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30'
                   }`}>
                     {isCorrect ? 'Correct' : isUnattempted ? 'Unattempted' : 'Incorrect'}
                   </span>
                 </div>
 
-                <p className="text-base font-bold text-slate-900 dark:text-white mb-4 leading-relaxed">
+                <p className="text-base font-bold text-[var(--text-main)] mb-4 leading-relaxed">
                   {q.questionText}
                 </p>
 
@@ -206,34 +206,34 @@ const AttemptResult = () => {
                     const isUserChoice = q.selectedOptionIndex === optIdx;
                     const isRightAnswer = q.correctAnswerIndex === optIdx;
 
-                    let optStyle = 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300';
+                    let optStyle = 'border-[var(--border)] bg-[var(--bg-sub)] text-[var(--text-main)]';
                     if (isRightAnswer) {
-                      optStyle = 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-900 dark:text-emerald-200';
+                      optStyle = 'border-[#22C55E] bg-[#22C55E]/15 text-[#22C55E] font-bold';
                     } else if (isUserChoice && !isRightAnswer) {
-                      optStyle = 'border-rose-500 bg-rose-50 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200';
+                      optStyle = 'border-[#EF4444] bg-[#EF4444]/15 text-[#EF4444] font-bold';
                     }
 
                     return (
                       <div
                         key={optIdx}
-                        className={`p-3.5 rounded-2xl border text-sm flex items-center justify-between ${optStyle}`}
+                        className={`p-3.5 rounded-xl border text-sm flex items-center justify-between ${optStyle}`}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-700 font-bold text-xs flex items-center justify-center">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-6 h-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] font-bold text-xs flex items-center justify-center">
                             {String.fromCharCode(65 + optIdx)}
                           </span>
                           <span>{opt}</span>
                         </div>
-                        {isRightAnswer && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-                        {isUserChoice && !isRightAnswer && <XCircle className="w-4 h-4 text-rose-500" />}
+                        {isRightAnswer && <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />}
+                        {isUserChoice && !isRightAnswer && <XCircle className="w-4 h-4 text-[#EF4444]" />}
                       </div>
                     );
                   })}
                 </div>
 
                 {q.explanation && (
-                  <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-4 text-xs text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                    <strong className="text-indigo-600 dark:text-indigo-400">Explanation: </strong>
+                  <div className="bg-[var(--bg-sub)] rounded-xl p-4 text-xs text-[var(--text-sub)] border border-[var(--border)]">
+                    <strong className="text-[#F59E0B]">Explanation: </strong>
                     {q.explanation}
                   </div>
                 )}

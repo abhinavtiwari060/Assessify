@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { FileEdit, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 const CreateEssayTest = () => {
   const navigate = useNavigate();
@@ -60,36 +60,36 @@ const CreateEssayTest = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto pb-12">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto pb-12 text-[var(--text-main)]">
       <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
           Create Essay Writing Assessment
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-[var(--text-sub)] mt-1">
           Set up a timed essay writing prompt for student evaluation.
         </p>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-6">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Essay Title</label>
+          <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Essay Title</label>
           <input
             type="text"
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Impact of Artificial Intelligence on Software Architecture"
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Target Subject</label>
+          <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Target Subject</label>
           <select
             required
             value={subjectId}
             onChange={(e) => setSubjectId(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
           >
             {subjects.map((sub) => (
               <option key={sub._id} value={sub._id}>
@@ -100,39 +100,39 @@ const CreateEssayTest = () => {
         </div>
 
         <div className="space-y-1">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Essay Prompt Topic & Instructions</label>
+          <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Essay Prompt Topic & Instructions</label>
           <textarea
             rows={5}
             required
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Detail the essay question prompt, word count guidance, and key evaluation criteria..."
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm text-slate-900 dark:text-white leading-relaxed focus:ring-2 focus:ring-purple-500"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm text-[var(--text-main)] leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Time Limit (Minutes)</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Time Limit (Minutes)</label>
             <input
               type="number"
               min={5}
               required
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)]"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Maximum Marks</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Maximum Marks</label>
             <input
               type="number"
               min={1}
               required
               value={totalMarks}
               onChange={(e) => setTotalMarks(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)]"
             />
           </div>
         </div>
@@ -141,9 +141,9 @@ const CreateEssayTest = () => {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-600/25 transition-all"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
+            <Save className="w-4 h-4 text-[#0A0A0A]" />
             <span>{saving ? 'Publishing...' : 'Publish Essay Test'}</span>
           </button>
         </div>
@@ -153,3 +153,4 @@ const CreateEssayTest = () => {
 };
 
 export default CreateEssayTest;
+

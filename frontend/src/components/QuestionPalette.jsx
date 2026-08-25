@@ -1,5 +1,4 @@
 import React from 'react';
-import { Bookmark, Check, HelpCircle } from 'lucide-react';
 
 const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, isSequential }) => {
   const getStatus = (questionId, index) => {
@@ -20,10 +19,10 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
   const totalCount = questions.length;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-5">
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-4">
-        <h3 className="font-bold text-slate-900 dark:text-white">Question Palette</h3>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+    <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs space-y-5">
+      <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+        <h3 className="font-extrabold text-[var(--text-main)] text-sm">Question Palette</h3>
+        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
           {answeredCount} / {totalCount} Answered
         </span>
       </div>
@@ -39,19 +38,19 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
               key={q._id}
               onClick={() => !isDisabled && onSelectQuestion(idx)}
               disabled={isDisabled}
-              className={`relative h-10 w-full rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center ${
+              className={`relative h-10 w-full rounded-xl font-bold text-xs transition-all duration-150 flex items-center justify-center cursor-pointer ${
                 status === 'current'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105 ring-2 ring-offset-2 ring-indigo-500 dark:ring-offset-slate-900'
+                  ? 'bg-[#F59E0B] text-[#0A0A0A] shadow-xs font-black ring-2 ring-[#F59E0B]/40'
                   : status === 'answered'
-                  ? 'bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
+                  ? 'bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/40 hover:bg-[#22C55E]/30'
                   : status === 'flagged'
-                  ? 'bg-amber-500 text-white shadow-sm hover:bg-amber-600'
-                  : 'bg-slate-100 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  ? 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40 hover:bg-[#F59E0B]/30'
+                  : 'bg-[var(--bg-sub)] text-[var(--text-sub)] border border-[var(--border)] hover:bg-[var(--bg-card-hover)]'
               } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               {idx + 1}
               {status === 'flagged' && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-300 ring-2 ring-white dark:ring-slate-800"></span>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#F59E0B] ring-2 ring-[var(--bg-card)]"></span>
               )}
             </button>
           );
@@ -59,21 +58,21 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
       </div>
 
       {/* Legend */}
-      <div className="grid grid-cols-2 gap-2 text-xs font-medium pt-2 border-t border-slate-100 dark:border-slate-700/80 text-slate-600 dark:text-slate-400">
+      <div className="grid grid-cols-2 gap-2 text-[11px] font-bold pt-2 border-t border-[var(--border)] text-[var(--text-sub)]">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-md bg-emerald-500"></div>
+          <div className="w-3 h-3 rounded-md bg-[#22C55E]"></div>
           <span>Answered ({answeredCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-md bg-slate-200 dark:bg-slate-700"></div>
+          <div className="w-3 h-3 rounded-md bg-[var(--bg-sub)] border border-[var(--border)]"></div>
           <span>Unanswered ({totalCount - answeredCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-md bg-indigo-600"></div>
+          <div className="w-3 h-3 rounded-md bg-[#F59E0B]"></div>
           <span>Current</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-md bg-amber-500"></div>
+          <div className="w-3 h-3 rounded-md bg-[#F59E0B]/40 border border-[#F59E0B]"></div>
           <span>Flagged ({flaggedCount})</span>
         </div>
       </div>
@@ -82,3 +81,4 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
 };
 
 export default QuestionPalette;
+

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/Modal';
@@ -15,6 +15,7 @@ import {
   KeyRound,
   CheckCircle,
   Lock,
+  FileText,
 } from 'lucide-react';
 
 const AvailableTests = () => {
@@ -110,28 +111,28 @@ const AvailableTests = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
+    <div className="space-y-8 max-w-7xl mx-auto pb-12 text-[var(--text-main)]">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold text-[#F0F6FC] tracking-tight">
+        <h1 className="text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
           Available Assessment Tests
         </h1>
-        <p className="text-xs sm:text-sm text-[#8B949E] mt-1">
+        <p className="text-xs sm:text-sm text-[var(--text-sub)] mt-1">
           Select a teacher-started test and enter your unique 4-character test code to begin.
         </p>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-[#161B22] rounded-2xl p-5 border border-[#30363D] shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
         {/* Search */}
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#8B949E]" />
+          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
             type="text"
             placeholder="Search tests by title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#21262D] border border-[#30363D] rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#F0F6FC] placeholder-[#8B949E] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
           />
         </div>
 
@@ -140,7 +141,7 @@ const AvailableTests = () => {
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
-            className="bg-[#21262D] border border-[#30363D] rounded-xl px-4 py-2.5 text-xs font-bold text-[#F0F6FC] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs font-bold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
           >
             <option value="">All Subjects</option>
             {subjects.map((sub) => (
@@ -153,7 +154,7 @@ const AvailableTests = () => {
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-[#21262D] border border-[#30363D] rounded-xl px-4 py-2.5 text-xs font-bold text-[#F0F6FC] focus:outline-none focus:ring-2 focus:ring-[#58A6FF]"
+            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs font-bold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
           >
             <option value="">All Test Types</option>
             <option value="mcq">MCQ Tests</option>
@@ -179,52 +180,47 @@ const AvailableTests = () => {
             const isCompleted = Boolean(test.hasAttempted) || (test.userAttempts > 0 && test.userAttempts >= (test.maxAttempts || 1));
 
             let statusText = '';
-            let isStartDisabled = false;
 
             if (isCompleted) {
               statusText = 'You have already attempted this test.';
-              isStartDisabled = true;
             } else if (status === 'DRAFT') {
               statusText = 'Waiting for teacher to start the test.';
-              isStartDisabled = true;
             } else if (status === 'ENDED') {
               statusText = 'This test has ended.';
-              isStartDisabled = true;
             } else if (status === 'STARTED') {
               statusText = 'Enter the 4-character test code to begin.';
-              isStartDisabled = false;
             }
 
             return (
               <div
                 key={test._id}
-                className="bg-[#161B22] rounded-2xl p-6 border border-[#30363D] shadow-xs hover:border-[#58A6FF]/50 transition-all flex flex-col justify-between"
+                className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs hover:border-[#F59E0B]/50 transition-all flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-md text-xs font-bold bg-[#21262D] text-[#58A6FF] border border-[#30363D]">
+                    <span className="px-3 py-1 rounded-md text-xs font-bold bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
                       {test.subjectId?.name || 'General'}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      <span className="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase bg-[#21262D] text-[#8B949E] border border-[#30363D]">
+                      <span className="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)]">
                         {test.type.toUpperCase()}
                       </span>
 
                       {/* Status Badges */}
                       {isCompleted ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#3FB950]/15 text-[#3FB950] border border-[#3FB950]/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
                           COMPLETED
                         </span>
                       ) : status === 'DRAFT' ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#D29922]/15 text-[#D29922] border border-[#D29922]/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">
                           NOT STARTED
                         </span>
                       ) : status === 'STARTED' ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#3FB950]/15 text-[#3FB950] border border-[#3FB950]/30 animate-pulse">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 animate-pulse">
                           STARTED
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#F85149]/15 text-[#F85149] border border-[#F85149]/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30">
                           ENDED
                         </span>
                       )}
@@ -232,10 +228,10 @@ const AvailableTests = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold text-[#F0F6FC] leading-snug">
+                    <h3 className="text-xl font-bold text-[var(--text-main)] leading-snug">
                       {test.title}
                     </h3>
-                    <p className="text-xs text-[#8B949E] line-clamp-2 mt-1">
+                    <p className="text-xs text-[var(--text-sub)] line-clamp-2 mt-1">
                       {test.description || 'Proctored online assessment.'}
                     </p>
                   </div>
@@ -243,15 +239,15 @@ const AvailableTests = () => {
                   {/* Contextual Status Message Banner */}
                   <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
                     isCompleted
-                      ? 'bg-[#3FB950]/10 border-[#3FB950]/30 text-[#3FB950]'
+                      ? 'bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E]'
                       : status === 'DRAFT'
-                      ? 'bg-[#D29922]/10 border-[#D29922]/30 text-[#D29922]'
+                      ? 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]'
                       : status === 'ENDED'
-                      ? 'bg-[#F85149]/10 border-[#F85149]/30 text-[#F85149]'
-                      : 'bg-[#58A6FF]/10 border-[#58A6FF]/30 text-[#58A6FF]'
+                      ? 'bg-[#EF4444]/10 border-[#EF4444]/30 text-[#EF4444]'
+                      : 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]'
                   }`}>
                     {isCompleted ? (
-                      <CheckCircle className="w-4 h-4 shrink-0" />
+                      <CheckCircle className="w-4 h-4 shrink-0 text-[#22C55E]" />
                     ) : status === 'DRAFT' ? (
                       <Clock className="w-4 h-4 shrink-0" />
                     ) : status === 'ENDED' ? (
@@ -262,27 +258,27 @@ const AvailableTests = () => {
                     <span>{statusText}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs text-[#8B949E] pt-3 border-t border-[#30363D]">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-[var(--text-sub)] pt-3 border-t border-[var(--border)]">
                     <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-[#58A6FF]" />
+                      <Clock className="w-4 h-4 text-[#F59E0B]" />
                       <span>{test.timerMode === 'none' ? 'No Timer' : `${test.durationMinutes || 30} mins`}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <BookOpen className="w-4 h-4 text-[#58A6FF]" />
+                      <BookOpen className="w-4 h-4 text-[#F59E0B]" />
                       <span>{test.type === 'essay' ? '1 Essay Topic' : `${test.questionCount} Questions`}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Award className="w-4 h-4 text-[#58A6FF]" />
+                      <Award className="w-4 h-4 text-[#F59E0B]" />
                       <span>Passing: {test.passingPercentage || 40}%</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Layers className="w-4 h-4 text-[#58A6FF]" />
+                      <Layers className="w-4 h-4 text-[#F59E0B]" />
                       <span>Attempts: {test.userAttempts || 0} / {test.maxAttempts}</span>
                     </div>
                   </div>
 
                   {test.bestScore && (
-                    <div className="bg-[#3FB950]/10 border border-[#3FB950]/30 rounded-xl p-3 flex items-center justify-between text-xs text-[#3FB950] font-bold">
+                    <div className="bg-[#22C55E]/10 border border-[#22C55E]/30 rounded-xl p-3 flex items-center justify-between text-xs text-[#22C55E] font-bold">
                       <span>Best Score</span>
                       <span>{test.bestScore.score} / {test.bestScore.maxMarks} ({test.bestScore.accuracy || 100}%)</span>
                     </div>
@@ -290,33 +286,39 @@ const AvailableTests = () => {
                 </div>
 
                 <div className="pt-6">
-                  <button
-                    onClick={() => handleOpenCodeModal(test)}
-                    disabled={isStartDisabled}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#58A6FF] hover:bg-[#388BFD] disabled:bg-[#21262D] disabled:text-[#8B949E] disabled:border disabled:border-[#30363D] disabled:cursor-not-allowed text-[#0D1117] font-bold text-sm shadow-xs transition-all cursor-pointer"
-                  >
-                    {isCompleted ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-[#3FB950]" />
-                        <span>Test Completed</span>
-                      </>
-                    ) : status === 'DRAFT' ? (
-                      <>
-                        <Clock className="w-4 h-4" />
-                        <span>Not Started Yet</span>
-                      </>
-                    ) : status === 'ENDED' ? (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        <span>Test Has Ended</span>
-                      </>
-                    ) : (
-                      <>
-                        <PlayCircle className="w-4 h-4" />
-                        <span>Start Test</span>
-                      </>
-                    )}
-                  </button>
+                  {isCompleted ? (
+                    <Link
+                      to="/student/history"
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[#22C55E]/40 text-[#22C55E] font-bold text-sm shadow-xs transition-all"
+                    >
+                      <FileText className="w-4 h-4 text-[#22C55E]" />
+                      <span>View Result</span>
+                    </Link>
+                  ) : status === 'DRAFT' ? (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed text-sm font-bold"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>Not Started Yet</span>
+                    </button>
+                  ) : status === 'ENDED' ? (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed text-sm font-bold"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>Test Has Ended</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleOpenCodeModal(test)}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-sm shadow-xs transition-all cursor-pointer"
+                    >
+                      <PlayCircle className="w-4 h-4" />
+                      <span>Start Test</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -335,7 +337,7 @@ const AvailableTests = () => {
               <button
                 type="button"
                 onClick={() => setActiveTestForCode(null)}
-                className="px-5 py-2.5 rounded-xl border border-[#30363D] font-bold text-xs text-[#F0F6FC] bg-[#21262D] hover:bg-[#30363D] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl border border-[var(--border)] font-bold text-xs text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] cursor-pointer"
               >
                 Cancel
               </button>
@@ -343,7 +345,7 @@ const AvailableTests = () => {
                 type="button"
                 onClick={handleVerifyCodeSubmit}
                 disabled={verifying || enteredCode.trim().length !== 4}
-                className="px-6 py-2.5 rounded-xl bg-[#58A6FF] hover:bg-[#388BFD] disabled:opacity-50 text-[#0D1117] font-bold text-xs shadow-md cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#0A0A0A] font-bold text-xs shadow-md cursor-pointer"
               >
                 {verifying ? 'Verifying...' : 'Verify & Start Test'}
               </button>
@@ -351,21 +353,21 @@ const AvailableTests = () => {
           }
         >
           <form onSubmit={handleVerifyCodeSubmit} className="space-y-6 text-center py-2">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#21262D] text-[#58A6FF] flex items-center justify-center border border-[#30363D]">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--bg-sub)] text-[#F59E0B] flex items-center justify-center border border-[var(--border)]">
               <KeyRound className="w-8 h-8" />
             </div>
 
             <div>
-              <h4 className="text-xl font-extrabold text-[#F0F6FC]">
+              <h4 className="text-xl font-extrabold text-[var(--text-main)]">
                 {activeTestForCode.title}
               </h4>
-              <p className="text-xs text-[#8B949E] mt-1">
+              <p className="text-xs text-[var(--text-sub)] mt-1">
                 Enter the 4-character code provided by your teacher to unlock this test.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#8B949E] block">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                 Enter Test Code (4 Characters)
               </label>
               <input
@@ -376,7 +378,7 @@ const AvailableTests = () => {
                 value={enteredCode}
                 onChange={(e) => setEnteredCode(e.target.value.toUpperCase())}
                 placeholder="e.g. A7K2"
-                className="w-48 text-center uppercase tracking-widest font-mono text-2xl font-black bg-[#21262D] border-2 border-[#58A6FF] rounded-2xl px-4 py-3 text-[#F0F6FC] focus:outline-none focus:ring-4 focus:ring-[#58A6FF]/20"
+                className="w-48 text-center uppercase tracking-widest font-mono text-2xl font-black bg-[var(--bg-sub)] border-2 border-[#F59E0B] rounded-2xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:ring-4 focus:ring-[#F59E0B]/20"
               />
             </div>
           </form>
@@ -387,3 +389,4 @@ const AvailableTests = () => {
 };
 
 export default AvailableTests;
+

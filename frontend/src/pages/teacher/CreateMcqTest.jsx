@@ -6,11 +6,6 @@ import {
   PlusCircle,
   Trash2,
   Save,
-  CheckCircle,
-  Clock,
-  BookOpen,
-  ArrowLeft,
-  HelpCircle,
 } from 'lucide-react';
 
 const CreateMcqTest = ({ isEditMode = false }) => {
@@ -141,7 +136,6 @@ const CreateMcqTest = ({ isEditMode = false }) => {
       return;
     }
 
-    // Validate questions
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!q.questionText.trim()) {
@@ -189,44 +183,44 @@ const CreateMcqTest = ({ isEditMode = false }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto pb-12">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto pb-12 text-[var(--text-main)]">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
             {isEditMode ? 'Edit MCQ Test' : 'Create New MCQ Test'}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-[var(--text-sub)] mt-1">
             Configure test parameters, timers, negative marking, and question options.
           </p>
         </div>
       </div>
 
       {/* Test Metadata Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
+        <h3 className="text-base font-extrabold text-[var(--text-main)] border-b border-[var(--border)] pb-3">
           1. Basic Test Details
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Test Title</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Test Title</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Core Java OOPs Mastery Assessment"
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Subject</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Subject</label>
             <select
               required
               value={subjectId}
               onChange={(e) => setSubjectId(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
             >
               {subjects.map((sub) => (
                 <option key={sub._id} value={sub._id}>
@@ -237,29 +231,29 @@ const CreateMcqTest = ({ isEditMode = false }) => {
           </div>
 
           <div className="space-y-1 md:col-span-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Description & Instructions</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Description & Instructions</label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide context or instructions for students..."
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
             />
           </div>
         </div>
 
         {/* Timer & Grading Rules */}
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3 pt-4">
+        <h3 className="text-base font-extrabold text-[var(--text-main)] border-b border-[var(--border)] pb-3 pt-4">
           2. Timer & Negative Marking Options
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Timer Mode</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Timer Mode</label>
             <select
               value={timerMode}
               onChange={(e) => setTimerMode(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)]"
             >
               <option value="none">No Timer (Self-Paced)</option>
               <option value="full">Full Test Timer (Total Minutes)</option>
@@ -269,36 +263,36 @@ const CreateMcqTest = ({ isEditMode = false }) => {
 
           {timerMode === 'full' && (
             <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Duration (Minutes)</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Total Duration (Minutes)</label>
               <input
                 type="number"
                 min={1}
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)]"
               />
             </div>
           )}
 
           {timerMode === 'question' && (
             <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Per-Question Seconds</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Per-Question Seconds</label>
               <input
                 type="number"
                 min={5}
                 value={perQuestionSeconds}
                 onChange={(e) => setPerQuestionSeconds(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)]"
               />
             </div>
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Negative Marking</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Negative Marking</label>
             <select
               value={negativeMarkingRate}
               onChange={(e) => setNegativeMarkingRate(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)]"
             >
               <option value={0}>No Negative Marking</option>
               <option value={0.25}>0.25 Marks (25% Deduction)</option>
@@ -311,42 +305,42 @@ const CreateMcqTest = ({ isEditMode = false }) => {
       {/* Questions Builder */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h3 className="text-lg font-extrabold text-[var(--text-main)]">
             3. Questions & Answer Choices ({questions.length})
           </h3>
 
           <button
             type="button"
             onClick={handleAddQuestion}
-            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:bg-indigo-100"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] text-[#F59E0B] font-bold text-xs cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4" /> Add Question
+            <PlusCircle className="w-4 h-4 text-[#F59E0B]" /> Add Question
           </button>
         </div>
 
         {questions.map((q, qIdx) => (
           <div
             key={qIdx}
-            className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-6 relative"
+            className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6 relative"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
-              <span className="font-bold text-base text-slate-900 dark:text-white">Question #{qIdx + 1}</span>
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+              <span className="font-extrabold text-sm text-[var(--text-main)]">Question #{qIdx + 1}</span>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-sub)]">
                   <span>Marks:</span>
                   <input
                     type="number"
                     min={1}
                     value={q.marks}
                     onChange={(e) => handleMarksChange(qIdx, e.target.value)}
-                    className="w-16 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1 text-center font-bold"
+                    className="w-16 bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-2 py-1 text-center font-bold text-[var(--text-main)]"
                   />
                 </div>
 
                 <button
                   type="button"
                   onClick={() => handleRemoveQuestion(qIdx)}
-                  className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
+                  className="p-1.5 text-[#EF4444] hover:bg-[var(--bg-sub)] rounded-xl transition-colors cursor-pointer"
                   title="Remove Question"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -355,20 +349,20 @@ const CreateMcqTest = ({ isEditMode = false }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Question Statement</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Question Statement</label>
               <textarea
                 rows={2}
                 required
                 value={q.questionText}
                 onChange={(e) => handleQuestionTextChange(qIdx, e.target.value)}
                 placeholder="Enter question text here..."
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm font-medium text-slate-900 dark:text-white"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
               />
             </div>
 
             {/* Options grid */}
             <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                 Options & Correct Answer Radio
               </label>
 
@@ -378,10 +372,10 @@ const CreateMcqTest = ({ isEditMode = false }) => {
                   return (
                     <div
                       key={optIdx}
-                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                         isCorrect
-                          ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40'
-                          : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40'
+                          ? 'border-[#22C55E] bg-[#22C55E]/10'
+                          : 'border-[var(--border)] bg-[var(--bg-sub)]'
                       }`}
                     >
                       <input
@@ -389,9 +383,9 @@ const CreateMcqTest = ({ isEditMode = false }) => {
                         name={`correct-ans-${qIdx}`}
                         checked={isCorrect}
                         onChange={() => handleCorrectAnsChange(qIdx, optIdx)}
-                        className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        className="w-4 h-4 text-[#22C55E] focus:ring-[#22C55E] cursor-pointer"
                       />
-                      <span className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold flex items-center justify-center">
+                      <span className="w-6 h-6 rounded-md bg-[var(--bg-card)] border border-[var(--border)] text-xs font-extrabold flex items-center justify-center text-[var(--text-main)]">
                         {String.fromCharCode(65 + optIdx)}
                       </span>
                       <input
@@ -400,7 +394,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
                         value={opt}
                         onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
                         placeholder={`Option ${String.fromCharCode(65 + optIdx)}`}
-                        className="flex-1 bg-transparent border-none text-sm font-medium text-slate-900 dark:text-white focus:outline-none"
+                        className="flex-1 bg-transparent border-none text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none"
                       />
                     </div>
                   );
@@ -409,13 +403,13 @@ const CreateMcqTest = ({ isEditMode = false }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Explanation for Answer (Optional)</label>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Explanation for Answer (Optional)</label>
               <input
                 type="text"
                 value={q.explanation}
                 onChange={(e) => handleExplanationChange(qIdx, e.target.value)}
                 placeholder="Explain why the correct answer is right..."
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-2.5 text-xs text-slate-900 dark:text-white"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2 text-xs text-[var(--text-main)]"
               />
             </div>
           </div>
@@ -426,9 +420,9 @@ const CreateMcqTest = ({ isEditMode = false }) => {
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base shadow-lg shadow-indigo-600/30 transition-all"
+          className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50"
         >
-          <Save className="w-5 h-5" />
+          <Save className="w-4 h-4 text-[#0A0A0A]" />
           <span>{saving ? 'Saving Test...' : isEditMode ? 'Update Test' : 'Publish MCQ Test'}</span>
         </button>
       </div>
@@ -437,3 +431,4 @@ const CreateMcqTest = ({ isEditMode = false }) => {
 };
 
 export default CreateMcqTest;
+

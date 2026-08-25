@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { user, isStudent, isTeacher, isApproved } = useAuth();
+  const { user, isStudent, isTeacher, isApproved, isAdmin } = useAuth();
 
   const mainLinks = isStudent
     ? [
@@ -69,29 +69,29 @@ const Sidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-[#0D1117]/80 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden"
         />
       )}
 
-      {/* Compact Sidebar Container (width: 224px / w-56) */}
+      {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-56 bg-[#161B22] border-r border-[#30363D] transition-transform duration-200 transform ${
+        className={`fixed top-0 left-0 z-50 h-full w-56 bg-[var(--bg-card)] border-r border-[var(--border)] transition-transform duration-200 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 lg:static lg:z-10 flex flex-col`}
       >
         {/* Mobile Header Inside Sidebar */}
-        <div className="h-14 px-4 border-b border-[#30363D] flex items-center justify-between lg:hidden">
+        <div className="h-14 px-4 border-b border-[var(--border)] flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <div className="w-7 h-7 rounded-lg bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-bold">
+            <div className="w-7 h-7 rounded-lg bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black">
               <GraduationCap className="w-4 h-4" />
             </div>
-            <span className="text-sm font-extrabold text-[#F0F6FC]">
+            <span className="text-sm font-extrabold text-[var(--text-main)]">
               Assessify
             </span>
           </Link>
           <button
             onClick={onClose}
-            className="p-1 text-[#8B949E] hover:text-[#F0F6FC] rounded-md lg:hidden"
+            className="p-1 text-[var(--text-sub)] hover:text-[var(--text-main)] rounded-md lg:hidden"
           >
             <X className="w-4 h-4" />
           </button>
@@ -101,7 +101,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div className="px-2.5 py-3 flex-1 overflow-y-auto space-y-4">
           {/* Main Navigation */}
           <div className="space-y-0.5">
-            <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#8B949E]">
+            <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Main Navigation
             </div>
             {mainLinks.map((link) => {
@@ -112,10 +112,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                   to={link.to}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs transition-colors ${
+                    `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors ${
                       isActive
-                        ? 'bg-[#21262D] text-[#58A6FF] font-bold border-l-2 border-[#58A6FF]'
-                        : 'text-[#8B949E] font-medium hover:bg-[#21262D] hover:text-[#F0F6FC]'
+                        ? 'bg-[#F59E0B]/15 text-[#F59E0B] font-bold border-l-2 border-[#F59E0B]'
+                        : 'text-[var(--text-sub)] font-semibold hover:bg-[var(--bg-sub)] hover:text-[var(--text-main)]'
                     }`
                   }
                 >
@@ -127,8 +127,8 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
 
           {/* Information Section */}
-          <div className="space-y-0.5 pt-2 border-t border-[#30363D]">
-            <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#8B949E]">
+          <div className="space-y-0.5 pt-2 border-t border-[var(--border)]">
+            <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Information
             </div>
             {infoLinks.map((link) => {
@@ -139,10 +139,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                   to={link.to}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs transition-colors ${
+                    `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors ${
                       isActive
-                        ? 'bg-[#21262D] text-[#58A6FF] font-bold border-l-2 border-[#58A6FF]'
-                        : 'text-[#8B949E] font-medium hover:bg-[#21262D] hover:text-[#F0F6FC]'
+                        ? 'bg-[#F59E0B]/15 text-[#F59E0B] font-bold border-l-2 border-[#F59E0B]'
+                        : 'text-[var(--text-sub)] font-semibold hover:bg-[var(--bg-sub)] hover:text-[var(--text-main)]'
                     }`
                   }
                 >
@@ -155,9 +155,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer Version Tag */}
-        <div className="p-2.5 border-t border-[#30363D]">
-          <div className="px-2 py-1.5 bg-[#21262D] rounded-lg text-center text-[10px] text-[#8B949E] font-semibold border border-[#30363D]">
-            Assessify v1.0 • Dark Developer
+        <div className="p-2.5 border-t border-[var(--border)]">
+          <div className="px-2 py-1.5 bg-[var(--bg-sub)] rounded-xl text-center text-[10px] text-[var(--text-muted)] font-semibold border border-[var(--border)]">
+            Assessify v1.0 • ChaiCode Design
           </div>
         </div>
       </aside>

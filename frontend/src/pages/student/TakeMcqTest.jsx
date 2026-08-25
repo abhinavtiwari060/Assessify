@@ -250,12 +250,12 @@ const TakeMcqTest = () => {
       />
 
       {/* Header bar with timer and controls */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
             {test?.subjectId?.name || 'Subject'}
           </span>
-          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
+          <h2 className="text-2xl font-extrabold text-[var(--text-main)] leading-tight">
             {test?.title}
           </h2>
         </div>
@@ -281,19 +281,19 @@ const TakeMcqTest = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Question Display Panel */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-6">
+          <div className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
             {/* Question Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/80 pb-4">
-              <span className="text-sm font-bold text-slate-500">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+              <span className="text-sm font-extrabold text-[var(--text-muted)]">
                 Question {currentIndex + 1} of {questions.length}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleToggleFlag}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     currentAnswer.isFlagged
-                      ? 'bg-amber-500 text-white shadow-sm'
-                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                      ? 'bg-[#F59E0B] text-[#0A0A0A] shadow-xs'
+                      : 'bg-[var(--bg-sub)] text-[var(--text-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)]'
                   }`}
                 >
                   <Bookmark className="w-3.5 h-3.5" />
@@ -303,7 +303,7 @@ const TakeMcqTest = () => {
                 {currentAnswer.selectedOptionIndex !== null && (
                   <button
                     onClick={handleClearChoice}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/20 cursor-pointer"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Clear Choice</span>
@@ -313,7 +313,7 @@ const TakeMcqTest = () => {
             </div>
 
             {/* Question Text */}
-            <div className="text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
+            <div className="text-lg sm:text-xl font-black text-[var(--text-main)] leading-relaxed">
               {currentQuestion?.questionText}
             </div>
 
@@ -325,36 +325,36 @@ const TakeMcqTest = () => {
                   <button
                     key={idx}
                     onClick={() => handleOptionSelect(idx)}
-                    className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex items-center justify-between group ${
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between group cursor-pointer ${
                       isSelected
-                        ? 'border-indigo-600 bg-indigo-50/80 dark:bg-indigo-950/60 text-slate-900 dark:text-white shadow-md'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200'
+                        ? 'border-[#F59E0B] bg-[#F59E0B]/10 text-[var(--text-main)] shadow-xs'
+                        : 'border-[var(--border)] hover:border-[#F59E0B]/50 bg-[var(--bg-sub)] text-[var(--text-sub)]'
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
                       <span
-                        className={`w-8 h-8 rounded-xl font-bold text-sm flex items-center justify-center transition-all ${
+                        className={`w-8 h-8 rounded-lg font-extrabold text-sm flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900'
+                            ? 'bg-[#F59E0B] text-[#0A0A0A]'
+                            : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] group-hover:bg-[#F59E0B]/20'
                         }`}
                       >
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      <span className="font-medium text-sm sm:text-base leading-snug">{option}</span>
+                      <span className="font-semibold text-sm sm:text-base leading-snug">{option}</span>
                     </div>
-                    {isSelected && <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />}
+                    {isSelected && <CheckCircle className="w-5 h-5 text-[#F59E0B] shrink-0" />}
                   </button>
                 );
               })}
             </div>
 
             {/* Nav Controls */}
-            <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-700/80">
+            <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
               <button
                 onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
                 disabled={currentIndex === 0 || test?.isSequential}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border)] font-bold text-sm text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Previous</span>
@@ -363,7 +363,7 @@ const TakeMcqTest = () => {
               {currentIndex < questions.length - 1 ? (
                 <button
                   onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-600/20"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-sm shadow-xs cursor-pointer"
                 >
                   <span>Next Question</span>
                   <ChevronRight className="w-4 h-4" />
@@ -371,7 +371,7 @@ const TakeMcqTest = () => {
               ) : (
                 <button
                   onClick={() => setConfirmModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-sm shadow-xs cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>Submit Test</span>
@@ -394,9 +394,9 @@ const TakeMcqTest = () => {
           <button
             onClick={() => setConfirmModalOpen(true)}
             disabled={submitting}
-            className="w-full py-4 px-6 rounded-2xl bg-[#3FB950] hover:bg-[#2ea043] disabled:opacity-50 text-[#0D1117] font-extrabold text-base shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-4 px-6 rounded-2xl bg-[#22C55E] hover:bg-[#16A34A] disabled:opacity-50 text-[#0A0A0A] font-black text-base shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Send className="w-5 h-5 text-[#0D1117]" />
+            <Send className="w-5 h-5 text-[#0A0A0A]" />
             <span>{submitting ? 'Submitting...' : 'Finish & Submit Test'}</span>
           </button>
         </div>
@@ -411,14 +411,14 @@ const TakeMcqTest = () => {
           <>
             <button
               onClick={() => setConfirmModalOpen(false)}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold text-sm text-slate-700 dark:text-slate-300"
+              className="px-5 py-2.5 rounded-xl border border-[var(--border)] font-bold text-xs text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] cursor-pointer"
             >
               Continue Test
             </button>
             <button
               onClick={() => handleFinalSubmit(false)}
               disabled={submitting}
-              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md"
+              className="px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-xs shadow-md cursor-pointer"
             >
               {submitting ? 'Submitting...' : 'Yes, Submit Test'}
             </button>
@@ -426,23 +426,23 @@ const TakeMcqTest = () => {
         }
       >
         <div className="space-y-4 text-center py-2">
-          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+          <div className="w-14 h-14 mx-auto rounded-full bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 flex items-center justify-center">
             <HelpCircle className="w-8 h-8" />
           </div>
-          <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h4 className="text-lg font-extrabold text-[var(--text-main)]">
             Are you sure you want to submit your answers?
           </h4>
-          <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl text-center border border-slate-200 dark:border-slate-700">
+          <div className="grid grid-cols-2 gap-4 p-4 bg-[var(--bg-sub)] rounded-2xl text-center border border-[var(--border)]">
             <div>
-              <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{answeredCount}</div>
-              <div className="text-xs text-slate-500">Answered</div>
+              <div className="text-2xl font-black text-[#22C55E]">{answeredCount}</div>
+              <div className="text-xs text-[var(--text-muted)]">Answered</div>
             </div>
             <div>
-              <div className="text-2xl font-extrabold text-rose-500">{unansweredCount}</div>
-              <div className="text-xs text-slate-500">Unanswered</div>
+              <div className="text-2xl font-black text-[#EF4444]">{unansweredCount}</div>
+              <div className="text-xs text-[var(--text-muted)]">Unanswered</div>
             </div>
           </div>
-          <p className="text-xs text-slate-500">Once submitted, your answers will be permanently evaluated.</p>
+          <p className="text-xs text-[var(--text-sub)]">Once submitted, your answers will be evaluated.</p>
         </div>
       </Modal>
     </div>
