@@ -47,20 +47,20 @@ const Timer = ({ initialSeconds, onTimeUp, label = 'Time Remaining' }) => {
 
   return (
     <div
-      className={`flex items-center gap-2.5 px-4 py-2 rounded-2xl font-mono font-bold transition-all duration-300 border shadow-sm ${
+      className={`flex items-center gap-2.5 px-4 py-2 rounded-xl font-mono font-bold transition-all duration-300 border shadow-xs ${
         isUrgent
-          ? 'bg-rose-500/10 text-rose-500 border-rose-500/30 animate-pulse'
+          ? 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30 animate-pulse'
           : isWarning
-          ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
-          : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+          ? 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30'
+          : 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30'
       }`}
     >
-      {isUrgent ? <AlertTriangle className="w-5 h-5 animate-bounce" /> : <Clock className="w-5 h-5" />}
+      {isUrgent ? <AlertTriangle className="w-4 h-4 animate-bounce" /> : <Clock className="w-4 h-4" />}
       <div className="flex flex-col">
-        <span className="text-[10px] font-sans font-semibold tracking-wider uppercase opacity-80 leading-none">
+        <span className="text-[10px] font-sans font-extrabold tracking-wider uppercase opacity-80 leading-none">
           {label}
         </span>
-        <span className="text-lg leading-tight">{formatTime(secondsLeft)}</span>
+        <span className="text-base leading-tight mt-0.5">{formatTime(secondsLeft)}</span>
       </div>
     </div>
   );

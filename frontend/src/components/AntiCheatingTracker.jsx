@@ -86,19 +86,19 @@ const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
   return (
     <>
       {/* Top Banner indicating Proctored Anti-Cheating Security */}
-      <div className="bg-slate-900 text-slate-300 px-4 py-2 text-xs font-semibold flex items-center justify-between border-b border-slate-800">
+      <div className="bg-[var(--bg-card)] text-[var(--text-main)] px-4 py-2 text-xs font-semibold flex items-center justify-between border-b border-[var(--border)] rounded-xl mb-4">
         <div className="flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-emerald-400 animate-pulse" />
+          <ShieldAlert className="w-4 h-4 text-[#22C55E] animate-pulse" />
           <span>Anti-Cheating Monitoring Active</span>
         </div>
         <div className="flex items-center gap-3">
-          <span>Violations: <strong className={violationCount > 0 ? 'text-amber-400' : 'text-emerald-400'}>{violationCount}/3</strong></span>
+          <span>Violations: <strong className={violationCount > 0 ? 'text-[#EF4444]' : 'text-[#22C55E]'}>{violationCount}/3</strong></span>
           {!isFullscreen && (
             <button
               onClick={requestFullscreen}
-              className="flex items-center gap-1 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-xs rounded-lg transition-colors cursor-pointer"
             >
-              <Maximize className="w-3.5 h-3.5" />
+              <Maximize className="w-3.5 h-3.5 text-[#0A0A0A]" />
               <span>Enable Fullscreen</span>
             </button>
           )}
@@ -113,21 +113,21 @@ const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
         footer={
           <button
             onClick={() => setWarningModalOpen(false)}
-            className="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
+            className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-xs rounded-xl transition-colors cursor-pointer"
           >
             I Understand & Resume Test
           </button>
         }
       >
         <div className="flex flex-col items-center text-center py-4 space-y-4">
-          <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center animate-bounce">
-            <AlertOctagon className="w-10 h-10" />
+          <div className="w-14 h-14 rounded-2xl bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444] flex items-center justify-center animate-bounce">
+            <AlertOctagon className="w-8 h-8" />
           </div>
           <div>
-            <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+            <h4 className="text-lg font-extrabold text-[var(--text-main)] mb-2">
               Warning {violationCount}/3
             </h4>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-sm">
+            <p className="text-xs text-[var(--text-sub)] leading-relaxed max-w-sm">
               {warningMessage}
             </p>
           </div>
@@ -138,3 +138,4 @@ const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
 };
 
 export default AntiCheatingTracker;
+

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { GraduationCap, Mail, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { GraduationCap, Mail, Lock, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -41,50 +41,50 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0D1117] text-[#F0F6FC]">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--bg-main)] text-[var(--text-main)] transition-colors">
       <div className="max-w-sm sm:max-w-md w-full space-y-6">
         {/* Logo Banner */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-black shadow-xs">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black shadow-xs">
             <GraduationCap className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-extrabold text-[#F0F6FC] tracking-tight">Assessify Platform</h2>
-          <p className="text-xs text-[#8B949E]">Sign in to access your student or instructor workspace</p>
+          <h2 className="text-2xl font-extrabold text-[var(--text-main)] tracking-tight">Assessify Platform</h2>
+          <p className="text-xs text-[var(--text-sub)]">Sign in to access your student or instructor workspace</p>
         </div>
 
-        {/* Login Card - Solid Dark Developer Surface */}
-        <form onSubmit={handleSubmit} className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 shadow-xl space-y-4">
+        {/* Login Card */}
+        <form onSubmit={handleSubmit} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 shadow-xs space-y-4">
           <div className="space-y-1">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Email Address</label>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B949E]" />
+              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@domain.com or teacher@domain.com"
-                className="w-full bg-[#21262D] border border-[#30363D] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[#F0F6FC] placeholder-[#8B949E] focus:outline-none focus:ring-2 focus:ring-[#58A6FF] transition-colors"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B] transition-colors"
               />
             </div>
           </div>
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Password</label>
-              <Link to="/forgot-password" className="text-[11px] font-semibold text-[#58A6FF] hover:underline">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Password</label>
+              <Link to="/forgot-password" className="text-[11px] font-semibold text-[#F59E0B] hover:underline">
                 Forgot Password?
               </Link>
             </div>
             <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B949E]" />
+              <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-[#21262D] border border-[#30363D] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[#F0F6FC] placeholder-[#8B949E] focus:outline-none focus:ring-2 focus:ring-[#58A6FF] transition-colors"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B] transition-colors"
               />
             </div>
           </div>
@@ -92,22 +92,22 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-[#58A6FF] hover:bg-[#388BFD] text-[#0D1117] font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50 mt-2"
+            className="w-full flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50 mt-2"
           >
             {loading ? 'Signing In...' : 'Sign In to Account'}
-            {!loading && <ArrowRight className="w-4 h-4" />}
+            {!loading && <ArrowRight className="w-4 h-4 text-[#0A0A0A]" />}
           </button>
 
-          <div className="pt-3 text-center space-y-2 text-xs text-[#8B949E]">
+          <div className="pt-3 text-center space-y-2 text-xs text-[var(--text-sub)]">
             <p>
               Don't have an account?{' '}
-              <Link to="/register" className="font-bold text-[#58A6FF] hover:underline">
+              <Link to="/register" className="font-bold text-[#F59E0B] hover:underline">
                 Create student or teacher account
               </Link>
             </p>
-            <p className="pt-2 border-t border-[#30363D]">
+            <p className="pt-2 border-t border-[var(--border)]">
               Platform Administrator?{' '}
-              <Link to="/admin/login" className="font-bold text-[#F85149] hover:underline">
+              <Link to="/admin/login" className="font-bold text-[#EF4444] hover:underline">
                 Access Admin Portal
               </Link>
             </p>
@@ -119,3 +119,4 @@ const Login = () => {
 };
 
 export default Login;
+

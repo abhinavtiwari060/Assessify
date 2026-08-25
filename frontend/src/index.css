@@ -16,7 +16,7 @@
   
   --primary-accent: #F59E0B;
   --primary-accent-hover: #D97706;
-  --primary-accent-text: #FFFFFF;
+  --primary-accent-text: #0A0A0A;
   --primary-accent-subtle: rgba(245, 158, 11, 0.1);
   --primary-accent-border: rgba(245, 158, 11, 0.25);
   
@@ -44,7 +44,7 @@
   --bg-card-hover: #181818;
   --bg-elevated: #1C1C1C;
   --border: #262626;
-  --border-hover: #404040;
+  --border-hover: #3F3F46;
   --text-main: #F5F5F5;
   --text-sub: #A1A1AA;
   --text-muted: #71717A;
@@ -77,7 +77,7 @@
     background-color: var(--bg-main);
     color: var(--text-main);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     @apply antialiased;
   }
 }
@@ -98,15 +98,15 @@
   background: var(--border-hover);
 }
 
-/* ChaiCode Card & Inputs Design System Utilities */
+/* ChaiCode Component Utilities */
 .chai-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 1rem;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.chai-card:hover {
+.chai-card-hover:hover {
   border-color: var(--border-hover);
 }
 
@@ -115,6 +115,7 @@
   border: 1px solid var(--border);
   color: var(--text-main);
   border-radius: 0.75rem;
+  transition: border-color 0.15s ease;
 }
 .chai-input::placeholder {
   color: var(--text-muted);
@@ -149,6 +150,57 @@
   border-color: var(--border-hover);
 }
 
+.chai-btn-ghost {
+  background-color: transparent;
+  color: var(--text-sub);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.chai-btn-ghost:hover {
+  background-color: var(--bg-sub);
+  color: var(--text-main);
+}
+
+.chai-btn-danger {
+  background-color: var(--error-subtle);
+  color: var(--error);
+  border: 1px solid var(--error-border);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: background-color 0.15s ease;
+}
+.chai-btn-danger:hover {
+  background-color: rgba(239, 68, 68, 0.25);
+}
+
+/* Badge styles */
+.chai-badge-available {
+  background-color: var(--success-subtle);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+.chai-badge-completed {
+  background-color: var(--success-subtle);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+.chai-badge-pending {
+  background-color: var(--warning-subtle);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+}
+.chai-badge-expired {
+  background-color: var(--error-subtle);
+  color: var(--error);
+  border: 1px solid var(--error-border);
+}
+.chai-badge-locked {
+  background-color: var(--bg-sub);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
 /* Print styling */
 @media print {
   body {
@@ -159,3 +211,4 @@
     display: none !important;
   }
 }
+

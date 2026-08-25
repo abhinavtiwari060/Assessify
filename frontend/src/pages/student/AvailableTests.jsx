@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../../components/Modal';
@@ -15,6 +15,7 @@ import {
   KeyRound,
   CheckCircle,
   Lock,
+  FileText,
 } from 'lucide-react';
 
 const AvailableTests = () => {
@@ -179,20 +180,15 @@ const AvailableTests = () => {
             const isCompleted = Boolean(test.hasAttempted) || (test.userAttempts > 0 && test.userAttempts >= (test.maxAttempts || 1));
 
             let statusText = '';
-            let isStartDisabled = false;
 
             if (isCompleted) {
               statusText = 'You have already attempted this test.';
-              isStartDisabled = true;
             } else if (status === 'DRAFT') {
               statusText = 'Waiting for teacher to start the test.';
-              isStartDisabled = true;
             } else if (status === 'ENDED') {
               statusText = 'This test has ended.';
-              isStartDisabled = true;
             } else if (status === 'STARTED') {
               statusText = 'Enter the 4-character test code to begin.';
-              isStartDisabled = false;
             }
 
             return (
@@ -251,7 +247,7 @@ const AvailableTests = () => {
                       : 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]'
                   }`}>
                     {isCompleted ? (
-                      <CheckCircle className="w-4 h-4 shrink-0" />
+                      <CheckCircle className="w-4 h-4 shrink-0 text-[#22C55E]" />
                     ) : status === 'DRAFT' ? (
                       <Clock className="w-4 h-4 shrink-0" />
                     ) : status === 'ENDED' ? (
@@ -290,33 +286,39 @@ const AvailableTests = () => {
                 </div>
 
                 <div className="pt-6">
-                  <button
-                    onClick={() => handleOpenCodeModal(test)}
-                    disabled={isStartDisabled}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:bg-[var(--bg-sub)] disabled:text-[var(--text-muted)] disabled:border disabled:border-[var(--border)] disabled:cursor-not-allowed text-[#0A0A0A] font-bold text-sm shadow-xs transition-all cursor-pointer"
-                  >
-                    {isCompleted ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 text-[#22C55E]" />
-                        <span>Test Completed</span>
-                      </>
-                    ) : status === 'DRAFT' ? (
-                      <>
-                        <Clock className="w-4 h-4" />
-                        <span>Not Started Yet</span>
-                      </>
-                    ) : status === 'ENDED' ? (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        <span>Test Has Ended</span>
-                      </>
-                    ) : (
-                      <>
-                        <PlayCircle className="w-4 h-4" />
-                        <span>Start Test</span>
-                      </>
-                    )}
-                  </button>
+                  {isCompleted ? (
+                    <Link
+                      to="/student/history"
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[#22C55E]/40 text-[#22C55E] font-bold text-sm shadow-xs transition-all"
+                    >
+                      <FileText className="w-4 h-4 text-[#22C55E]" />
+                      <span>View Result</span>
+                    </Link>
+                  ) : status === 'DRAFT' ? (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed text-sm font-bold"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>Not Started Yet</span>
+                    </button>
+                  ) : status === 'ENDED' ? (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed text-sm font-bold"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>Test Has Ended</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleOpenCodeModal(test)}
+                      className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-sm shadow-xs transition-all cursor-pointer"
+                    >
+                      <PlayCircle className="w-4 h-4" />
+                      <span>Start Test</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -387,3 +389,4 @@ const AvailableTests = () => {
 };
 
 export default AvailableTests;
+

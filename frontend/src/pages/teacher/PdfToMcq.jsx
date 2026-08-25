@@ -156,12 +156,25 @@ const PdfToMcq = () => {
 
       {/* Scanned PDF Warning Banner */}
       {extractionMeta && (extractionMeta.requiresOCR || extractionMeta.status === 'no_text') && (
-        <div className="bg-[#EF4444]/15 border border-[#EF4444]/30 rounded-2xl p-5 flex items-start gap-3 text-[#EF4444] animate-in fade-in duration-300">
-          <Scan className="w-6 h-6 text-[#EF4444] shrink-0 mt-0.5" />
+        <div className="bg-[#F59E0B]/15 border border-[#F59E0B]/30 rounded-2xl p-5 flex items-start gap-3 text-[#F59E0B] animate-in fade-in duration-300">
+          <Scan className="w-6 h-6 text-[#F59E0B] shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <h4 className="text-base font-extrabold">Scanned / Image-Based PDF Detected</h4>
+            <h4 className="text-base font-extrabold text-[var(--text-main)]">Scanned PDF Detected</h4>
             <p className="text-xs text-[var(--text-sub)] leading-relaxed">
-              This PDF contains image scans or non-extractable text ({extractionMeta.textLength || 0} characters found). No fake questions were generated. OCR pre-processing is required for image-based PDFs.
+              This file appears to contain images instead of selectable text. OCR processing is required. No fake or sample questions were generated.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* No MCQs Detected Banner */}
+      {extractionMeta && !extractionMeta.requiresOCR && extractionMeta.status !== 'no_text' && extractedQuestions.length === 0 && (
+        <div className="bg-[#EF4444]/15 border border-[#EF4444]/30 rounded-2xl p-5 flex items-start gap-3 text-[#EF4444] animate-in fade-in duration-300">
+          <AlertTriangle className="w-6 h-6 text-[#EF4444] shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="text-base font-extrabold">No MCQs Detected</h4>
+            <p className="text-xs text-[var(--text-sub)] leading-relaxed">
+              No MCQs could be detected from this PDF. Please ensure the document contains numbered questions with option choices (A, B, C, D).
             </p>
           </div>
         </div>

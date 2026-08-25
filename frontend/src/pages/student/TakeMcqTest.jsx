@@ -250,12 +250,12 @@ const TakeMcqTest = () => {
       />
 
       {/* Header bar with timer and controls */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
             {test?.subjectId?.name || 'Subject'}
           </span>
-          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
+          <h2 className="text-2xl font-extrabold text-[var(--text-main)] leading-tight">
             {test?.title}
           </h2>
         </div>

@@ -13,9 +13,10 @@ const ThemeToggle = ({ className = '' }) => {
       title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       aria-label="Toggle Theme"
     >
-      {isDarkMode ? <Sun className="w-4 h-4 text-[#F59E0B]" /> : <Moon className="w-4 h-4 text-indigo-500" />}
+      {isDarkMode ? <Sun className="w-4 h-4 text-[#F59E0B]" /> : <Moon className="w-4 h-4 text-[#F59E0B]" />}
     </button>
   );
 };
 
 export default ThemeToggle;
+

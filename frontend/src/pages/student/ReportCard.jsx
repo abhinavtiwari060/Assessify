@@ -4,12 +4,8 @@ import { CardSkeleton } from '../../components/LoadingSkeleton';
 import {
   Award,
   Printer,
-  CheckCircle2,
-  AlertCircle,
   BookOpen,
-  User,
   GraduationCap,
-  Sparkles,
 } from 'lucide-react';
 
 const ReportCard = () => {
@@ -40,40 +36,40 @@ const ReportCard = () => {
   const student = report?.student || {};
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12 text-[var(--text-main)]">
       {/* Top Action Bar (hidden in print) */}
       <div className="flex items-center justify-between no-print">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
             Official Student Report Card
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-[var(--text-sub)] mt-1">
             Comprehensive evaluation statement of subject proficiency and assessment scores.
           </p>
         </div>
 
         <button
           onClick={handlePrint}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-600/20 transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs shadow-xs transition-colors cursor-pointer"
         >
-          <Printer className="w-4 h-4" />
+          <Printer className="w-4 h-4 text-[#0A0A0A]" />
           <span>Print / Export PDF</span>
         </button>
       </div>
 
       {/* Printable Report Card Container */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 sm:p-10 border border-slate-200 dark:border-slate-700/80 shadow-xl space-y-8 print:shadow-none print:border-none print:p-0">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-8 sm:p-10 border border-[var(--border)] shadow-xs space-y-8 print:shadow-none print:border-none print:p-0">
         {/* Header Header Info */}
-        <div className="flex flex-col sm:flex-row items-center justify-between pb-8 border-b border-slate-200 dark:border-slate-700 gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between pb-8 border-b border-[var(--border)] gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-black text-2xl shadow-xs">
+            <div className="w-14 h-14 rounded-2xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black text-2xl shadow-xs">
               {student.name ? student.name.charAt(0).toUpperCase() : 'S'}
             </div>
             <div>
-              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">{student.name}</h2>
-              <p className="text-sm text-slate-500">{student.email}</p>
+              <h2 className="text-xl font-extrabold text-[var(--text-main)]">{student.name}</h2>
+              <p className="text-xs text-[var(--text-sub)]">{student.email}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
                   Active Enrolled Student
                 </span>
               </div>
@@ -81,40 +77,40 @@ const ReportCard = () => {
           </div>
 
           <div className="text-right space-y-1">
-            <div className="flex items-center gap-2 text-lg font-bold text-indigo-600 dark:text-indigo-400 justify-end">
-              <GraduationCap className="w-5 h-5" /> Assessify Academy
+            <div className="flex items-center gap-2 text-base font-bold text-[#F59E0B] justify-end">
+              <GraduationCap className="w-5 h-5" /> Assessify Platform
             </div>
-            <p className="text-xs text-slate-400">Generated on {new Date().toLocaleDateString()}</p>
+            <p className="text-xs text-[var(--text-muted)]">Generated on {new Date().toLocaleDateString()}</p>
           </div>
         </div>
 
         {/* Global Summary Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 space-y-1">
-            <div className="text-xs font-bold uppercase text-slate-400">Tests Attempted</div>
-            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">{summary.totalMcqAttempts}</div>
+          <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
+            <div className="text-[11px] font-bold uppercase text-[var(--text-muted)]">Tests Attempted</div>
+            <div className="text-3xl font-extrabold text-[var(--text-main)]">{summary.totalMcqAttempts}</div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 space-y-1">
-            <div className="text-xs font-bold uppercase text-slate-400">Average Accuracy</div>
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{summary.averageAccuracy}%</div>
+          <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
+            <div className="text-[11px] font-bold uppercase text-[var(--text-muted)]">Average Accuracy</div>
+            <div className="text-3xl font-extrabold text-[#22C55E]">{summary.averageAccuracy}%</div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 space-y-1">
-            <div className="text-xs font-bold uppercase text-slate-400">Total Points</div>
-            <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">{summary.totalScoreObtained}</div>
+          <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
+            <div className="text-[11px] font-bold uppercase text-[var(--text-muted)]">Total Points</div>
+            <div className="text-3xl font-extrabold text-[#F59E0B]">{summary.totalScoreObtained}</div>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 space-y-1">
-            <div className="text-xs font-bold uppercase text-slate-400">Questions Solved</div>
-            <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{summary.totalQuestionsAttempted}</div>
+          <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1">
+            <div className="text-[11px] font-bold uppercase text-[var(--text-muted)]">Questions Solved</div>
+            <div className="text-3xl font-extrabold text-[var(--text-main)]">{summary.totalQuestionsAttempted}</div>
           </div>
         </div>
 
         {/* Subject-Wise Performance Breakdown */}
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-500" />
+          <h3 className="text-base font-extrabold text-[var(--text-main)] flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-[#F59E0B]" />
             Subject Proficiency Analysis
           </h3>
 
@@ -122,30 +118,30 @@ const ReportCard = () => {
             {report?.subjectBreakdown?.map((sub, idx) => (
               <div
                 key={idx}
-                className="p-5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/80 space-y-3"
+                className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-bold text-base text-slate-900 dark:text-white">{sub.subjectName}</h4>
-                    <span className="text-xs text-slate-400">Code: {sub.code}</span>
+                    <h4 className="font-bold text-sm text-[var(--text-main)]">{sub.subjectName}</h4>
+                    <span className="text-xs text-[var(--text-muted)]">Code: {sub.code}</span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                     sub.status === 'Strong'
-                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                      ? 'bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30'
+                      : 'bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30'
                   }`}>
                     {sub.status}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-xs text-slate-500">Accuracy Rate:</span>
-                  <span className="font-extrabold text-slate-900 dark:text-white">{sub.accuracy}%</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--text-sub)]">Accuracy Rate:</span>
+                  <span className="font-extrabold text-[var(--text-main)]">{sub.accuracy}%</span>
                 </div>
 
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                <div className="w-full bg-[var(--bg-card)] border border-[var(--border)] h-2 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${sub.accuracy >= 75 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                    className={`h-full rounded-full ${sub.accuracy >= 75 ? 'bg-[#22C55E]' : 'bg-[#F59E0B]'}`}
                     style={{ width: `${sub.accuracy}%` }}
                   ></div>
                 </div>
@@ -156,9 +152,9 @@ const ReportCard = () => {
 
         {/* Teacher Evaluated Essay Feedback */}
         {report?.evaluatedEssays?.length > 0 && (
-          <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Award className="w-5 h-5 text-purple-500" />
+          <div className="space-y-4 pt-4 border-t border-[var(--border)]">
+            <h3 className="text-base font-extrabold text-[var(--text-main)] flex items-center gap-2">
+              <Award className="w-4 h-4 text-[#F59E0B]" />
               Evaluated Essays & Teacher Feedback
             </h3>
 
@@ -166,15 +162,15 @@ const ReportCard = () => {
               {report.evaluatedEssays.map((essay, idx) => (
                 <div
                   key={idx}
-                  className="p-5 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 space-y-2"
+                  className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-purple-900 dark:text-purple-200">{essay.testTitle}</span>
-                    <span className="text-sm font-extrabold text-purple-700 dark:text-purple-300">
+                    <span className="font-bold text-xs text-[var(--text-main)]">{essay.testTitle}</span>
+                    <span className="text-xs font-extrabold text-[#F59E0B]">
                       {essay.marksObtained} / {essay.maxMarks} Marks
                     </span>
                   </div>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                  <p className="text-xs text-[var(--text-sub)] leading-relaxed italic">
                     "{essay.feedback || 'Great effort demonstrated.'}"
                   </p>
                 </div>
@@ -188,3 +184,4 @@ const ReportCard = () => {
 };
 
 export default ReportCard;
+
