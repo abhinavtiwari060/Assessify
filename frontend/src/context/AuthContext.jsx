@@ -104,6 +104,7 @@ export const AuthProvider = ({ children }) => {
         isTeacher: user?.role === 'teacher',
         isAdmin: user?.role === 'admin',
         isApproved,
+        mustChangePassword: Boolean(user?.mustChangePassword),
       }}
     >
       {children}

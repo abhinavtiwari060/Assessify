@@ -10,6 +10,7 @@ import {
   BarChart3,
   ShieldCheck,
   Clock,
+  KeyRound,
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -160,6 +161,19 @@ const AdminDashboard = () => {
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Manage Subjects</h3>
             <p className="text-xs text-slate-500 font-normal">Create & manage subjects</p>
+          </div>
+        </Link>
+
+        <Link
+          to="/admin/password-resets"
+          className="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 shadow-xs hover:shadow-sm transition-all flex items-center gap-3.5 group"
+        >
+          <div className="w-11 h-11 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <KeyRound className="w-5.5 h-5.5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">Password Reset Requests</h3>
+            <p className="text-xs text-slate-500 font-normal">Review user reset requests & temp keys</p>
           </div>
         </Link>
 

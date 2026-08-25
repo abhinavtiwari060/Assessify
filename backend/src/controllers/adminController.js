@@ -1,7 +1,40 @@
+const crypto = require('crypto');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const Test = require('../models/Test');
+const PasswordResetRequest = require('../models/PasswordResetRequest');
 const { logAudit } = require('../middleware/auth');
+
+/**
+ * Generates a cryptographically secure 10-character temporary password
+ * containing uppercase, lowercase, numbers, and special symbols (e.g. K7#mP92@xL).
+ */
+const generateSecureTempPassword = () => {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower = 'abcdefghijkmnopqrstuvwxyz';
+  const nums = '23456789';
+  const syms = '@#$%&*!';
+  const all = upper + lower + nums + syms;
+
+  const chars = [
+    upper[crypto.randomInt(0, upper.length)],
+    lower[crypto.randomInt(0, lower.length)],
+    nums[crypto.randomInt(0, nums.length)],
+    syms[crypto.randomInt(0, syms.length)],
+  ];
+
+  for (let i = 4; i < 10; i++) {
+    chars.push(all[crypto.randomInt(0, all.length)]);
+  }
+
+  // Cryptographically shuffle array
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = crypto.randomInt(0, i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+
+  return chars.join('');
+};
 
 // @desc    Get list of all users
 // @route   GET /api/admin/users
@@ -189,6 +222,78 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// @desc    Get password reset requests
+// @route   GET /api/admin/password-resets
+// @access  Private (Admin)
+const getPasswordResetRequests = async (req, res) => {
+  try {
+    const requests = await PasswordResetRequest.find()
+      .sort({ requestedAt: -1 })
+      .lean();
+    res.json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Process password reset request (Admin generates temporary password)
+// @route   POST /api/admin/password-resets/:id/reset
+// @access  Private (Admin)
+const processPasswordReset = async (req, res) => {
+  try {
+    const resetReq = await PasswordResetRequest.findById(req.params.id);
+    if (!resetReq) {
+      return res.status(404).json({ message: 'Password reset request not found' });
+    }
+
+    if (resetReq.status !== 'PENDING') {
+      return res.status(400).json({ message: `Request is already ${resetReq.status.toLowerCase()}` });
+    }
+
+    const user = await User.findById(resetReq.userId).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: 'Associated user account not found' });
+    }
+
+    // Generate secure temporary password
+    const tempPassword = generateSecureTempPassword();
+
+    // Hash and store temporary password in user document
+    user.password = tempPassword;
+    user.mustChangePassword = true;
+    user.temporaryPasswordExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours expiry
+    await user.save();
+
+    // Mark reset request as completed
+    resetReq.status = 'COMPLETED';
+    resetReq.processedAt = new Date();
+    resetReq.processedBy = req.user._id;
+    resetReq.processedByName = req.user.name;
+    await resetReq.save();
+
+    await logAudit(
+      req,
+      'ADMIN_PASSWORD_RESET',
+      `Admin ${req.user.email} reset password for ${user.email} (${user.role})`
+    );
+
+    // Return temporary password ONCE to admin for manual communication
+    res.json({
+      message: 'Password reset successful. Please communicate the temporary password to the user.',
+      temporaryPassword: tempPassword,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('Process password reset error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Get system audit logs
 // @route   GET /api/admin/audit-logs
 // @access  Private (Admin)
@@ -213,5 +318,7 @@ module.exports = {
   deleteUser,
   updateUserRole,
   toggleUserStatus,
+  getPasswordResetRequests,
+  processPasswordReset,
   getAuditLogs,
 };
