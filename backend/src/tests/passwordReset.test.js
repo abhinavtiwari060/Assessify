@@ -17,6 +17,7 @@ const {
 let mongoServer;
 
 test.before(async () => {
+  process.env.JWT_SECRET = 'test_secret_key_password_reset_99';
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri);

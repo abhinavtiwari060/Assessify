@@ -6,13 +6,11 @@ const essaySubmissionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Test',
       required: true,
-      index: true,
     },
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     essayText: {
       type: String,
@@ -73,6 +71,13 @@ const essaySubmissionSchema = new mongoose.Schema(
   {
     timestamps: true,
   }
+);
+
+essaySubmissionSchema.index({ testId: 1, studentId: 1 });
+essaySubmissionSchema.index({ studentId: 1, status: 1 });
+essaySubmissionSchema.index(
+  { testId: 1, studentId: 1 },
+  { unique: true, partialFilterExpression: { status: 'in_progress' } }
 );
 
 module.exports = mongoose.model('EssaySubmission', essaySubmissionSchema);

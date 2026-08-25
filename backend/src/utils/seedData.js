@@ -7,29 +7,22 @@ const TestAttempt = require('../models/TestAttempt');
 
 const seedInitialData = async () => {
   try {
-    // Always ensure Admin user exists and has correct password & admin permissions
-    let admin = await User.findOne({ email: 'abhitiwariaj@gmail.com' }).select('+password');
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@platform.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'AdminPassword123!';
+
+    // Ensure Admin user exists without resetting existing password
+    let admin = await User.findOne({ role: 'admin' });
     if (!admin) {
       admin = await User.create({
         name: 'Platform Admin',
-        email: 'abhitiwariaj@gmail.com',
-        password: 'Abhi8957@tiwari#9451',
+        email: adminEmail,
+        password: adminPassword,
         role: 'admin',
         isApproved: true,
         isActive: true,
-        bio: 'System Administrator & Moderation Lead',
+        bio: 'System Administrator',
       });
-      console.log('✅ Default Admin user created: abhitiwariaj@gmail.com');
-    } else {
-      admin.role = 'admin';
-      admin.isActive = true;
-      admin.isApproved = true;
-      const isMatch = await admin.matchPassword('Abhi8957@tiwari#9451');
-      if (!isMatch) {
-        admin.password = 'Abhi8957@tiwari#9451';
-      }
-      await admin.save();
-      console.log('✅ Admin user verified & updated: abhitiwariaj@gmail.com');
+      console.log(`✅ Default Admin user created: ${adminEmail}`);
     }
 
     const userCount = await User.countDocuments();
