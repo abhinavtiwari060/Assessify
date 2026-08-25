@@ -167,7 +167,7 @@ const TakeEssayTest = () => {
       {/* Header bar */}
       <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#FA8128]">
             Essay Writing Assessment
           </span>
           <h2 className="text-2xl font-extrabold text-[var(--text-main)] leading-tight">
@@ -186,8 +186,8 @@ const TakeEssayTest = () => {
 
       {/* Essay Prompt Card - Solid Dark Surface */}
       <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] uppercase tracking-wider">
-          <BookOpen className="w-4 h-4 text-[#F59E0B]" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[#FA8128] uppercase tracking-wider">
+          <BookOpen className="w-4 h-4 text-[#FA8128]" />
           <span>Essay Prompt & Topic Instructions</span>
         </div>
         <p className="text-lg font-bold leading-relaxed text-[var(--text-main)]">{test?.description || test?.instructions}</p>
@@ -213,8 +213,8 @@ const TakeEssayTest = () => {
         </div>
 
         {/* Security Warning Banner */}
-        <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] bg-[#F59E0B]/10 p-3 rounded-xl border border-[#F59E0B]/30">
-          <ShieldAlert className="w-4 h-4 shrink-0 text-[#F59E0B]" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[#FA8128] bg-[#FA8128]/10 p-3 rounded-xl border border-[#FA8128]/30">
+          <ShieldAlert className="w-4 h-4 shrink-0 text-[#FA8128]" />
           <span>Copy, Paste, Cut, Right-Click, and Drag-and-Drop are disabled in this essay answer box.</span>
         </div>
 
@@ -230,15 +230,15 @@ const TakeEssayTest = () => {
           onContextMenu={(e) => preventAction(e, 'Right-click context menu')}
           onDrop={(e) => preventAction(e, 'Text dragging')}
           placeholder="Begin typing your essay response here..."
-          className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B] leading-relaxed font-sans"
+          className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#FA8128] leading-relaxed font-sans"
         />
 
         <div className="flex justify-end pt-2">
           <button
             onClick={() => setConfirmModalOpen(true)}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-base shadow-md transition-all cursor-pointer"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-base shadow-md transition-all cursor-pointer"
           >
-            <Send className="w-5 h-5 text-[#0A0A0A]" />
+            <Send className="w-5 h-5 text-white" />
             <span>Submit Essay for Grading</span>
           </button>
         </div>

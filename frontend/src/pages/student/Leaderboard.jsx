@@ -32,7 +32,7 @@ const Leaderboard = () => {
   const getRankBadge = (rank) => {
     if (rank === 1)
       return (
-        <div className="w-8 h-8 rounded-xl bg-[#F59E0B] text-[#0A0A0A] font-black flex items-center justify-center shadow-xs">
+        <div className="w-8 h-8 rounded-xl bg-[#FA8128] text-white font-black flex items-center justify-center shadow-xs">
           🥇
         </div>
       );
@@ -57,7 +57,7 @@ const Leaderboard = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-[var(--text-main)] tracking-tight flex items-center gap-2">
-            <Trophy className="w-8 h-8 text-[#F59E0B]" />
+            <Trophy className="w-8 h-8 text-[#FA8128]" />
             Global Platform Leaderboard
           </h1>
           <p className="text-sm text-[var(--text-sub)] mt-1">
@@ -69,7 +69,7 @@ const Leaderboard = () => {
         <select
           value={selectedSubject}
           onChange={(e) => setSelectedSubject(e.target.value)}
-          className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+          className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
         >
           <option value="">All Subjects Leaderboard</option>
           {subjects.map((sub) => (
@@ -81,8 +81,8 @@ const Leaderboard = () => {
       </div>
 
       {/* Transparent Ranking Rule Explanation Banner */}
-      <div className="bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-2xl p-4 flex items-center gap-3 text-xs text-[#F59E0B]">
-        <Info className="w-5 h-5 shrink-0 text-[#F59E0B]" />
+      <div className="bg-[#FA8128]/10 border border-[#FA8128]/30 rounded-2xl p-4 flex items-center gap-3 text-xs text-[#FA8128]">
+        <Info className="w-5 h-5 shrink-0 text-[#FA8128]" />
         <div>
           <strong>Transparent Ranking Formula: </strong>
           Primary: Peak Score Obtained → Secondary: High Accuracy Percentage → Tertiary (Tiebreaker): Speed / Completion Time.
@@ -113,13 +113,13 @@ const Leaderboard = () => {
                   <tr
                     key={item.student._id}
                     className={`hover:bg-[var(--bg-sub)] transition-colors ${
-                      item.rank <= 3 ? 'bg-[#F59E0B]/5' : ''
+                      item.rank <= 3 ? 'bg-[#FA8128]/5' : ''
                     }`}
                   >
                     <td className="px-6 py-4">{getRankBadge(item.rank)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black text-sm">
+                        <div className="w-9 h-9 rounded-xl bg-[#FA8128] text-white flex items-center justify-center font-black text-sm">
                           {item.student.name ? item.student.name.charAt(0).toUpperCase() : 'S'}
                         </div>
                         <div>
@@ -128,7 +128,7 @@ const Leaderboard = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-black text-[#F59E0B] text-base">
+                    <td className="px-6 py-4 font-black text-[#FA8128] text-base">
                       {item.bestScore} pts
                     </td>
                     <td className="px-6 py-4 font-bold text-[#22C55E]">

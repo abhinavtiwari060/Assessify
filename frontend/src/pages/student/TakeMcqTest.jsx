@@ -252,7 +252,7 @@ const TakeMcqTest = () => {
       {/* Header bar with timer and controls */}
       <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#FA8128]">
             {test?.subjectId?.name || 'Subject'}
           </span>
           <h2 className="text-2xl font-extrabold text-[var(--text-main)] leading-tight">
@@ -292,7 +292,7 @@ const TakeMcqTest = () => {
                   onClick={handleToggleFlag}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     currentAnswer.isFlagged
-                      ? 'bg-[#F59E0B] text-[#0A0A0A] shadow-xs'
+                      ? 'bg-[#FA8128] text-white shadow-xs'
                       : 'bg-[var(--bg-sub)] text-[var(--text-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)]'
                   }`}
                 >
@@ -327,23 +327,23 @@ const TakeMcqTest = () => {
                     onClick={() => handleOptionSelect(idx)}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between group cursor-pointer ${
                       isSelected
-                        ? 'border-[#F59E0B] bg-[#F59E0B]/10 text-[var(--text-main)] shadow-xs'
-                        : 'border-[var(--border)] hover:border-[#F59E0B]/50 bg-[var(--bg-sub)] text-[var(--text-sub)]'
+                        ? 'border-[#FA8128] bg-[#FA8128]/10 text-[var(--text-main)] shadow-xs'
+                        : 'border-[var(--border)] hover:border-[#FA8128]/50 bg-[var(--bg-sub)] text-[var(--text-sub)]'
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
                       <span
                         className={`w-8 h-8 rounded-lg font-extrabold text-sm flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-[#F59E0B] text-[#0A0A0A]'
-                            : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] group-hover:bg-[#F59E0B]/20'
+                            ? 'bg-[#FA8128] text-white'
+                            : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] group-hover:bg-[#FA8128]/20'
                         }`}
                       >
                         {String.fromCharCode(65 + idx)}
                       </span>
                       <span className="font-semibold text-sm sm:text-base leading-snug">{option}</span>
                     </div>
-                    {isSelected && <CheckCircle className="w-5 h-5 text-[#F59E0B] shrink-0" />}
+                    {isSelected && <CheckCircle className="w-5 h-5 text-[#FA8128] shrink-0" />}
                   </button>
                 );
               })}
@@ -363,15 +363,15 @@ const TakeMcqTest = () => {
               {currentIndex < questions.length - 1 ? (
                 <button
                   onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-sm shadow-xs cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-sm shadow-xs cursor-pointer"
                 >
                   <span>Next Question</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 text-white" />
                 </button>
               ) : (
                 <button
                   onClick={() => setConfirmModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-sm shadow-xs cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-sm shadow-xs cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>Submit Test</span>

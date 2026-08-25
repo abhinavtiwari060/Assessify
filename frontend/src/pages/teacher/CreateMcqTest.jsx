@@ -210,7 +210,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Core Java OOPs Mastery Assessment"
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
 
@@ -220,7 +220,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
               required
               value={subjectId}
               onChange={(e) => setSubjectId(e.target.value)}
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             >
               {subjects.map((sub) => (
                 <option key={sub._id} value={sub._id}>
@@ -237,7 +237,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide context or instructions for students..."
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
         </div>
@@ -312,9 +312,9 @@ const CreateMcqTest = ({ isEditMode = false }) => {
           <button
             type="button"
             onClick={handleAddQuestion}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] text-[#F59E0B] font-bold text-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] text-[#FA8128] font-bold text-xs cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4 text-[#F59E0B]" /> Add Question
+            <PlusCircle className="w-4 h-4 text-[#FA8128]" /> Add Question
           </button>
         </div>
 
@@ -356,7 +356,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
                 value={q.questionText}
                 onChange={(e) => handleQuestionTextChange(qIdx, e.target.value)}
                 placeholder="Enter question text here..."
-                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
               />
             </div>
 
@@ -420,9 +420,9 @@ const CreateMcqTest = ({ isEditMode = false }) => {
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50"
         >
-          <Save className="w-4 h-4 text-[#0A0A0A]" />
+          <Save className="w-4 h-4 text-white" />
           <span>{saving ? 'Saving Test...' : isEditMode ? 'Update Test' : 'Publish MCQ Test'}</span>
         </button>
       </div>

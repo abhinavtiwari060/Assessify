@@ -97,23 +97,23 @@ const MyTests = () => {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             to="/teacher/create-test"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-extrabold text-xs shadow-xs transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-xs shadow-xs transition-colors"
           >
-            <PlusCircle className="w-4 h-4 text-[#0A0A0A]" />
+            <PlusCircle className="w-4 h-4 text-white" />
             <span>Create MCQ Test</span>
           </Link>
           <Link
             to="/teacher/create-essay"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] text-[var(--text-main)] font-bold text-xs transition-colors"
           >
-            <PlusCircle className="w-4 h-4 text-[#F59E0B]" />
+            <PlusCircle className="w-4 h-4 text-[#FA8128]" />
             <span>Create Essay Test</span>
           </Link>
           <Link
             to="/teacher/pdf-mcq"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] text-[var(--text-main)] font-bold text-xs transition-colors"
           >
-            <FileUp className="w-4 h-4 text-[#F59E0B]" />
+            <FileUp className="w-4 h-4 text-[#FA8128]" />
             <span>PDF → MCQ</span>
           </Link>
         </div>
@@ -154,19 +154,19 @@ const MyTests = () => {
                         </div>
                       </td>
                       <td className="px-5 py-4 font-bold uppercase text-xs">
-                        <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
+                        <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-[var(--bg-sub)] text-[#FA8128] border border-[var(--border)]">
                           {test.type}
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-sub)] border border-[var(--border)] rounded-lg font-mono text-xs font-black text-[#F59E0B]">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-sub)] border border-[var(--border)] rounded-lg font-mono text-xs font-black text-[#FA8128]">
                           <KeyRound className="w-3.5 h-3.5" />
                           <span>{test.testCode || 'N/A'}</span>
                         </div>
                       </td>
                       <td className="px-5 py-4">
                         {status === 'DRAFT' && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">
                             NOT STARTED
                           </span>
                         )}
@@ -195,9 +195,9 @@ const MyTests = () => {
                             <button
                               onClick={() => handleStartTest(test._id, test.title)}
                               disabled={actionLoadingId === test._id}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-extrabold text-xs shadow-xs transition-all cursor-pointer"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
                             >
-                              <Play className="w-3.5 h-3.5 fill-current text-[#0A0A0A]" />
+                              <Play className="w-3.5 h-3.5 fill-current text-white" />
                               <span>{actionLoadingId === test._id ? 'Starting...' : 'Start Test'}</span>
                             </button>
                           )}
@@ -216,7 +216,7 @@ const MyTests = () => {
                           {test.type === 'essay' && (
                             <Link
                               to="/teacher/essays/evaluations"
-                              className="p-1.5 text-[#F59E0B] hover:bg-[var(--bg-sub)] rounded-xl font-bold text-xs flex items-center gap-1"
+                              className="p-1.5 text-[#FA8128] hover:bg-[var(--bg-sub)] rounded-xl font-bold text-xs flex items-center gap-1"
                               title="View Submissions"
                             >
                               <FileText className="w-4 h-4" />

@@ -62,15 +62,15 @@ const PrivacyPolicy = () => {
   return (
     <div className="py-8 sm:py-10 max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
       {/* Header */}
-      <div className="pb-6 border-b border-slate-200 dark:border-slate-800 space-y-2">
-        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider">
+      <div className="pb-6 border-b border-[var(--border)] space-y-2">
+        <div className="flex items-center gap-2 text-[#FA8128] text-xs font-bold uppercase tracking-wider">
           <ShieldCheck className="w-4 h-4" />
           <span>Platform Privacy Document</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)]">
           Privacy Policy
         </h1>
-        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-2 text-xs text-[var(--text-sub)]">
           <Calendar className="w-3.5 h-3.5" />
           <span>Last Updated: <strong>{lastUpdated}</strong></span>
         </div>
@@ -81,20 +81,20 @@ const PrivacyPolicy = () => {
         {sections.map((section, idx) => (
           <div
             key={idx}
-            className="bg-white dark:bg-slate-800/90 rounded-2xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-2"
+            className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-2"
           >
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            <h2 className="text-base font-bold text-[var(--text-main)]">
               {section.title}
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-sm text-[var(--text-sub)] leading-relaxed">
               {section.content}
             </p>
 
             {section.items && (
-              <ul className="mt-2 space-y-1.5 pl-4 text-xs text-slate-600 dark:text-slate-300">
+              <ul className="mt-2 space-y-1.5 pl-4 text-xs text-[var(--text-sub)]">
                 {section.items.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FA8128] mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -102,7 +102,7 @@ const PrivacyPolicy = () => {
             )}
 
             {section.contact && (
-              <div className="mt-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+              <div className="mt-2 text-xs font-semibold text-[#FA8128] flex items-center gap-1.5">
                 <Mail className="w-4 h-4" />
                 <a href={`mailto:${section.contact}`} className="hover:underline">
                   {section.contact}

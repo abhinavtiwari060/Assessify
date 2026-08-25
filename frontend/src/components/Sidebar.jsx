@@ -82,7 +82,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         {/* Mobile Header Inside Sidebar */}
         <div className="h-14 px-4 border-b border-[var(--border)] flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <div className="w-7 h-7 rounded-lg bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black">
+            <div className="w-7 h-7 rounded-lg bg-[#FA8128] text-white flex items-center justify-center font-black">
               <GraduationCap className="w-4 h-4" />
             </div>
             <span className="text-sm font-extrabold text-[var(--text-main)]">
@@ -114,7 +114,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors ${
                       isActive
-                        ? 'bg-[#F59E0B]/15 text-[#F59E0B] font-bold border-l-2 border-[#F59E0B]'
+                        ? 'bg-[#FA8128]/15 text-[#FA8128] font-bold border-l-2 border-[#FA8128]'
                         : 'text-[var(--text-sub)] font-semibold hover:bg-[var(--bg-sub)] hover:text-[var(--text-main)]'
                     }`
                   }
@@ -141,7 +141,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors ${
                       isActive
-                        ? 'bg-[#F59E0B]/15 text-[#F59E0B] font-bold border-l-2 border-[#F59E0B]'
+                        ? 'bg-[#FA8128]/15 text-[#FA8128] font-bold border-l-2 border-[#FA8128]'
                         : 'text-[var(--text-sub)] font-semibold hover:bg-[var(--bg-sub)] hover:text-[var(--text-main)]'
                     }`
                   }

@@ -52,7 +52,7 @@ const Timer = ({ initialSeconds, onTimeUp, label = 'Time Remaining' }) => {
           ? 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30 animate-pulse'
           : isWarning
           ? 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30'
-          : 'bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30'
+          : 'bg-[#FA8128]/10 text-[#FA8128] border-[#FA8128]/30'
       }`}
     >
       {isUrgent ? <AlertTriangle className="w-4 h-4 animate-bounce" /> : <Clock className="w-4 h-4" />}

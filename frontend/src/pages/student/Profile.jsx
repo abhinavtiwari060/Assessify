@@ -45,13 +45,13 @@ const Profile = () => {
 
       <form onSubmit={handleSave} className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
         <div className="flex items-center gap-4 pb-6 border-b border-[var(--border)]">
-          <div className="w-14 h-14 rounded-2xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black text-2xl shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[#FA8128] text-white flex items-center justify-center font-black text-2xl shadow-xs">
             {name ? name.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
             <h3 className="text-base font-extrabold text-[var(--text-main)]">{user?.name}</h3>
             <p className="text-xs text-[var(--text-sub)]">{user?.email}</p>
-            <span className="inline-block mt-1 text-[11px] font-bold text-[#F59E0B] uppercase">
+            <span className="inline-block mt-1 text-[11px] font-bold text-[#FA8128] uppercase">
               Role: {user?.role}
             </span>
           </div>
@@ -65,7 +65,7 @@ const Profile = () => {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
 
@@ -86,7 +86,7 @@ const Profile = () => {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Computer science undergrad or course instructor..."
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
 
@@ -97,7 +97,7 @@ const Profile = () => {
               placeholder="Leave blank to keep current password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
             />
           </div>
         </div>
@@ -106,9 +106,9 @@ const Profile = () => {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#0A0A0A] font-extrabold text-xs shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] disabled:opacity-50 text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
           >
-            <Save className="w-4 h-4 text-[#0A0A0A]" />
+            <Save className="w-4 h-4 text-white" />
             <span>{saving ? 'Saving Changes...' : 'Save Profile Changes'}</span>
           </button>
         </div>

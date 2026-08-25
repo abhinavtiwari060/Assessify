@@ -96,9 +96,9 @@ const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
           {!isFullscreen && (
             <button
               onClick={requestFullscreen}
-              className="flex items-center gap-1 px-2.5 py-1 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-xs rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 bg-[#FA8128] hover:bg-[#E06D1A] text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
             >
-              <Maximize className="w-3.5 h-3.5 text-[#0A0A0A]" />
+              <Maximize className="w-3.5 h-3.5 text-white" />
               <span>Enable Fullscreen</span>
             </button>
           )}
@@ -113,7 +113,7 @@ const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
         footer={
           <button
             onClick={() => setWarningModalOpen(false)}
-            className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-xs rounded-xl transition-colors cursor-pointer"
+            className="px-5 py-2.5 bg-[#FA8128] hover:bg-[#E06D1A] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
           >
             I Understand & Resume Test
           </button>

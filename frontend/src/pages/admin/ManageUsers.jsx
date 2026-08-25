@@ -135,10 +135,10 @@ const ManageUsers = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
             User Account Management
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-[var(--text-sub)] mt-1">
             Approve teacher registrations, manage student & teacher roles, and moderate platform accounts.
           </p>
         </div>
@@ -148,13 +148,13 @@ const ManageUsers = () => {
           <div
             className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl border text-xs font-bold shadow-xs ${
               pendingTeachersCount > 0
-                ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'
-                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                ? 'bg-[#FA8128]/10 border-[#FA8128]/30 text-[#FA8128]'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
             }`}
           >
             {pendingTeachersCount > 0 ? (
               <>
-                <Clock className="w-4 h-4 text-amber-500 animate-pulse" />
+                <Clock className="w-4 h-4 text-[#FA8128] animate-pulse" />
                 <span>Pending Teacher Approvals: {pendingTeachersCount}</span>
               </>
             ) : (
@@ -168,7 +168,7 @@ const ManageUsers = () => {
       </div>
 
       {/* Tabs & Search Filter Bar */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700/80 shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-[var(--bg-card)] rounded-3xl p-4 sm:p-5 border border-[var(--border)] shadow-xs flex flex-col md:flex-row gap-4 justify-between items-center">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
           {[
@@ -185,8 +185,8 @@ const ManageUsers = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    ? 'bg-[#FA8128] text-white shadow-md'
+                    : 'bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] text-[var(--text-sub)]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -194,7 +194,7 @@ const ManageUsers = () => {
                 {tab.count !== undefined && tab.count > 0 && (
                   <span
                     className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                      isActive ? 'bg-white text-indigo-600' : 'bg-amber-500 text-white'
+                      isActive ? 'bg-white text-[#FA8128]' : 'bg-[#FA8128] text-white'
                     }`}
                   >
                     {tab.count}
@@ -207,13 +207,13 @@ const ManageUsers = () => {
 
         {/* Search Bar */}
         <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
             type="text"
             placeholder="Search name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-2xl pl-10 pr-4 py-2 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
           />
         </div>
       </div>
@@ -231,10 +231,10 @@ const ManageUsers = () => {
           }
         />
       ) : (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700/80 overflow-hidden shadow-xs">
+        <div className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border)] overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900/60 text-xs uppercase text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700">
+              <thead className="bg-[var(--bg-sub)] text-xs uppercase text-[var(--text-muted)] font-bold border-b border-[var(--border)]">
                 <tr>
                   <th className="px-6 py-4">User</th>
                   <th className="px-6 py-4">Role</th>
@@ -244,7 +244,7 @@ const ManageUsers = () => {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/80">
+              <tbody className="divide-y divide-[var(--border)]">
                 {filteredUsers.map((u) => {
                   const isPending = u.role === 'teacher' && u.isApproved === false;
                   const isSelf = currentUser && currentUser._id === u._id;
@@ -252,24 +252,24 @@ const ManageUsers = () => {
                   return (
                     <tr
                       key={u._id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors"
+                      className="hover:bg-[var(--bg-card-hover)] transition-colors"
                     >
                       {/* User Info */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-[#58A6FF] text-[#0D1117] flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-[#FA8128] text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
                             {u.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <div className="font-bold text-[var(--text-main)] flex items-center gap-1.5">
                               <span>{u.name}</span>
                               {isSelf && (
-                                <span className="px-1.5 py-0.5 text-[10px] rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold">
+                                <span className="px-1.5 py-0.5 text-[10px] rounded-md bg-[#FA8128]/15 text-[#FA8128] font-bold">
                                   You
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-slate-500">{u.email}</div>
+                            <div className="text-xs text-[var(--text-sub)]">{u.email}</div>
                           </div>
                         </div>
                       </td>
@@ -280,7 +280,7 @@ const ManageUsers = () => {
                           value={u.role}
                           onChange={(e) => handleRoleChange(u._id, e.target.value)}
                           disabled={isSelf}
-                          className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs font-bold text-slate-900 dark:text-white cursor-pointer disabled:opacity-50"
+                          className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-2.5 py-1 text-xs font-bold text-[var(--text-main)] cursor-pointer disabled:opacity-50"
                         >
                           <option value="student">Student</option>
                           <option value="teacher">Teacher</option>
@@ -292,16 +292,16 @@ const ManageUsers = () => {
                       <td className="px-6 py-4">
                         {u.role === 'teacher' ? (
                           isPending ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#FA8128]/10 border border-[#FA8128]/30 text-[#FA8128]">
                               <Clock className="w-3.5 h-3.5" /> Pending
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
                               <CheckCircle className="w-3.5 h-3.5" /> Approved
                             </span>
                           )
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[var(--bg-sub)] text-[var(--text-sub)]">
                             Approved
                           </span>
                         )}

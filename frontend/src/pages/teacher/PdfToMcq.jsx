@@ -140,8 +140,8 @@ const PdfToMcq = () => {
     <div className="space-y-8 max-w-5xl mx-auto pb-12 text-[var(--text-main)]">
       {/* Page Header */}
       <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-sub)] border border-[var(--border)] text-xs font-bold text-[#F59E0B]">
-          <Sparkles className="w-3.5 h-3.5" /> Automatic PDF-to-MCQ Parsing Engine
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-sub)] border border-[var(--border)] text-xs font-bold text-[#FA8128]">
+          <Sparkles className="w-3.5 h-3.5 text-[#FA8128]" /> Automatic PDF-to-MCQ Parsing Engine
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-main)]">
           PDF → MCQ Extraction Pipeline
@@ -156,8 +156,8 @@ const PdfToMcq = () => {
 
       {/* Scanned PDF Warning Banner */}
       {extractionMeta && (extractionMeta.requiresOCR || extractionMeta.status === 'no_text') && (
-        <div className="bg-[#F59E0B]/15 border border-[#F59E0B]/30 rounded-2xl p-5 flex items-start gap-3 text-[#F59E0B] animate-in fade-in duration-300">
-          <Scan className="w-6 h-6 text-[#F59E0B] shrink-0 mt-0.5" />
+        <div className="bg-[#FA8128]/15 border border-[#FA8128]/30 rounded-2xl p-5 flex items-start gap-3 text-[#FA8128] animate-in fade-in duration-300">
+          <Scan className="w-6 h-6 text-[#FA8128] shrink-0 mt-0.5" />
           <div className="space-y-1">
             <h4 className="text-base font-extrabold text-[var(--text-main)]">Scanned PDF Detected</h4>
             <p className="text-xs text-[var(--text-sub)] leading-relaxed">
@@ -182,9 +182,9 @@ const PdfToMcq = () => {
 
       {/* Global Warnings & Status Banner */}
       {warnings.length > 0 && (
-        <div className="bg-[#F59E0B]/15 border border-[#F59E0B]/30 rounded-2xl p-4 space-y-2 text-[#F59E0B] text-xs animate-in fade-in duration-300">
+        <div className="bg-[#FA8128]/15 border border-[#FA8128]/30 rounded-2xl p-4 space-y-2 text-[#FA8128] text-xs animate-in fade-in duration-300">
           <div className="font-bold flex items-center gap-2 text-[var(--text-main)]">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-[#F59E0B]" />
+            <AlertTriangle className="w-4 h-4 shrink-0 text-[#FA8128]" />
             <span>Extraction Warnings & Status ({extractionStatus || 'Notice'})</span>
           </div>
           <ul className="list-disc pl-5 space-y-1 text-[var(--text-sub)]">
@@ -213,7 +213,7 @@ const PdfToMcq = () => {
               </div>
               <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-4 space-y-1">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Medium / Low</span>
-                <div className="text-2xl font-extrabold text-[#F59E0B]">
+                <div className="text-2xl font-extrabold text-[#FA8128]">
                   {(extractionMeta.statistics.mediumConfidence || 0) + (extractionMeta.statistics.lowConfidence || 0)}
                 </div>
               </div>
@@ -236,7 +236,7 @@ const PdfToMcq = () => {
                   type="text"
                   value={testTitle}
                   onChange={(e) => setTestTitle(e.target.value)}
-                  className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
                 />
               </div>
 
@@ -245,7 +245,7 @@ const PdfToMcq = () => {
                 <select
                   value={subjectId}
                   onChange={(e) => setSubjectId(e.target.value)}
-                  className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                  className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
                 >
                   {subjects.map((sub) => (
                     <option key={sub._id} value={sub._id}>
@@ -268,7 +268,7 @@ const PdfToMcq = () => {
                 q.confidence === 'high'
                   ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
                   : q.confidence === 'medium'
-                  ? 'bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30'
+                  ? 'bg-[#FA8128]/15 text-[#FA8128] border-[#FA8128]/30'
                   : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30';
 
               const missingAns = q.correctAnswerIndex === null || q.correctAnswerIndex === undefined;
@@ -290,7 +290,7 @@ const PdfToMcq = () => {
                         </span>
                       )}
                       {q.answerSource && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">
                           Source: {q.answerSource}
                         </span>
                       )}
@@ -306,9 +306,9 @@ const PdfToMcq = () => {
 
                   {/* Warnings List */}
                   {q.warnings && q.warnings.length > 0 && (
-                    <div className="p-3 bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl space-y-1 text-xs text-[#F59E0B]">
+                    <div className="p-3 bg-[#FA8128]/10 border border-[#FA8128]/30 rounded-xl space-y-1 text-xs text-[#FA8128]">
                       <div className="font-bold text-[var(--text-main)] flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B]" /> Review Warnings:
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#FA8128]" /> Review Warnings:
                       </div>
                       <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-[var(--text-sub)]">
                         {q.warnings.map((w, wIdx) => (
@@ -324,7 +324,7 @@ const PdfToMcq = () => {
                       rows={2}
                       value={q.questionText}
                       onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
-                      className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B]"
+                      className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
                     />
                   </div>
 
@@ -378,9 +378,9 @@ const PdfToMcq = () => {
             <button
               onClick={handleSaveExtractedTest}
               disabled={saving}
-              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#0A0A0A] font-extrabold text-base shadow-md transition-all cursor-pointer"
+              className="flex items-center gap-2 px-8 py-4 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] disabled:opacity-50 text-white font-extrabold text-base shadow-md transition-all cursor-pointer"
             >
-              <Save className="w-5 h-5 text-[#0A0A0A]" />
+              <Save className="w-5 h-5 text-white" />
               <span>{saving ? 'Publishing Test...' : 'Publish Verified Test'}</span>
             </button>
           </div>

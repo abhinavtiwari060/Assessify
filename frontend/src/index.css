@@ -3,22 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --bg-main: #FAFAFA;
-  --bg-sub: #F4F4F5;
+  --bg-main: #F8FAFC;
+  --bg-sub: #F1F5F9;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F4F4F5;
+  --bg-card-hover: #F8FAFC;
   --bg-elevated: #FFFFFF;
-  --border: #E4E4E7;
-  --border-hover: #D4D4D8;
-  --text-main: #18181B;
-  --text-sub: #52525B;
-  --text-muted: #71717A;
+  --border: #E2E8F0;
+  --border-hover: #CBD5E1;
+  --text-main: #0F172A;
+  --text-sub: #475569;
+  --text-muted: #64748B;
   
-  --primary-accent: #F59E0B;
-  --primary-accent-hover: #D97706;
-  --primary-accent-text: #0A0A0A;
-  --primary-accent-subtle: rgba(245, 158, 11, 0.1);
-  --primary-accent-border: rgba(245, 158, 11, 0.25);
+  --primary-accent: #FA8128;
+  --primary-accent-hover: #E06D1A;
+  --primary-accent-text: #FFFFFF;
+  --primary-accent-subtle: rgba(250, 129, 40, 0.12);
+  --primary-accent-border: rgba(250, 129, 40, 0.3);
   
   --success: #22C55E;
   --success-subtle: rgba(34, 197, 94, 0.1);
@@ -38,22 +38,22 @@
 }
 
 [data-theme="dark"], .dark {
-  --bg-main: #0A0A0A;
-  --bg-sub: #111111;
-  --bg-card: #141414;
-  --bg-card-hover: #181818;
-  --bg-elevated: #1C1C1C;
-  --border: #262626;
-  --border-hover: #3F3F46;
-  --text-main: #F5F5F5;
-  --text-sub: #A1A1AA;
-  --text-muted: #71717A;
+  --bg-main: #0B0F17;
+  --bg-sub: #111827;
+  --bg-card: #161F30;
+  --bg-card-hover: #1E293B;
+  --bg-elevated: #1E293B;
+  --border: #243044;
+  --border-hover: #334155;
+  --text-main: #F8FAFC;
+  --text-sub: #94A3B8;
+  --text-muted: #64748B;
   
-  --primary-accent: #F59E0B;
-  --primary-accent-hover: #D97706;
-  --primary-accent-text: #0A0A0A;
-  --primary-accent-subtle: rgba(245, 158, 11, 0.15);
-  --primary-accent-border: rgba(245, 158, 11, 0.3);
+  --primary-accent: #FA8128;
+  --primary-accent-hover: #E06D1A;
+  --primary-accent-text: #FFFFFF;
+  --primary-accent-subtle: rgba(250, 129, 40, 0.15);
+  --primary-accent-border: rgba(250, 129, 40, 0.35);
   
   --success: #22C55E;
   --success-subtle: rgba(34, 197, 94, 0.15);

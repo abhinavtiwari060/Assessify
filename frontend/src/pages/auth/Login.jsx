@@ -45,8 +45,8 @@ const Login = () => {
       <div className="max-w-sm sm:max-w-md w-full space-y-6">
         {/* Logo Banner */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#F59E0B] text-[#0A0A0A] flex items-center justify-center font-black shadow-xs">
-            <GraduationCap className="w-6 h-6" />
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#FA8128] text-white flex items-center justify-center font-black shadow-xs">
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <h2 className="text-2xl font-extrabold text-[var(--text-main)] tracking-tight">Assessify Platform</h2>
           <p className="text-xs text-[var(--text-sub)]">Sign in to access your student or instructor workspace</p>
@@ -64,7 +64,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@domain.com or teacher@domain.com"
-                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B] transition-colors"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#FA8128] transition-colors"
               />
             </div>
           </div>
@@ -72,7 +72,7 @@ const Login = () => {
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Password</label>
-              <Link to="/forgot-password" className="text-[11px] font-semibold text-[#F59E0B] hover:underline">
+              <Link to="/forgot-password" className="text-[11px] font-semibold text-[#FA8128] hover:underline">
                 Forgot Password?
               </Link>
             </div>
@@ -84,7 +84,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B] transition-colors"
+                className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl pl-10 pr-3.5 py-2.5 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#FA8128] transition-colors"
               />
             </div>
           </div>
@@ -92,16 +92,16 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50 mt-2"
+            className="w-full flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-bold text-xs sm:text-sm shadow-xs transition-colors cursor-pointer disabled:opacity-50 mt-2"
           >
             {loading ? 'Signing In...' : 'Sign In to Account'}
-            {!loading && <ArrowRight className="w-4 h-4 text-[#0A0A0A]" />}
+            {!loading && <ArrowRight className="w-4 h-4 text-white" />}
           </button>
 
           <div className="pt-3 text-center space-y-2 text-xs text-[var(--text-sub)]">
             <p>
               Don't have an account?{' '}
-              <Link to="/register" className="font-bold text-[#F59E0B] hover:underline">
+              <Link to="/register" className="font-bold text-[#FA8128] hover:underline">
                 Create student or teacher account
               </Link>
             </p>

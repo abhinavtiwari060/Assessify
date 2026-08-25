@@ -22,7 +22,7 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
     <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs space-y-5">
       <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
         <h3 className="font-extrabold text-[var(--text-main)] text-sm">Question Palette</h3>
-        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
+        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--bg-sub)] text-[#FA8128] border border-[var(--border)]">
           {answeredCount} / {totalCount} Answered
         </span>
       </div>
@@ -40,17 +40,17 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
               disabled={isDisabled}
               className={`relative h-10 w-full rounded-xl font-bold text-xs transition-all duration-150 flex items-center justify-center cursor-pointer ${
                 status === 'current'
-                  ? 'bg-[#F59E0B] text-[#0A0A0A] shadow-xs font-black ring-2 ring-[#F59E0B]/40'
+                  ? 'bg-[#FA8128] text-white shadow-xs font-black ring-2 ring-[#FA8128]/40'
                   : status === 'answered'
                   ? 'bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/40 hover:bg-[#22C55E]/30'
                   : status === 'flagged'
-                  ? 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40 hover:bg-[#F59E0B]/30'
+                  ? 'bg-[#FA8128]/20 text-[#FA8128] border border-[#FA8128]/40 hover:bg-[#FA8128]/30'
                   : 'bg-[var(--bg-sub)] text-[var(--text-sub)] border border-[var(--border)] hover:bg-[var(--bg-card-hover)]'
               } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               {idx + 1}
               {status === 'flagged' && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#F59E0B] ring-2 ring-[var(--bg-card)]"></span>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#FA8128] ring-2 ring-[var(--bg-card)]"></span>
               )}
             </button>
           );
@@ -68,11 +68,11 @@ const QuestionPalette = ({ questions, answers, currentIndex, onSelectQuestion, i
           <span>Unanswered ({totalCount - answeredCount})</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-md bg-[#F59E0B]"></div>
+          <div className="w-3 h-3 rounded-md bg-[#FA8128]"></div>
           <span>Current</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-md bg-[#F59E0B]/40 border border-[#F59E0B]"></div>
+          <div className="w-3 h-3 rounded-md bg-[#FA8128]/40 border border-[#FA8128]"></div>
           <span>Flagged ({flaggedCount})</span>
         </div>
       </div>

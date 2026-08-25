@@ -99,8 +99,8 @@ const PDFUploader = ({ onExtracted }) => {
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
           dragOver
-            ? 'border-[#F59E0B] bg-[var(--bg-sub)] scale-[1.01]'
-            : 'border-[var(--border)] hover:border-[#F59E0B] bg-[var(--bg-sub)]'
+            ? 'border-[#FA8128] bg-[var(--bg-sub)] scale-[1.01]'
+            : 'border-[var(--border)] hover:border-[#FA8128] bg-[var(--bg-sub)]'
         }`}
       >
         <input
@@ -111,7 +111,7 @@ const PDFUploader = ({ onExtracted }) => {
           id="pdf-upload-input"
         />
         <label htmlFor="pdf-upload-input" className="cursor-pointer flex flex-col items-center">
-          <div className="w-14 h-14 rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] text-[#F59E0B] flex items-center justify-center mb-3 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] text-[#FA8128] flex items-center justify-center mb-3 shadow-xs">
             <UploadCloud className="w-7 h-7" />
           </div>
           <h4 className="text-base font-extrabold text-[var(--text-main)] mb-1">
@@ -123,7 +123,7 @@ const PDFUploader = ({ onExtracted }) => {
         </label>
 
         {file && (
-          <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] text-xs text-[#F59E0B] font-bold">
+          <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] text-xs text-[#FA8128] font-bold">
             <FileText className="w-4 h-4 shrink-0" />
             <span className="truncate max-w-xs">{file.name}</span>
             <span className="text-[11px] text-[var(--text-muted)]">({(file.size / 1024).toFixed(1)} KB)</span>
@@ -136,17 +136,17 @@ const PDFUploader = ({ onExtracted }) => {
         <div className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[var(--text-main)] flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-[#F59E0B]" />
+              <Loader2 className="w-4 h-4 animate-spin text-[#FA8128]" />
               Parsing PDF Question Paper...
             </span>
-            <span className="text-xs font-mono font-bold text-[#F59E0B]">
+            <span className="text-xs font-mono font-bold text-[#FA8128]">
               Step {currentStep + 1} of {EXTRACTION_STEPS.length}
             </span>
           </div>
 
           <div className="w-full bg-[var(--bg-card)] h-2 rounded-full overflow-hidden border border-[var(--border)]">
             <div
-              className="bg-[#F59E0B] h-full transition-all duration-300 rounded-full"
+              className="bg-[#FA8128] h-full transition-all duration-300 rounded-full"
               style={{ width: `${((currentStep + 1) / EXTRACTION_STEPS.length) * 100}%` }}
             ></div>
           </div>
@@ -162,7 +162,7 @@ const PDFUploader = ({ onExtracted }) => {
                     isDone
                       ? 'bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E]'
                       : isCurrent
-                      ? 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B] font-bold'
+                      ? 'bg-[#FA8128]/10 border-[#FA8128]/30 text-[#FA8128] font-bold'
                       : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-muted)]'
                   }`}
                 >
@@ -190,17 +190,17 @@ const PDFUploader = ({ onExtracted }) => {
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-xs shadow-xs transition-all ${
             !file || loading
               ? 'bg-[var(--bg-sub)] border border-[var(--border)] text-[var(--text-muted)] cursor-not-allowed'
-              : 'bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] cursor-pointer'
+              : 'bg-[#FA8128] hover:bg-[#E06D1A] text-white cursor-pointer'
           }`}
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" />
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
               <span>Parsing PDF...</span>
             </>
           ) : (
             <>
-              <CheckCircle className="w-4 h-4 text-[#0A0A0A]" />
+              <CheckCircle className="w-4 h-4 text-white" />
               <span>Extract Questions</span>
             </>
           )}

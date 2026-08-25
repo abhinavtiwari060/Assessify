@@ -65,11 +65,11 @@ const TestHistory = () => {
                         {att.testId?.title || 'Assessment Test'}
                       </td>
                       <td className="px-5 py-4">
-                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[var(--bg-sub)] text-[#F59E0B] border border-[var(--border)]">
+                        <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[var(--bg-sub)] text-[#FA8128] border border-[var(--border)]">
                           {att.testId?.subjectId?.name || 'General'}
                         </span>
                       </td>
-                      <td className="px-5 py-4 font-extrabold text-[#F59E0B]">
+                      <td className="px-5 py-4 font-extrabold text-[#FA8128]">
                         {att.score} / {att.maxMarks}
                       </td>
                       <td className="px-5 py-4 font-bold text-[var(--text-main)]">
@@ -88,7 +88,7 @@ const TestHistory = () => {
                       <td className="px-5 py-4 text-right">
                         <Link
                           to={`/student/attempt/${att._id}/result`}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-[#F59E0B] hover:underline"
+                          className="inline-flex items-center gap-1 text-xs font-bold text-[#FA8128] hover:underline"
                         >
                           <span>View Result</span>
                           <ArrowRight className="w-3.5 h-3.5" />
