@@ -21,6 +21,8 @@ const PdfToMcq = () => {
   const [extractedQuestions, setExtractedQuestions] = useState([]);
   const [testTitle, setTestTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [warnings, setWarnings] = useState([]);
+  const [extractionStatus, setExtractionStatus] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -36,9 +38,11 @@ const PdfToMcq = () => {
     fetchSubjects();
   }, []);
 
-  const handleExtracted = (questions, fileName) => {
-    setExtractedQuestions(questions);
-    setTestTitle(fileName.replace('.pdf', '') + ' MCQ Assessment');
+  const handleExtracted = (questions, fileName, meta) => {
+    setExtractedQuestions(questions || []);
+    setTestTitle(fileName.replace(/\.pdf$/i, '') + ' MCQ Assessment');
+    setWarnings(meta?.warnings || []);
+    setExtractionStatus(meta?.status || null);
   };
 
   const handleQuestionChange = (qIdx, text) => {
@@ -71,6 +75,15 @@ const PdfToMcq = () => {
 
     if (extractedQuestions.length === 0) {
       addToast('No questions to save', 'error');
+      return;
+    }
+
+    // Verify all questions have a valid correct answer index selected
+    const missingAnsIdx = extractedQuestions.findIndex(
+      (q) => q.correctAnswerIndex === null || q.correctAnswerIndex === undefined || q.correctAnswerIndex < 0
+    );
+    if (missingAnsIdx !== -1) {
+      addToast(`Question #${missingAnsIdx + 1} does not have a correct answer selected. Please select one.`, 'error');
       return;
     }
 
@@ -112,16 +125,24 @@ const PdfToMcq = () => {
       {/* Upload Component */}
       <PDFUploader onExtracted={handleExtracted} />
 
+      {/* Warnings & Status Banner */}
+      {warnings.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 space-y-2 text-amber-900 dark:text-amber-200 text-xs animate-in fade-in duration-300">
+          <div className="font-bold flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>Extraction Warnings & Status ({extractionStatus || 'Notice'})</span>
+          </div>
+          <ul className="list-disc pl-5 space-y-1">
+            {warnings.map((w, idx) => (
+              <li key={idx}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Extracted Review Editor Section */}
       {extractedQuestions.length > 0 && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-3 text-amber-900 dark:text-amber-200 text-xs">
-            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-            <div>
-              <strong>Review Extracted Questions: </strong> PDF extraction heuristic parsed {extractedQuestions.length} questions. Verify options, correct answer keys, and text accuracy below.
-            </div>
-          </div>
-
           <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Save Test Configuration</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -165,9 +186,20 @@ const PdfToMcq = () => {
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-900 dark:text-white">Question #{qIdx + 1}</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      q.confidence === 'high'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : q.confidence === 'low'
+                        ? 'bg-rose-500/10 text-rose-600'
+                        : 'bg-amber-500/10 text-amber-600'
+                    }`}>
                       Confidence: {q.confidence || 'Medium'}
                     </span>
+                    {q.sourcePage && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300">
+                        Page {q.sourcePage}
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => handleRemoveQuestion(qIdx)}
