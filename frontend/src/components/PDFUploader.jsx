@@ -69,7 +69,7 @@ const PDFUploader = ({ onExtracted }) => {
   };
 
   return (
-    <div className="bg-[#161B22] rounded-3xl p-8 border border-[#30363D] shadow-sm space-y-6">
+    <div className="bg-[var(--bg-card)] rounded-2xl p-8 border border-[var(--border)] shadow-sm space-y-6">
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -77,10 +77,10 @@ const PDFUploader = ({ onExtracted }) => {
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+        className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
           dragOver
-            ? 'border-[#58A6FF] bg-[#21262D] scale-[1.01]'
-            : 'border-[#30363D] hover:border-[#58A6FF] bg-[#0D1117]'
+            ? 'border-[#F59E0B] bg-[var(--bg-sub)] scale-[1.01]'
+            : 'border-[var(--border)] hover:border-[#F59E0B] bg-[var(--bg-sub)]'
         }`}
       >
         <input
@@ -91,22 +91,22 @@ const PDFUploader = ({ onExtracted }) => {
           id="pdf-upload-input"
         />
         <label htmlFor="pdf-upload-input" className="cursor-pointer flex flex-col items-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#21262D] border border-[#30363D] text-[#58A6FF] flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] text-[#F59E0B] flex items-center justify-center mb-4 shadow-xs">
             <UploadCloud className="w-8 h-8" />
           </div>
-          <h4 className="text-base font-extrabold text-[#F0F6FC] mb-1">
+          <h4 className="text-base font-extrabold text-[var(--text-main)] mb-1">
             Upload Question Paper PDF
           </h4>
-          <p className="text-xs text-[#8B949E] max-w-sm mb-4">
+          <p className="text-xs text-[var(--text-sub)] max-w-sm mb-4">
             Drag and drop your PDF file here, or click to browse files. Supports text-based MCQ question papers.
           </p>
         </label>
 
         {file && (
-          <div className="flex items-center gap-3 px-4 py-2 bg-[#21262D] rounded-xl border border-[#30363D] text-xs text-[#58A6FF] font-bold">
+          <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-card)] rounded-xl border border-[var(--border)] text-xs text-[#F59E0B] font-bold">
             <FileText className="w-4 h-4 shrink-0" />
             <span className="truncate max-w-xs">{file.name}</span>
-            <span className="text-[11px] text-[#8B949E]">({(file.size / 1024).toFixed(1)} KB)</span>
+            <span className="text-[11px] text-[var(--text-muted)]">({(file.size / 1024).toFixed(1)} KB)</span>
           </div>
         )}
       </div>
@@ -115,20 +115,20 @@ const PDFUploader = ({ onExtracted }) => {
         <button
           onClick={handleUpload}
           disabled={!file || loading}
-          className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-extrabold text-xs shadow-md transition-all ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-xs shadow-md transition-all ${
             !file || loading
-              ? 'bg-[#21262D] border border-[#30363D] text-[#8B949E] cursor-not-allowed'
-              : 'bg-[#58A6FF] hover:bg-[#388BFD] text-[#0D1117] cursor-pointer'
+              ? 'bg-[var(--bg-sub)] border border-[var(--border)] text-[var(--text-muted)] cursor-not-allowed'
+              : 'bg-[#F59E0B] hover:bg-[#D97706] text-[#0A0A0A] cursor-pointer'
           }`}
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin text-[#0D1117]" />
+              <Loader2 className="w-4 h-4 animate-spin text-[#0A0A0A]" />
               <span>Extracting MCQs...</span>
             </>
           ) : (
             <>
-              <CheckCircle className="w-4 h-4 text-[#0D1117]" />
+              <CheckCircle className="w-4 h-4 text-[#0A0A0A]" />
               <span>Extract Questions</span>
             </>
           )}

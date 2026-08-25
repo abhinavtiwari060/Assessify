@@ -158,19 +158,19 @@ const TakeEssayTest = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+    <div className="space-y-6 max-w-5xl mx-auto pb-12 text-[var(--text-main)]">
       <AntiCheatingTracker
         attemptId={submission?._id}
         onAutoSubmit={handleFinalSubmit}
       />
 
       {/* Header bar */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
             Essay Writing Assessment
           </span>
-          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
+          <h2 className="text-2xl font-extrabold text-[var(--text-main)] leading-tight">
             {test?.title}
           </h2>
         </div>
@@ -184,27 +184,27 @@ const TakeEssayTest = () => {
         )}
       </div>
 
-      {/* Essay Prompt Card */}
-      <div className="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 border border-indigo-800 shadow-lg space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold text-indigo-300 uppercase tracking-wider">
-          <BookOpen className="w-4 h-4" />
+      {/* Essay Prompt Card - Solid Dark Surface */}
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] uppercase tracking-wider">
+          <BookOpen className="w-4 h-4 text-[#F59E0B]" />
           <span>Essay Prompt & Topic Instructions</span>
         </div>
-        <p className="text-lg font-bold leading-relaxed">{test?.description || test?.instructions}</p>
-        <div className="text-xs text-indigo-200 bg-indigo-900/60 p-3 rounded-xl border border-indigo-700">
+        <p className="text-lg font-bold leading-relaxed text-[var(--text-main)]">{test?.description || test?.instructions}</p>
+        <div className="text-xs text-[var(--text-sub)] bg-[var(--bg-sub)] p-3 rounded-xl border border-[var(--border)]">
           💡 Instructions: Maintain clean paragraph structure. Your essay will be evaluated by your course instructor based on quality, argument clarity, and technical correctness.
         </div>
       </div>
 
       {/* Writing Interface Panel */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/80 pb-3">
-          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 dark:text-slate-400">
-            <span>Word Count: <strong className="text-slate-900 dark:text-white">{wordCount}</strong></span>
-            <span>Characters: <strong className="text-slate-900 dark:text-white">{essayText.length}</strong></span>
+      <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+          <div className="flex items-center gap-4 text-xs font-semibold text-[var(--text-sub)]">
+            <span>Word Count: <strong className="text-[var(--text-main)]">{wordCount}</strong></span>
+            <span>Characters: <strong className="text-[var(--text-main)]">{essayText.length}</strong></span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]">
             <Save className="w-3.5 h-3.5" />
             <span>
               {saveStatus === 'saving' ? 'Autosaving...' : saveStatus === 'saved' ? 'Autosaved' : 'Save Error'}
@@ -213,8 +213,8 @@ const TakeEssayTest = () => {
         </div>
 
         {/* Security Warning Banner */}
-        <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-800/60">
-          <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] bg-[#F59E0B]/10 p-3 rounded-xl border border-[#F59E0B]/30">
+          <ShieldAlert className="w-4 h-4 shrink-0 text-[#F59E0B]" />
           <span>Copy, Paste, Cut, Right-Click, and Drag-and-Drop are disabled in this essay answer box.</span>
         </div>
 
@@ -230,15 +230,15 @@ const TakeEssayTest = () => {
           onContextMenu={(e) => preventAction(e, 'Right-click context menu')}
           onDrop={(e) => preventAction(e, 'Text dragging')}
           placeholder="Begin typing your essay response here..."
-          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 leading-relaxed font-sans"
+          className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-5 text-sm text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[#F59E0B] leading-relaxed font-sans"
         />
 
         <div className="flex justify-end pt-2">
           <button
             onClick={() => setConfirmModalOpen(true)}
-            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#3FB950] hover:bg-[#2ea043] text-[#0D1117] font-extrabold text-base shadow-md transition-all cursor-pointer"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-base shadow-md transition-all cursor-pointer"
           >
-            <Send className="w-5 h-5 text-[#0D1117]" />
+            <Send className="w-5 h-5 text-[#0A0A0A]" />
             <span>Submit Essay for Grading</span>
           </button>
         </div>
@@ -253,14 +253,14 @@ const TakeEssayTest = () => {
           <>
             <button
               onClick={() => setConfirmModalOpen(false)}
-              className="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold cursor-pointer"
+              className="px-5 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--text-main)] bg-[var(--bg-sub)] cursor-pointer"
             >
               Continue Editing
             </button>
             <button
               onClick={handleFinalSubmit}
               disabled={submitting}
-              className="px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md cursor-pointer"
+              className="px-6 py-2 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-[#0A0A0A] font-black text-xs shadow-md cursor-pointer"
             >
               {submitting ? 'Submitting...' : 'Yes, Submit Essay'}
             </button>
@@ -268,9 +268,9 @@ const TakeEssayTest = () => {
         }
       >
         <div className="text-center py-4 space-y-3">
-          <CheckCircle className="w-12 h-12 text-purple-500 mx-auto" />
-          <h4 className="text-lg font-bold text-slate-900 dark:text-white">Ready to submit your essay?</h4>
-          <p className="text-xs text-slate-500">Total words written: <strong>{wordCount} words</strong>. Once submitted, your essay will be sent directly to your teacher for grading.</p>
+          <CheckCircle className="w-12 h-12 text-[#22C55E] mx-auto" />
+          <h4 className="text-lg font-bold text-[var(--text-main)]">Ready to submit your essay?</h4>
+          <p className="text-xs text-[var(--text-sub)]">Total words written: <strong>{wordCount} words</strong>. Once submitted, your essay will be sent directly to your teacher for grading.</p>
         </div>
       </Modal>
     </div>

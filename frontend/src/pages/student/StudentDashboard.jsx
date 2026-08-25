@@ -121,72 +121,72 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Welcome Banner - Solid Developer Dark Surface */}
-      <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 shadow-sm space-y-3 relative overflow-hidden">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#21262D] border border-[#30363D] text-xs font-semibold text-[#58A6FF]">
+    <div className="space-y-6 max-w-7xl mx-auto text-[var(--text-main)]">
+      {/* Welcome Banner - ChaiCode Clean Card */}
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm space-y-3 relative overflow-hidden">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--bg-sub)] border border-[var(--border)] text-xs font-bold text-[#F59E0B]">
           <Sparkles className="w-3.5 h-3.5" /> Student Workspace
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F0F6FC] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-main)] tracking-tight">
           Welcome back, {user?.name}! 👋
         </h1>
-        <p className="text-xs sm:text-sm text-[#8B949E] max-w-2xl leading-relaxed">
+        <p className="text-xs sm:text-sm text-[var(--text-sub)] max-w-2xl leading-relaxed">
           Track your real-time performance, complete assigned tests, and improve accuracy across subjects.
         </p>
       </div>
 
       {/* Overview Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#161B22] rounded-2xl p-5 border border-[#30363D] shadow-xs space-y-2">
-          <div className="flex items-center justify-between text-[#58A6FF]">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Tests Completed</span>
-            <div className="w-10 h-10 rounded-xl bg-[#21262D] border border-[#30363D] flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5 text-[#3FB950]" />
+        <div className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Tests Completed</span>
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-[#22C55E]" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-[#F0F6FC]">
+          <div className="text-3xl font-extrabold text-[var(--text-main)]">
             {summary.totalMcqAttempts}
           </div>
-          <div className="text-xs text-[#8B949E]">MCQ & Essay Submissions</div>
+          <div className="text-xs text-[var(--text-sub)]">MCQ & Essay Submissions</div>
         </div>
 
-        <div className="bg-[#161B22] rounded-2xl p-5 border border-[#30363D] shadow-xs space-y-2">
+        <div className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Average Accuracy</span>
-            <div className="w-10 h-10 rounded-xl bg-[#21262D] border border-[#30363D] flex items-center justify-center text-[#3FB950]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Average Accuracy</span>
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] flex items-center justify-center text-[#22C55E]">
               <Target className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-[#F0F6FC]">
+          <div className="text-3xl font-extrabold text-[var(--text-main)]">
             {summary.averageAccuracy}%
           </div>
-          <div className="text-xs text-[#8B949E]">Overall correctness rate</div>
+          <div className="text-xs text-[var(--text-sub)]">Overall correctness rate</div>
         </div>
 
-        <div className="bg-[#161B22] rounded-2xl p-5 border border-[#30363D] shadow-xs space-y-2">
+        <div className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Average Score</span>
-            <div className="w-10 h-10 rounded-xl bg-[#21262D] border border-[#30363D] flex items-center justify-center text-[#58A6FF]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Average Score</span>
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] flex items-center justify-center text-[#F59E0B]">
               <BarChart2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-[#F0F6FC]">
-            {summary.averageScore} <span className="text-xs font-normal text-[#8B949E]">pts</span>
+          <div className="text-3xl font-extrabold text-[var(--text-main)]">
+            {summary.averageScore} <span className="text-xs font-normal text-[var(--text-muted)]">pts</span>
           </div>
-          <div className="text-xs text-[#8B949E]">Average points per attempt</div>
+          <div className="text-xs text-[var(--text-sub)]">Average points per attempt</div>
         </div>
 
-        <div className="bg-[#161B22] rounded-2xl p-5 border border-[#30363D] shadow-xs space-y-2">
+        <div className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B949E]">Leaderboard</span>
-            <div className="w-10 h-10 rounded-xl bg-[#21262D] border border-[#30363D] flex items-center justify-center text-[#D29922]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Leaderboard</span>
+            <div className="w-10 h-10 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] flex items-center justify-center text-[#F59E0B]">
               <Trophy className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-extrabold text-[#F0F6FC]">
+          <div className="text-3xl font-extrabold text-[var(--text-main)]">
             Top Rankings
           </div>
-          <Link to="/student/leaderboard" className="text-xs font-semibold text-[#58A6FF] hover:underline flex items-center gap-1">
+          <Link to="/student/leaderboard" className="text-xs font-semibold text-[#F59E0B] hover:underline flex items-center gap-1">
             View full leaderboard →
           </Link>
         </div>
@@ -195,10 +195,10 @@ const StudentDashboard = () => {
       {/* Available Tests Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-[#F0F6FC] tracking-tight">
+          <h2 className="text-xl font-extrabold text-[var(--text-main)] tracking-tight">
             Available Tests — Ready to Take
           </h2>
-          <Link to="/student/available-tests" className="text-xs font-bold text-[#58A6FF] hover:underline flex items-center gap-1">
+          <Link to="/student/available-tests" className="text-xs font-bold text-[#F59E0B] hover:underline flex items-center gap-1">
             View All Tests <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -215,33 +215,33 @@ const StudentDashboard = () => {
               return (
                 <div
                   key={test._id}
-                  className="bg-[#161B22] rounded-2xl p-5 border border-[#30363D] shadow-xs flex flex-col justify-between hover:border-[#58A6FF]/50 transition-all"
+                  className="bg-[var(--bg-card)] rounded-2xl p-5 border border-[var(--border)] shadow-xs flex flex-col justify-between hover:border-[#F59E0B]/50 transition-all"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#21262D] text-[#58A6FF] uppercase border border-[#30363D]">
+                      <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-[var(--bg-sub)] text-[#F59E0B] uppercase border border-[var(--border)]">
                         {test.subjectId?.name || 'Subject'}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-[#21262D] text-[#8B949E] border border-[#30363D]">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)]">
                           {test.type}
                         </span>
 
                         {/* Status Badges */}
                         {isCompleted ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#3FB950]/15 text-[#3FB950] border border-[#3FB950]/30">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
                             COMPLETED
                           </span>
                         ) : status === 'DRAFT' ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#D29922]/15 text-[#D29922] border border-[#D29922]/30">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">
                             NOT STARTED
                           </span>
                         ) : status === 'STARTED' ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#3FB950]/15 text-[#3FB950] border border-[#3FB950]/30 animate-pulse">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 animate-pulse">
                             STARTED
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#F85149]/15 text-[#F85149] border border-[#F85149]/30">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30">
                             ENDED
                           </span>
                         )}
@@ -249,21 +249,21 @@ const StudentDashboard = () => {
                     </div>
 
                     <div>
-                      <h3 className="text-base font-bold text-[#F0F6FC] line-clamp-1">
+                      <h3 className="text-base font-bold text-[var(--text-main)] line-clamp-1">
                         {test.title}
                       </h3>
-                      <p className="text-xs text-[#8B949E] line-clamp-2 mt-1 font-normal leading-relaxed">
+                      <p className="text-xs text-[var(--text-sub)] line-clamp-2 mt-1 font-normal leading-relaxed">
                         {test.description || 'Test your proficiency and earn leaderboard points.'}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-[#8B949E] pt-3 border-t border-[#30363D]">
+                    <div className="flex items-center gap-4 text-xs text-[var(--text-sub)] pt-3 border-t border-[var(--border)]">
                       <span className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-[#58A6FF]" />
+                        <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
                         {test.timerMode === 'none' ? 'Self-Paced' : `${test.durationMinutes || 30} mins`}
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-[#58A6FF]" />
+                        <BookOpen className="w-3.5 h-3.5 text-[#F59E0B]" />
                         {test.type === 'essay' ? '1 Essay' : `${test.questionCount} MCQs`}
                       </span>
                     </div>
@@ -273,11 +273,11 @@ const StudentDashboard = () => {
                     <button
                       onClick={() => handleOpenCodeModal(test)}
                       disabled={isStartDisabled}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#58A6FF] hover:bg-[#388BFD] disabled:bg-[#21262D] disabled:text-[#8B949E] disabled:border disabled:border-[#30363D] disabled:cursor-not-allowed text-[#0D1117] font-bold text-xs shadow-xs transition-all cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:bg-[var(--bg-sub)] disabled:text-[var(--text-muted)] disabled:border disabled:border-[var(--border)] disabled:cursor-not-allowed text-[#0A0A0A] font-bold text-xs shadow-xs transition-all cursor-pointer"
                     >
                       {isCompleted ? (
                         <>
-                          <CheckCircle className="w-4 h-4 text-[#3FB950]" />
+                          <CheckCircle className="w-4 h-4 text-[#22C55E]" />
                           <span>Test Completed</span>
                         </>
                       ) : status === 'DRAFT' ? (
@@ -292,7 +292,7 @@ const StudentDashboard = () => {
                         </>
                       ) : (
                         <>
-                          <PlayCircle className="w-4 h-4 text-[#0D1117]" />
+                          <PlayCircle className="w-4 h-4 text-[#0A0A0A]" />
                           <span>Start Test</span>
                         </>
                       )}
@@ -308,31 +308,31 @@ const StudentDashboard = () => {
       {/* Subject-Wise Performance Summary */}
       {report?.subjectBreakdown && report.subjectBreakdown.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-extrabold text-[#F0F6FC] tracking-tight">
+          <h2 className="text-xl font-extrabold text-[var(--text-main)] tracking-tight">
             Subject-Wise Accuracy
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {report.subjectBreakdown.map((sub, idx) => (
               <div
                 key={idx}
-                className="bg-[#161B22] rounded-2xl p-4 border border-[#30363D] shadow-xs space-y-2"
+                className="bg-[var(--bg-card)] rounded-2xl p-4 border border-[var(--border)] shadow-xs space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-[#F0F6FC]">{sub.subjectName}</span>
+                  <span className="font-bold text-xs text-[var(--text-main)]">{sub.subjectName}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     sub.status === 'Strong'
-                      ? 'bg-[#3FB950]/20 text-[#3FB950] border border-[#3FB950]/30'
-                      : 'bg-[#D29922]/20 text-[#D29922] border border-[#D29922]/30'
+                      ? 'bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30'
+                      : 'bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/30'
                   }`}>
                     {sub.status}
                   </span>
                 </div>
-                <div className="text-2xl font-extrabold text-[#F0F6FC]">
+                <div className="text-2xl font-extrabold text-[var(--text-main)]">
                   {sub.accuracy}%
                 </div>
-                <div className="w-full bg-[#21262D] h-2 rounded-full overflow-hidden border border-[#30363D]">
+                <div className="w-full bg-[var(--bg-sub)] h-2 rounded-full overflow-hidden border border-[var(--border)]">
                   <div
-                    className={`h-full rounded-full ${sub.accuracy >= 75 ? 'bg-[#3FB950]' : 'bg-[#D29922]'}`}
+                    className={`h-full rounded-full ${sub.accuracy >= 75 ? 'bg-[#22C55E]' : 'bg-[#F59E0B]'}`}
                     style={{ width: `${sub.accuracy}%` }}
                   ></div>
                 </div>
@@ -353,7 +353,7 @@ const StudentDashboard = () => {
               <button
                 type="button"
                 onClick={() => setActiveTestForCode(null)}
-                className="px-5 py-2.5 rounded-xl border border-[#30363D] font-bold text-xs text-[#F0F6FC] bg-[#21262D] hover:bg-[#30363D] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl border border-[var(--border)] font-bold text-xs text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] cursor-pointer"
               >
                 Cancel
               </button>
@@ -361,7 +361,7 @@ const StudentDashboard = () => {
                 type="button"
                 onClick={handleVerifyCodeSubmit}
                 disabled={verifying || enteredCode.trim().length !== 4}
-                className="px-6 py-2.5 rounded-xl bg-[#58A6FF] hover:bg-[#388BFD] disabled:opacity-50 text-[#0D1117] font-bold text-xs shadow-md cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 text-[#0A0A0A] font-bold text-xs shadow-md cursor-pointer"
               >
                 {verifying ? 'Verifying...' : 'Verify & Start Test'}
               </button>
@@ -369,21 +369,21 @@ const StudentDashboard = () => {
           }
         >
           <form onSubmit={handleVerifyCodeSubmit} className="space-y-6 text-center py-2">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#21262D] text-[#58A6FF] flex items-center justify-center border border-[#30363D]">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-[var(--bg-sub)] text-[#F59E0B] flex items-center justify-center border border-[var(--border)]">
               <KeyRound className="w-8 h-8" />
             </div>
 
             <div>
-              <h4 className="text-xl font-extrabold text-[#F0F6FC]">
+              <h4 className="text-xl font-extrabold text-[var(--text-main)]">
                 {activeTestForCode.title}
               </h4>
-              <p className="text-xs text-[#8B949E] mt-1">
+              <p className="text-xs text-[var(--text-sub)] mt-1">
                 Enter the 4-character code provided by your teacher to unlock this test.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#8B949E] block">
+              <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                 Enter Test Code (4 Characters)
               </label>
               <input
@@ -394,7 +394,7 @@ const StudentDashboard = () => {
                 value={enteredCode}
                 onChange={(e) => setEnteredCode(e.target.value.toUpperCase())}
                 placeholder="e.g. A7K2"
-                className="w-48 text-center uppercase tracking-widest font-mono text-2xl font-black bg-[#21262D] border-2 border-[#58A6FF] rounded-2xl px-4 py-3 text-[#F0F6FC] focus:outline-none focus:ring-4 focus:ring-[#58A6FF]/20"
+                className="w-48 text-center uppercase tracking-widest font-mono text-2xl font-black bg-[var(--bg-sub)] border-2 border-[#F59E0B] rounded-2xl px-4 py-3 text-[var(--text-main)] focus:outline-none focus:ring-4 focus:ring-[#F59E0B]/20"
               />
             </div>
           </form>
