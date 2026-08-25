@@ -1,6 +1,7 @@
 const TestAttempt = require('../models/TestAttempt');
 const Test = require('../models/Test');
 const Question = require('../models/Question');
+const EssaySubmission = require('../models/EssaySubmission');
 const { logAudit } = require('../middleware/auth');
 
 // @desc    Start a test attempt (Optimized + Race-Condition Safe)
@@ -227,8 +228,53 @@ const recordViolation = async (req, res) => {
     const attemptId = req.params.id;
     const { type, details } = req.body;
 
-    const attempt = await TestAttempt.findById(attemptId).populate('testId', 'title');
+    let attempt = await TestAttempt.findById(attemptId).populate('testId', 'title');
     if (!attempt || attempt.studentId.toString() !== req.user._id.toString()) {
+      // Fallback check for EssaySubmission ID
+      const essay = await EssaySubmission.findById(attemptId).populate('testId', 'title');
+      if (essay && essay.studentId.toString() === req.user._id.toString()) {
+        if (essay.status !== 'in_progress') {
+          return res.json({
+            success: true,
+            violationCount: essay.violationCount || 0,
+            isAutoSubmitted: true,
+            message: 'Essay is already submitted',
+          });
+        }
+
+        essay.violations.push({
+          timestamp: new Date(),
+          type: type || 'visibilitychange',
+          details: details || 'Tab switch / focus loss detected during essay',
+        });
+        essay.violationCount = (essay.violationCount || 0) + 1;
+
+        logAudit(
+          req,
+          'ESSAY_TAB_VIOLATION',
+          `Violation #${essay.violationCount} (${type}) during essay test "${essay.testId?.title}"`
+        );
+
+        let isAutoSubmitted = false;
+        if (essay.violationCount >= 3) {
+          essay.status = 'auto_submitted';
+          essay.submissionType = 'AUTO_SUBMITTED';
+          essay.submittedAt = new Date();
+          isAutoSubmitted = true;
+        }
+
+        await essay.save();
+
+        return res.json({
+          success: true,
+          violationCount: essay.violationCount,
+          isAutoSubmitted,
+          status: essay.status,
+          message: isAutoSubmitted
+            ? 'Test automatically submitted due to multiple anti-cheating violations.'
+            : `Warning ${essay.violationCount}/3: Please stay on the test window.`,
+        });
+      }
       return res.status(404).json({ message: 'Active attempt not found' });
     }
 

@@ -477,10 +477,69 @@ const deleteEssaySubmission = async (req, res) => {
   }
 };
 
+// @desc    Record anti-cheating tab switch / focus loss violation for essay
+// @route   POST /api/essays/submissions/:id/violation
+// @access  Private (Student)
+const recordEssayViolation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type, details } = req.body;
+
+    const submission = await EssaySubmission.findById(id).populate('testId', 'title');
+    if (!submission || submission.studentId.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ message: 'Active essay submission not found' });
+    }
+
+    if (submission.status !== 'in_progress') {
+      return res.json({
+        success: true,
+        violationCount: submission.violationCount || 0,
+        isAutoSubmitted: true,
+        message: 'Essay is already submitted',
+      });
+    }
+
+    submission.violations.push({
+      timestamp: new Date(),
+      type: type || 'visibilitychange',
+      details: details || 'Tab switch / focus loss detected during essay',
+    });
+    submission.violationCount = (submission.violationCount || 0) + 1;
+
+    await logAudit(
+      req,
+      'ESSAY_TAB_VIOLATION',
+      `Violation #${submission.violationCount} (${type}) during essay test "${submission.testId?.title}"`
+    );
+
+    let isAutoSubmitted = false;
+    if (submission.violationCount >= 3) {
+      submission.status = 'auto_submitted';
+      submission.submissionType = 'AUTO_SUBMITTED';
+      submission.submittedAt = new Date();
+      isAutoSubmitted = true;
+    }
+
+    await submission.save();
+
+    res.json({
+      success: true,
+      violationCount: submission.violationCount,
+      isAutoSubmitted,
+      message: isAutoSubmitted
+        ? 'Test automatically submitted due to multiple anti-cheating violations.'
+        : `Warning ${submission.violationCount}/3: Please stay on the test window.`,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   startEssay,
   autoSaveEssay,
   submitEssay,
+  recordEssayViolation,
   getTeacherSubmissions,
   evaluateEssay,
   getMyEssaySubmissions,

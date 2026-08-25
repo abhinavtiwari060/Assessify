@@ -1,20 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
 import Modal from './Modal';
 import { ShieldAlert, AlertOctagon, Maximize } from 'lucide-react';
 
-const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
+const AntiCheatingTracker = ({ attemptId, attemptType = 'mcq', onAutoSubmit, active = true }) => {
   const [violationCount, setViolationCount] = useState(0);
   const [warningModalOpen, setWarningModalOpen] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const lastViolationTimeRef = useRef(0);
 
   const handleViolation = useCallback(
     async (type, details) => {
       if (!attemptId || !active) return;
 
+      const now = Date.now();
+      if (now - lastViolationTimeRef.current < 1000) {
+        // Cooldown 1 second to prevent duplicate event bursts
+        return;
+      }
+      lastViolationTimeRef.current = now;
+
+      const endpoint = attemptType === 'essay'
+        ? `/essays/submissions/${attemptId}/violation`
+        : `/attempts/${attemptId}/violation`;
+
       try {
-        const res = await api.post(`/attempts/${attemptId}/violation`, { type, details });
+        const res = await api.post(endpoint, { type, details });
         const { violationCount: newCount, isAutoSubmitted, message } = res.data;
 
         setViolationCount(newCount);
@@ -33,7 +45,7 @@ const AntiCheatingTracker = ({ attemptId, onAutoSubmit, active = true }) => {
         console.error('Failed to log violation:', err);
       }
     },
-    [attemptId, active, onAutoSubmit]
+    [attemptId, attemptType, active, onAutoSubmit]
   );
 
   // Enter fullscreen request

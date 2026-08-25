@@ -73,6 +73,7 @@ const TakeEssayTest = () => {
   }, [testId, navigate, addToast, initialSubmissionFromState, verifiedCodeFromState]);
 
   const handleTextChange = (e) => {
+    if (submittingRef.current || submission?.status !== 'in_progress') return;
     const text = e.target.value;
     setEssayText(text);
     const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
@@ -83,7 +84,7 @@ const TakeEssayTest = () => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
 
     saveTimerRef.current = setTimeout(async () => {
-      if (!submission) return;
+      if (!submission || submittingRef.current || submission?.status !== 'in_progress') return;
       try {
         await api.put(`/essays/submissions/${submission._id}/save`, {
           essayText: text,
@@ -161,7 +162,9 @@ const TakeEssayTest = () => {
     <div className="space-y-6 max-w-5xl mx-auto pb-12 text-[var(--text-main)]">
       <AntiCheatingTracker
         attemptId={submission?._id}
+        attemptType="essay"
         onAutoSubmit={handleFinalSubmit}
+        active={!submitting && submission?.status === 'in_progress'}
       />
 
       {/* Header bar */}

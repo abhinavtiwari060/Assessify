@@ -63,6 +63,17 @@ const essaySubmissionSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    violations: [
+      {
+        timestamp: { type: Date, default: Date.now },
+        type: { type: String, required: true },
+        details: { type: String, default: '' },
+      },
+    ],
+    violationCount: {
+      type: Number,
+      default: 0,
+    },
     submittedAt: {
       type: Date,
       default: null,

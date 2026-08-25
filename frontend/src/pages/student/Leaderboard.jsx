@@ -1,33 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
-import { TableSkeleton } from '../../components/LoadingSkeleton';
-import EmptyState from '../../components/EmptyState';
-import { Trophy, Info } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import Modal from '../../components/Modal';
+import { Trophy, Info, RotateCcw, AlertTriangle } from 'lucide-react';
 
 const Leaderboard = () => {
+  const { isAdmin } = useAuth();
+  const { addToast } = useToast();
   const [leaderboard, setLeaderboard] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [loading, setLoading] = useState(true);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [lbRes, subRes] = await Promise.all([
+        api.get(`/analytics/leaderboard${selectedSubject ? `?subjectId=${selectedSubject}` : ''}`),
+        api.get('/subjects'),
+      ]);
+      setLeaderboard(lbRes.data);
+      setSubjects(subRes.data);
+    } catch (err) {
+      console.error('Failed to load leaderboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [lbRes, subRes] = await Promise.all([
-          api.get(`/analytics/leaderboard${selectedSubject ? `?subjectId=${selectedSubject}` : ''}`),
-          api.get('/subjects'),
-        ]);
-        setLeaderboard(lbRes.data);
-        setSubjects(subRes.data);
-      } catch (err) {
-        console.error('Failed to load leaderboard:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, [selectedSubject]);
+
+  const handleResetLeaderboard = async () => {
+    if (resetting) return;
+    setResetting(true);
+    try {
+      const res = await api.post('/admin/leaderboard/reset');
+      addToast(res.data.message || 'Leaderboard reset successfully!', 'success');
+      setResetModalOpen(false);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to reset leaderboard:', err);
+      addToast(err.response?.data?.message || 'Failed to reset leaderboard', 'error');
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const getRankBadge = (rank) => {
     if (rank === 1)
@@ -65,19 +85,32 @@ const Leaderboard = () => {
           </p>
         </div>
 
-        {/* Subject Filter */}
-        <select
-          value={selectedSubject}
-          onChange={(e) => setSelectedSubject(e.target.value)}
-          className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
-        >
-          <option value="">All Subjects Leaderboard</option>
-          {subjects.map((sub) => (
-            <option key={sub._id} value={sub._id}>
-              {sub.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Admin Leaderboard Reset Control */}
+          {isAdmin && (
+            <button
+              onClick={() => setResetModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4 text-white" />
+              <span>Reset Leaderboard</span>
+            </button>
+          )}
+
+          {/* Subject Filter */}
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            className="bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] shadow-xs focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+          >
+            <option value="">All Subjects Leaderboard</option>
+            {subjects.map((sub) => (
+              <option key={sub._id} value={sub._id}>
+                {sub.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Transparent Ranking Rule Explanation Banner */}
@@ -147,6 +180,48 @@ const Leaderboard = () => {
           </div>
         </div>
       )}
+
+      {/* Admin Leaderboard Reset Confirmation Modal */}
+      <Modal
+        isOpen={resetModalOpen}
+        onClose={() => !resetting && setResetModalOpen(false)}
+        title="Reset Platform Leaderboard"
+        footer={
+          <>
+            <button
+              onClick={() => setResetModalOpen(false)}
+              disabled={resetting}
+              className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--text-main)] bg-[var(--bg-sub)] cursor-pointer disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleResetLeaderboard}
+              disabled={resetting}
+              className="px-5 py-2 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] text-white font-extrabold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+            >
+              {resetting ? (
+                <>
+                  <RotateCcw className="w-3.5 h-3.5 text-white animate-spin" />
+                  <span>Resetting...</span>
+                </>
+              ) : (
+                <span>Confirm Reset</span>
+              )}
+            </button>
+          </>
+        }
+      >
+        <div className="text-center py-4 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444] flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h4 className="text-lg font-extrabold text-[var(--text-main)]">Reset Leaderboard Cutoff?</h4>
+          <p className="text-xs text-[var(--text-sub)] leading-relaxed max-w-sm mx-auto">
+            This will reset the current leaderboard rankings. Student test history, exam scores, and report cards will <strong>NOT</strong> be deleted.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

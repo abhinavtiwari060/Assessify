@@ -11,6 +11,7 @@ const {
   getPasswordResetRequests,
   processPasswordReset,
   getAuditLogs,
+  resetLeaderboard,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -29,6 +30,7 @@ router.put('/teachers/:id/approve', approveTeacher);
 router.get('/password-resets', getPasswordResetRequests);
 router.post('/password-resets/:id/reset', processPasswordReset);
 
+router.post('/leaderboard/reset', resetLeaderboard);
 router.get('/audit-logs', getAuditLogs);
 
 module.exports = router;
