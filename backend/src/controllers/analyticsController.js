@@ -3,7 +3,7 @@ const Test = require('../models/Test');
 const Question = require('../models/Question');
 const EssaySubmission = require('../models/EssaySubmission');
 const User = require('../models/User');
-const Subject = require('../models/Subject');
+const PlatformSettings = require('../models/PlatformSettings');
 
 // @desc    Get transparent leaderboard (Score -> Accuracy -> Time tiebreaker)
 // @route   GET /api/analytics/leaderboard
@@ -13,6 +13,16 @@ const getLeaderboard = async (req, res) => {
     const { subjectId, testId, limit = 20 } = req.query;
 
     let query = { status: { $ne: 'in_progress' } };
+
+    // Respect Admin Leaderboard Reset cutoff if active
+    const settings = await PlatformSettings.findOne().lean();
+    if (settings && settings.leaderboardResetAt) {
+      const resetCutoff = new Date(settings.leaderboardResetAt);
+      query.$or = [
+        { submittedAt: { $gte: resetCutoff } },
+        { submittedAt: null, createdAt: { $gte: resetCutoff } },
+      ];
+    }
 
     if (testId) {
       query.testId = testId;

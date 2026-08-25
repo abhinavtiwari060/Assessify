@@ -294,6 +294,8 @@ const processPasswordReset = async (req, res) => {
   }
 };
 
+const PlatformSettings = require('../models/PlatformSettings');
+
 // @desc    Get system audit logs
 // @route   GET /api/admin/audit-logs
 // @access  Private (Admin)
@@ -310,6 +312,34 @@ const getAuditLogs = async (req, res) => {
   }
 };
 
+// @desc    Reset platform leaderboard cutoff (Admin only)
+// @route   POST /api/admin/leaderboard/reset
+// @access  Private (Admin)
+const resetLeaderboard = async (req, res) => {
+  try {
+    const resetAt = new Date();
+    const settings = await PlatformSettings.findOneAndUpdate(
+      {},
+      { leaderboardResetAt: resetAt },
+      { upsert: true, new: true }
+    );
+
+    await logAudit(
+      req,
+      'LEADERBOARD_RESET',
+      `Admin ${req.user.email} reset platform leaderboard rankings (Cutoff: ${resetAt.toISOString()})`
+    );
+
+    res.json({
+      success: true,
+      message: 'Leaderboard reset successfully',
+      resetAt: settings.leaderboardResetAt,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
   getTeachers,
@@ -321,4 +351,5 @@ module.exports = {
   getPasswordResetRequests,
   processPasswordReset,
   getAuditLogs,
+  resetLeaderboard,
 };
