@@ -33,6 +33,7 @@ const Profile = lazy(() => import('./pages/student/Profile'));
 const TeacherDashboard = lazy(() => import('./pages/teacher/TeacherDashboard'));
 const MyTests = lazy(() => import('./pages/teacher/MyTests'));
 const CreateMcqTest = lazy(() => import('./pages/teacher/CreateMcqTest'));
+const CreateReadingComprehension = lazy(() => import('./pages/teacher/CreateReadingComprehension'));
 const PdfToMcq = lazy(() => import('./pages/teacher/PdfToMcq'));
 const CreateEssayTest = lazy(() => import('./pages/teacher/CreateEssayTest'));
 const EvaluateEssay = lazy(() => import('./pages/teacher/EvaluateEssay'));
