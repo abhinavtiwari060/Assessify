@@ -16,6 +16,7 @@ import ChangePassword from './pages/auth/ChangePassword';
 import StudentDashboard from './pages/student/StudentDashboard';
 import AvailableTests from './pages/student/AvailableTests';
 import TakeMcqTest from './pages/student/TakeMcqTest';
+import TakeReadingComprehension from './pages/student/TakeReadingComprehension';
 import TakeEssayTest from './pages/student/TakeEssayTest';
 import AttemptResult from './pages/student/AttemptResult';
 import TestHistory from './pages/student/TestHistory';
