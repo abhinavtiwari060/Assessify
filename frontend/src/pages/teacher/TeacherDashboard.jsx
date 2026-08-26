@@ -13,6 +13,7 @@ import {
   Sparkles,
   ArrowRight,
   FileSpreadsheet,
+  BookOpen,
 } from 'lucide-react';
 
 const TeacherDashboard = () => {
@@ -76,6 +77,12 @@ const TeacherDashboard = () => {
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-xs shadow-xs transition-colors"
           >
             <PlusCircle className="w-4 h-4 text-white" /> Create MCQ Test
+          </Link>
+          <Link
+            to="/teacher/create-reading-comprehension"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FA8128]/15 hover:bg-[#FA8128]/25 text-[#FA8128] border border-[#FA8128]/40 font-extrabold text-xs transition-colors"
+          >
+            <BookOpen className="w-4 h-4 text-[#FA8128]" /> Create Reading Comprehension
           </Link>
           <Link
             to="/teacher/pdf-mcq"

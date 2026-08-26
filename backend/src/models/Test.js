@@ -24,8 +24,14 @@ const testSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['mcq', 'essay'],
+      enum: ['mcq', 'reading_comprehension', 'essay'],
       default: 'mcq',
+    },
+    testType: {
+      type: String,
+      enum: ['mcq', 'reading_comprehension', 'essay'],
+      default: 'mcq',
+      index: true,
     },
     timerMode: {
       type: String,

@@ -1,4 +1,4 @@
-const { extractMcqsFromBuffer } = require('../services/pdfExtractor');
+const { extractMcqsFromBuffer, extractReadingComprehensionFromBuffer } = require('../services/pdfExtractor');
 const { logAudit } = require('../middleware/auth');
 
 // @desc    Extract MCQs from uploaded PDF
@@ -60,4 +60,63 @@ const extractPdfQuestions = async (req, res) => {
   }
 };
 
-module.exports = { extractPdfQuestions };
+// @desc    Extract Reading Comprehension from uploaded PDF
+// @route   POST /api/pdf/extract-rc
+// @access  Private (Teacher / Admin)
+const extractPdfReadingComprehension = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Please upload a PDF file' });
+    }
+
+    const result = await extractReadingComprehensionFromBuffer(req.file.buffer, req.file.originalname);
+
+    if (!result.success) {
+      return res.status(200).json({
+        success: false,
+        status: result.status || 'failed',
+        fileName: req.file.originalname,
+        passages: [],
+        questions: [],
+        warnings: result.warnings || ['This PDF does not appear to contain a valid Reading Comprehension passage and question structure.'],
+        error: result.message || 'This PDF does not appear to contain a valid Reading Comprehension passage and question structure.',
+      });
+    }
+
+    await logAudit(
+      req,
+      'PDF_RC_EXTRACT',
+      `Processed uploaded file "${req.file.originalname}": ${result.passages?.length || 0} passage(s) extracted`
+    );
+
+    res.json({
+      success: true,
+      status: result.status || 'success',
+      message: result.message || 'PDF processed successfully. Please review extracted passage and questions before saving.',
+      fileName: req.file.originalname,
+      textLength: result.textLength || 0,
+      pageCount: result.pageCount || 1,
+      passageCount: result.passageCount || 0,
+      questionCount: result.questionCount || 0,
+      passages: result.passages || [],
+      questions: result.questions || [],
+      warnings: result.warnings || [],
+    });
+  } catch (error) {
+    console.error('PDF RC extraction controller error:', error);
+    res.status(500).json({
+      success: false,
+      status: 'failed',
+      message: error.message || 'Reading Comprehension PDF extraction failed.',
+      passages: [],
+      questions: [],
+      warnings: [error.message || 'Fatal extraction error.'],
+      error: error.message || 'Reading Comprehension PDF extraction failed.',
+    });
+  }
+};
+
+module.exports = {
+  extractPdfQuestions,
+  extractPdfReadingComprehension,
+};

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { extractPdfQuestions } = require('../controllers/pdfController');
+const { extractPdfQuestions, extractPdfReadingComprehension } = require('../controllers/pdfController');
 const { protect, authorize } = require('../middleware/auth');
 
 // Configure multer memory storage
@@ -23,6 +23,14 @@ router.post(
   authorize('teacher', 'admin'),
   upload.single('pdf'),
   extractPdfQuestions
+);
+
+router.post(
+  '/extract-rc',
+  protect,
+  authorize('teacher', 'admin'),
+  upload.single('pdf'),
+  extractPdfReadingComprehension
 );
 
 module.exports = router;

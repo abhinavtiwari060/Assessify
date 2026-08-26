@@ -42,6 +42,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           { to: '/teacher/tests', label: 'My Tests', icon: FileCheck2 },
           { to: '/teacher/reports', label: 'Student Reports', icon: FileSpreadsheet },
           { to: '/teacher/create-test', label: 'Create Test (MCQ)', icon: PlusCircle },
+          { to: '/teacher/create-reading-comprehension', label: 'Create Reading Comp', icon: BookOpen },
           { to: '/teacher/pdf-mcq', label: 'PDF → MCQ Extractor', icon: FileUp },
           { to: '/teacher/create-essay', label: 'Create Essay Test', icon: FileEdit },
           { to: '/teacher/essays/evaluations', label: 'Essay Evaluations', icon: FileSpreadsheet },

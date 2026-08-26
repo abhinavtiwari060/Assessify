@@ -642,10 +642,82 @@ const extractMcqsFromBuffer = async (pdfBuffer, fileName = '') => {
   }
 };
 
+/**
+ * Dedicated Buffer Extractor for Reading Comprehension PDFs
+ */
+const extractReadingComprehensionFromBuffer = async (pdfBuffer, fileName = '') => {
+  const mcqResult = await extractMcqsFromBuffer(pdfBuffer, fileName);
+
+  if (!mcqResult.success || !mcqResult.questions || mcqResult.questions.length === 0) {
+    return {
+      success: false,
+      status: 'failed',
+      message: 'This PDF does not appear to contain a valid Reading Comprehension passage and question structure.',
+      fileName,
+      pageCount: mcqResult.pageCount || 0,
+      passages: [],
+      questions: [],
+      warnings: ['This PDF does not appear to contain a valid Reading Comprehension passage and question structure.'],
+    };
+  }
+
+  // Filter for comprehension questions
+  const compQuestions = mcqResult.questions.filter((q) => q.type === 'comprehension' || q.passageId);
+
+  if (compQuestions.length === 0) {
+    return {
+      success: false,
+      status: 'no_passage',
+      message: 'This PDF does not appear to contain a valid Reading Comprehension passage and question structure.',
+      fileName,
+      pageCount: mcqResult.pageCount || 1,
+      passages: [],
+      questions: [],
+      warnings: ['This PDF does not appear to contain a valid Reading Comprehension passage and question structure.'],
+    };
+  }
+
+  // Group by passageId
+  const passagesMap = new Map();
+  compQuestions.forEach((q) => {
+    const pId = q.passageId || 'passage_default';
+    if (!passagesMap.has(pId)) {
+      passagesMap.set(pId, {
+        passageId: pId,
+        passage: q.passage || '',
+        questions: [],
+      });
+    }
+    const group = passagesMap.get(pId);
+    if (!group.passage && q.passage) {
+      group.passage = q.passage;
+    }
+    group.questions.push(q);
+  });
+
+  const passages = Array.from(passagesMap.values());
+
+  return {
+    success: true,
+    status: 'success',
+    message: `Successfully extracted ${passages.length} reading comprehension passage(s) with ${compQuestions.length} question(s).`,
+    fileName,
+    pageCount: mcqResult.pageCount,
+    textLength: mcqResult.textLength,
+    passageCount: passages.length,
+    questionCount: compQuestions.length,
+    passages,
+    questions: compQuestions,
+    allQuestions: mcqResult.questions,
+    warnings: mcqResult.warnings || [],
+  };
+};
+
 module.exports = {
   extractMcqsFromBuffer,
+  extractReadingComprehensionFromBuffer,
   parsePdfTextToMCQs,
-  splitInlineOptions,
+  customPageRender,
   normalizeText,
   isScannedPdf,
 };
