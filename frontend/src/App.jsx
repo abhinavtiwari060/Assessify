@@ -187,6 +187,7 @@ const App = () => {
                 <Route path="/student/dashboard" element={<ProtectedRoute allowedRoles={['student']}><StudentDashboard /></ProtectedRoute>} />
                 <Route path="/student/available-tests" element={<ProtectedRoute allowedRoles={['student']}><AvailableTests /></ProtectedRoute>} />
                 <Route path="/student/test/mcq/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeMcqTest /></ProtectedRoute>} />
+                <Route path="/student/test/reading-comprehension/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeReadingComprehension /></ProtectedRoute>} />
                 <Route path="/student/test/essay/:id" element={<ProtectedRoute allowedRoles={['student']}><TakeEssayTest /></ProtectedRoute>} />
                 <Route path="/student/attempt/:id/result" element={<ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}><AttemptResult /></ProtectedRoute>} />
                 <Route path="/student/history" element={<ProtectedRoute allowedRoles={['student']}><TestHistory /></ProtectedRoute>} />
@@ -201,6 +202,8 @@ const App = () => {
                 <Route path="/teacher/reports" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><TeacherReports /></ProtectedRoute>} />
                 <Route path="/teacher/create-test" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest /></ProtectedRoute>} />
                 <Route path="/teacher/edit-test/:id" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateMcqTest isEditMode={true} /></ProtectedRoute>} />
+                <Route path="/teacher/create-reading-comprehension" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateReadingComprehension /></ProtectedRoute>} />
+                <Route path="/teacher/edit-reading-comprehension/:id" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateReadingComprehension isEditMode={true} /></ProtectedRoute>} />
                 <Route path="/teacher/pdf-mcq" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><PdfToMcq /></ProtectedRoute>} />
                 <Route path="/teacher/create-essay" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><CreateEssayTest /></ProtectedRoute>} />
                 <Route path="/teacher/essays/evaluations" element={<ProtectedRoute allowedRoles={['teacher', 'admin']}><EvaluateEssay /></ProtectedRoute>} />

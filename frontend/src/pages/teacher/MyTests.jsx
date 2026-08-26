@@ -13,12 +13,14 @@ import {
   FileUp,
   KeyRound,
   FileText,
+  BookOpen,
 } from 'lucide-react';
 
 const MyTests = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [filterType, setFilterType] = useState('all');
   const { addToast } = useToast();
 
   const fetchTests = async () => {
@@ -103,6 +105,13 @@ const MyTests = () => {
             <span>Create MCQ Test</span>
           </Link>
           <Link
+            to="/teacher/create-reading-comprehension"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FA8128]/15 hover:bg-[#FA8128]/25 border border-[#FA8128]/40 text-[#FA8128] font-extrabold text-xs transition-colors"
+          >
+            <BookOpen className="w-4 h-4 text-[#FA8128]" />
+            <span>Create Reading Comp</span>
+          </Link>
+          <Link
             to="/teacher/create-essay"
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)] text-[var(--text-main)] font-bold text-xs transition-colors"
           >
@@ -119,12 +128,34 @@ const MyTests = () => {
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-[var(--border)] pb-3">
+        {[
+          { key: 'all', label: 'All Content' },
+          { key: 'mcq', label: 'MCQ Tests' },
+          { key: 'reading_comprehension', label: 'Reading Comprehension' },
+          { key: 'essay', label: 'Essay Prompts' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setFilterType(tab.key)}
+            className={`px-4 py-1.5 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
+              filterType === tab.key
+                ? 'bg-[#FA8128] text-white shadow-xs'
+                : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-sub)] hover:bg-[var(--bg-sub)]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <TableSkeleton />
       ) : tests.length === 0 ? (
         <EmptyState
           title="No tests created yet"
-          description="Create your first MCQ or Essay test to begin evaluating students."
+          description="Create your first MCQ, Reading Comprehension, or Essay test to begin evaluating students."
         />
       ) : (
         <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] overflow-hidden shadow-xs">
@@ -141,8 +172,15 @@ const MyTests = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]">
-                {tests.map((test) => {
+                {tests
+                  .filter((t) => {
+                    if (filterType === 'all') return true;
+                    const tType = t.testType || t.type || 'mcq';
+                    return tType === filterType;
+                  })
+                  .map((test) => {
                   const status = test.status || 'DRAFT';
+                  const displayType = test.testType || test.type || 'mcq';
                   return (
                     <tr key={test._id} className="hover:bg-[var(--bg-sub)] transition-colors">
                       <td className="px-5 py-4">
@@ -155,7 +193,7 @@ const MyTests = () => {
                       </td>
                       <td className="px-5 py-4 font-bold uppercase text-xs">
                         <span className="px-2.5 py-0.5 rounded-md text-[10px] bg-[var(--bg-sub)] text-[#FA8128] border border-[var(--border)]">
-                          {test.type}
+                          {displayType.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="px-5 py-4">
@@ -213,7 +251,23 @@ const MyTests = () => {
                             </button>
                           )}
 
-                          {test.type === 'essay' && (
+                          {displayType === 'reading_comprehension' ? (
+                            <Link
+                              to={`/teacher/edit-reading-comprehension/${test._id}`}
+                              className="p-1.5 text-[var(--text-sub)] hover:bg-[var(--bg-sub)] rounded-xl transition-colors cursor-pointer"
+                              title="Edit Reading Comprehension"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Link>
+                          ) : displayType === 'mcq' ? (
+                            <Link
+                              to={`/teacher/edit-test/${test._id}`}
+                              className="p-1.5 text-[var(--text-sub)] hover:bg-[var(--bg-sub)] rounded-xl transition-colors cursor-pointer"
+                              title="Edit Test"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Link>
+                          ) : (
                             <Link
                               to="/teacher/essays/evaluations"
                               className="p-1.5 text-[#FA8128] hover:bg-[var(--bg-sub)] rounded-xl font-bold text-xs flex items-center gap-1"
@@ -223,14 +277,6 @@ const MyTests = () => {
                               <span>Submissions</span>
                             </Link>
                           )}
-
-                          <Link
-                            to={test.type === 'mcq' ? `/teacher/edit-test/${test._id}` : `/teacher/create-essay`}
-                            className="p-1.5 text-[var(--text-sub)] hover:text-[var(--text-main)] rounded-xl hover:bg-[var(--bg-sub)]"
-                            title="Edit Test"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Link>
 
                           <button
                             onClick={() => handleDelete(test._id, test.title)}

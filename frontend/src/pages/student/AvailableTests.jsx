@@ -91,6 +91,16 @@ const AvailableTests = () => {
         navigate(`/student/test/essay/${targetTest._id}`, {
           state: { initialSubmission: startRes.data, verifiedCode: trimmed },
         });
+      } else if (activeTestForCode.type === 'reading_comprehension' || activeTestForCode.testType === 'reading_comprehension') {
+        const startRes = await api.post(`/attempts/start/${activeTestForCode._id}`, {
+          code: trimmed,
+        });
+        addToast('Test code verified! Starting Reading Comprehension session...', 'success');
+        const targetTest = activeTestForCode;
+        setActiveTestForCode(null);
+        navigate(`/student/test/reading-comprehension/${targetTest._id}`, {
+          state: { initialAttempt: startRes.data, verifiedCode: trimmed },
+        });
       } else {
         const startRes = await api.post(`/attempts/start/${activeTestForCode._id}`, {
           code: trimmed,
@@ -158,6 +168,7 @@ const AvailableTests = () => {
           >
             <option value="">All Test Types</option>
             <option value="mcq">MCQ Tests</option>
+            <option value="reading_comprehension">Reading Comprehension</option>
             <option value="essay">Essay Tests</option>
           </select>
         </div>

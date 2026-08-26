@@ -302,12 +302,15 @@ const createTest = async (req, res) => {
 
     const testCode = await generateUniqueTestCode();
 
+    const determinedType = req.body.testType || (type === 'reading_comprehension' ? 'reading_comprehension' : type || 'mcq');
+
     const newTest = await Test.create({
       title,
       description: description || '',
       subjectId,
       teacherId: req.user._id, // Enforce logged in teacher ownership!
-      type: type || 'mcq',
+      type: determinedType,
+      testType: determinedType,
       timerMode: timerMode || 'full',
       durationMinutes: durationMinutes || 30,
       perQuestionSeconds: perQuestionSeconds || 60,
