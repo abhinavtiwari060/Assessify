@@ -90,6 +90,11 @@ const filterHeadersAndFooters = (pages) => {
 const splitInlineOptions = (line) => {
   if (!line || line.trim().length === 0) return [line];
 
+  // Ignore error detection sentences containing slashes between parts (e.g. "... / (B) ... / (C) ...")
+  if (/\/\s*[\(\[]?[B-E][\)\.\s]/i.test(line)) {
+    return [line];
+  }
+
   const markerRegex = /(?:^|\s+)(?:([A-Ea-e1-6])[\.\:\)\-]|[\(\[\{]([A-Ea-e1-6])[\)\]\}])\s*/g;
   const matches = [];
   let match;
@@ -157,6 +162,13 @@ const detectQuestionStart = (line) => {
 };
 
 const detectOptionStart = (line, activeOptionsCount = 0) => {
+  if (!line || line.trim().length === 0) return null;
+
+  // Safeguard: If line contains multiple error/part markers like "(A) ... / (B) ... / (C) ...", it is question text, not an option start
+  if (/[\(\[]A[\)\]].*[\(\[]B[\)\]]/i.test(line)) {
+    return null;
+  }
+
   const letterRegex = /^(?:([A-Ea-e])[\.\:\)\-]|[\(\[\{]([A-Ea-e])[\)\]\}])\s*(.*)/;
   const letterMatch = line.match(letterRegex);
   if (letterMatch) {
@@ -207,9 +219,34 @@ const detectAnswerKeyHeader = (line) => {
 };
 
 const detectPassageStart = (line) => {
-  return /^(?:PASSAGE(?:\s+\d+)?|READING\s+PASSAGE|COMPREHENSION(?:\s+PASSAGE)?|Read\s+the\s+(?:following\s+)?passage[^\n]*)/i.test(
-    line.trim()
+  const clean = line.trim();
+  return /^(?:Reading\s+Comprehension(?:\s+Passage)?|READING\s+COMPREHENSION(?:\s+PASSAGE)?|Comprehension\s+Passage|PASSAGE(?:\s+\d+)?|Reading\s+Passage|Read\s+the\s+(?:following\s+)?passage[^\n]*)/i.test(
+    clean
   );
+};
+
+const formatPassageText = (lines) => {
+  if (!lines || lines.length === 0) return '';
+  const paragraphs = [];
+  let currentPara = [];
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (currentPara.length > 0) {
+        paragraphs.push(currentPara.join(' '));
+        currentPara = [];
+      }
+    } else {
+      currentPara.push(trimmed);
+    }
+  });
+
+  if (currentPara.length > 0) {
+    paragraphs.push(currentPara.join(' '));
+  }
+
+  return paragraphs.join('\n\n');
 };
 
 const parseAnswerKeySection = (lines) => {
@@ -327,7 +364,7 @@ function parsePdfTextToMCQs(rawText) {
         passageCounter++;
         currentPassage = {
           id: `passage_${Date.now()}_${passageCounter}`,
-          text: line,
+          lines: [],
           isFirst: true,
         };
         currentState = 'PASSAGE';
@@ -341,12 +378,13 @@ function parsePdfTextToMCQs(rawText) {
         }
 
         if (!currentQuestion) {
-          const isComp = !!(currentPassage && currentPassage.text.trim().length > 0);
+          const passageText = currentPassage ? formatPassageText(currentPassage.lines) : '';
+          const isComp = !!(currentPassage && passageText.length > 0);
           currentQuestion = {
             questionNumber: parseInt(qStart.qNum, 10) || (extractedQuestions.length + 1),
             qNum: qStart.qNum,
             type: isComp ? 'comprehension' : 'mcq',
-            passage: isComp && currentPassage.isFirst ? currentPassage.text.trim() : '',
+            passage: isComp && currentPassage.isFirst ? passageText : '',
             passageId: isComp ? currentPassage.id : null,
             questionText: qStart.text,
             options: [],
@@ -366,7 +404,7 @@ function parsePdfTextToMCQs(rawText) {
       }
 
       if (currentState === 'PASSAGE' && currentPassage) {
-        currentPassage.text += '\n' + line;
+        currentPassage.lines.push(line);
         return;
       }
 
@@ -531,6 +569,27 @@ const extractMcqsFromBuffer = async (pdfBuffer, fileName = '') => {
 
     const questions = parsePdfTextToMCQs(text);
     const warnings = [];
+
+    // Validation for comprehension groups
+    const passageMap = new Map();
+    questions.forEach((q) => {
+      if (q.type === 'comprehension' && q.passageId) {
+        if (!passageMap.has(q.passageId)) {
+          passageMap.set(q.passageId, { count: 0, hasPassageText: false });
+        }
+        const info = passageMap.get(q.passageId);
+        info.count += 1;
+        if (q.passage && q.passage.trim().length > 0) {
+          info.hasPassageText = true;
+        }
+      }
+    });
+
+    passageMap.forEach((info, pId) => {
+      if (!info.hasPassageText) {
+        warnings.push(`Reading comprehension group (${pId}) is missing passage text.`);
+      }
+    });
 
     if (questions.length === 0) {
       warnings.push('No valid multiple-choice questions could be detected in this document.');
