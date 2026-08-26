@@ -17,7 +17,7 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, bio, rollNo } = req.body;
+    const { name, email, password, bio, rollNo, role } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please enter all required fields' });
@@ -35,9 +35,8 @@ const registerUser = async (req, res) => {
       }
     }
 
-    // SECURITY HARDENING: Public registration endpoint must ALWAYS enforce role = 'student'.
-    // Clients must NEVER be able to self-assign 'admin' or 'teacher' roles via public registration.
-    const userRole = 'student';
+    // Allow student or teacher roles during public registration; prevent self-assignment of admin role
+    const userRole = role === 'teacher' ? 'teacher' : 'student';
 
     const user = await User.create({
       name,
