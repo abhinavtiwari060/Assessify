@@ -169,88 +169,248 @@ const AttemptResult = () => {
       {/* Question Breakdown Review */}
       <div className="space-y-4">
         <h3 className="text-xl font-extrabold text-[var(--text-main)]">Question-by-Question Review</h3>
-        <div className="space-y-4">
-          {questions.map((q, idx) => {
-            const isCorrect = q.isCorrect;
-            const isUnattempted = q.selectedOptionIndex === null || q.selectedOptionIndex === undefined;
+        <div className="space-y-6">
+          {(() => {
+            const renderItems = [];
+            let currentGroup = null;
 
-            return (
-              <div
-                key={q._id || idx}
-                className={`bg-[var(--bg-card)] rounded-2xl p-6 border shadow-sm transition-all ${
-                  isCorrect
-                    ? 'border-[#22C55E]/30 bg-[#22C55E]/5'
-                    : isUnattempted
-                    ? 'border-[var(--border)]'
-                    : 'border-[#EF4444]/30 bg-[#EF4444]/5'
-                }`}
-              >
-                {q.passage && (
-                  <div className="p-4 rounded-xl bg-[#FA8128]/10 border border-[#FA8128]/30 space-y-1.5 mb-4">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FA8128] flex items-center gap-1.5">
-                      <BookOpen className="w-4 h-4" /> Reading Passage
-                    </span>
-                    <p className="text-xs font-serif leading-relaxed text-[var(--text-main)] whitespace-pre-wrap">
-                      {q.passage}
-                    </p>
-                  </div>
-                )}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[var(--text-muted)]">Q{idx + 1} ({q.marks} marks)</span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                    isCorrect
-                      ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
-                      : isUnattempted
-                      ? 'bg-[var(--bg-sub)] text-[var(--text-muted)] border-[var(--border)]'
-                      : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30'
-                  }`}>
-                    {isCorrect ? 'Correct' : isUnattempted ? 'Unattempted' : 'Incorrect'}
-                  </span>
-                </div>
+            questions.forEach((q, idx) => {
+              if (q.type === 'comprehension' && q.passageId) {
+                if (currentGroup && currentGroup.passageId === q.passageId) {
+                  currentGroup.questions.push({ q, idx });
+                } else {
+                  if (currentGroup) renderItems.push(currentGroup);
+                  currentGroup = {
+                    type: 'comprehension_group',
+                    passageId: q.passageId,
+                    passage: q.passage || '',
+                    questions: [{ q, idx }],
+                  };
+                }
+              } else {
+                if (currentGroup) {
+                  renderItems.push(currentGroup);
+                  currentGroup = null;
+                }
+                renderItems.push({ type: 'single_mcq', q, idx });
+              }
+            });
+            if (currentGroup) renderItems.push(currentGroup);
 
-                <p className="text-base font-bold text-[var(--text-main)] mb-4 leading-relaxed">
-                  {q.questionText}
-                </p>
+            return renderItems.map((item, itemIdx) => {
+              if (item.type === 'comprehension_group') {
+                const groupPassageText =
+                  item.questions.find((itemObj) => itemObj.q.passage)?.q.passage ||
+                  item.passage ||
+                  '';
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
-                  {q.options.map((opt, optIdx) => {
-                    const isUserChoice = q.selectedOptionIndex === optIdx;
-                    const isRightAnswer = q.correctAnswerIndex === optIdx;
-
-                    let optStyle = 'border-[var(--border)] bg-[var(--bg-sub)] text-[var(--text-main)]';
-                    if (isRightAnswer) {
-                      optStyle = 'border-[#22C55E] bg-[#22C55E]/15 text-[#22C55E] font-bold';
-                    } else if (isUserChoice && !isRightAnswer) {
-                      optStyle = 'border-[#EF4444] bg-[#EF4444]/15 text-[#EF4444] font-bold';
-                    }
-
-                    return (
-                      <div
-                        key={optIdx}
-                        className={`p-3.5 rounded-xl border text-sm flex items-center justify-between ${optStyle}`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <span className="w-6 h-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] font-bold text-xs flex items-center justify-center">
-                            {String.fromCharCode(65 + optIdx)}
-                          </span>
-                          <span>{opt}</span>
-                        </div>
-                        {isRightAnswer && <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />}
-                        {isUserChoice && !isRightAnswer && <XCircle className="w-4 h-4 text-[#EF4444]" />}
+                return (
+                  <div
+                    key={`result-group-${item.passageId}-${itemIdx}`}
+                    className="bg-[var(--bg-card)] rounded-2xl p-6 border-2 border-[#FA8128]/40 shadow-sm space-y-6"
+                  >
+                    {/* Section Header */}
+                    <div className="flex items-center gap-3 border-b border-[#FA8128]/30 pb-4">
+                      <div className="w-9 h-9 rounded-xl bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30 flex items-center justify-center font-black">
+                        <BookOpen className="w-4 h-4" />
                       </div>
-                    );
-                  })}
-                </div>
+                      <div>
+                        <h4 className="font-extrabold text-base text-[var(--text-main)]">
+                          Reading Comprehension Section
+                        </h4>
+                        <p className="text-xs text-[var(--text-sub)]">
+                          {item.questions.length} question(s) bound to this passage
+                        </p>
+                      </div>
+                    </div>
 
-                {q.explanation && (
-                  <div className="bg-[var(--bg-sub)] rounded-xl p-4 text-xs text-[var(--text-sub)] border border-[var(--border)]">
-                    <strong className="text-[#FA8128]">Explanation: </strong>
-                    {q.explanation}
+                    {/* Passage Card */}
+                    {groupPassageText && (
+                      <div className="p-4 rounded-xl bg-[var(--bg-sub)] border border-[var(--border)] space-y-1.5">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FA8128] flex items-center gap-1.5">
+                          <BookOpen className="w-3.5 h-3.5" /> Reading Passage
+                        </span>
+                        <p className="text-xs font-serif leading-relaxed text-[var(--text-main)] whitespace-pre-wrap">
+                          {groupPassageText}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Sub-Questions */}
+                    <div className="space-y-4 pt-2">
+                      <h5 className="text-xs font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
+                        Passage Questions ({item.questions.length})
+                      </h5>
+
+                      {item.questions.map(({ q, idx }) => {
+                        const isCorrect = q.isCorrect;
+                        const isUnattempted =
+                          q.selectedOptionIndex === null || q.selectedOptionIndex === undefined;
+
+                        return (
+                          <div
+                            key={q._id || idx}
+                            className={`bg-[var(--bg-sub)] rounded-xl p-5 border shadow-sm transition-all space-y-3 ${
+                              isCorrect
+                                ? 'border-[#22C55E]/30 bg-[#22C55E]/5'
+                                : isUnattempted
+                                ? 'border-[var(--border)]'
+                                : 'border-[#EF4444]/30 bg-[#EF4444]/5'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-[var(--text-muted)]">
+                                Q{idx + 1} ({q.marks} marks)
+                              </span>
+                              <span
+                                className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                                  isCorrect
+                                    ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
+                                    : isUnattempted
+                                    ? 'bg-[var(--bg-card)] text-[var(--text-muted)] border-[var(--border)]'
+                                    : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30'
+                                }`}
+                              >
+                                {isCorrect ? 'Correct' : isUnattempted ? 'Unattempted' : 'Incorrect'}
+                              </span>
+                            </div>
+
+                            <p className="text-base font-bold text-[var(--text-main)] leading-relaxed">
+                              {q.questionText}
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {q.options.map((opt, optIdx) => {
+                                const isUserChoice = q.selectedOptionIndex === optIdx;
+                                const isRightAnswer = q.correctAnswerIndex === optIdx;
+
+                                let optStyle =
+                                  'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-main)]';
+                                if (isRightAnswer) {
+                                  optStyle =
+                                    'border-[#22C55E] bg-[#22C55E]/15 text-[#22C55E] font-bold';
+                                } else if (isUserChoice && !isRightAnswer) {
+                                  optStyle =
+                                    'border-[#EF4444] bg-[#EF4444]/15 text-[#EF4444] font-bold';
+                                }
+
+                                return (
+                                  <div
+                                    key={optIdx}
+                                    className={`p-3.5 rounded-xl border text-sm flex items-center justify-between ${optStyle}`}
+                                  >
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="w-6 h-6 rounded-lg bg-[var(--bg-sub)] border border-[var(--border)] font-bold text-xs flex items-center justify-center">
+                                        {String.fromCharCode(65 + optIdx)}
+                                      </span>
+                                      <span>{opt}</span>
+                                    </div>
+                                    {isRightAnswer && <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />}
+                                    {isUserChoice && !isRightAnswer && (
+                                      <XCircle className="w-4 h-4 text-[#EF4444]" />
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {q.explanation && (
+                              <div className="bg-[var(--bg-card)] rounded-xl p-4 text-xs text-[var(--text-sub)] border border-[var(--border)]">
+                                <strong className="text-[#FA8128]">Explanation: </strong>
+                                {q.explanation}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              }
+
+              // Standalone MCQ
+              const { q, idx } = item;
+              const isCorrect = q.isCorrect;
+              const isUnattempted =
+                q.selectedOptionIndex === null || q.selectedOptionIndex === undefined;
+
+              return (
+                <div
+                  key={q._id || idx}
+                  className={`bg-[var(--bg-card)] rounded-2xl p-6 border shadow-sm transition-all space-y-3 ${
+                    isCorrect
+                      ? 'border-[#22C55E]/30 bg-[#22C55E]/5'
+                      : isUnattempted
+                      ? 'border-[var(--border)]'
+                      : 'border-[#EF4444]/30 bg-[#EF4444]/5'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[var(--text-muted)]">
+                      Q{idx + 1} ({q.marks} marks)
+                    </span>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                        isCorrect
+                          ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
+                          : isUnattempted
+                          ? 'bg-[var(--bg-sub)] text-[var(--text-muted)] border-[var(--border)]'
+                          : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30'
+                      }`}
+                    >
+                      {isCorrect ? 'Correct' : isUnattempted ? 'Unattempted' : 'Incorrect'}
+                    </span>
+                  </div>
+
+                  <p className="text-base font-bold text-[var(--text-main)] leading-relaxed">
+                    {q.questionText}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {q.options.map((opt, optIdx) => {
+                      const isUserChoice = q.selectedOptionIndex === optIdx;
+                      const isRightAnswer = q.correctAnswerIndex === optIdx;
+
+                      let optStyle =
+                        'border-[var(--border)] bg-[var(--bg-sub)] text-[var(--text-main)]';
+                      if (isRightAnswer) {
+                        optStyle =
+                          'border-[#22C55E] bg-[#22C55E]/15 text-[#22C55E] font-bold';
+                      } else if (isUserChoice && !isRightAnswer) {
+                        optStyle =
+                          'border-[#EF4444] bg-[#EF4444]/15 text-[#EF4444] font-bold';
+                      }
+
+                      return (
+                        <div
+                          key={optIdx}
+                          className={`p-3.5 rounded-xl border text-sm flex items-center justify-between ${optStyle}`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-6 h-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] font-bold text-xs flex items-center justify-center">
+                              {String.fromCharCode(65 + optIdx)}
+                            </span>
+                            <span>{opt}</span>
+                          </div>
+                          {isRightAnswer && <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />}
+                          {isUserChoice && !isRightAnswer && (
+                            <XCircle className="w-4 h-4 text-[#EF4444]" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {q.explanation && (
+                    <div className="bg-[var(--bg-sub)] rounded-xl p-4 text-xs text-[var(--text-sub)] border border-[var(--border)]">
+                      <strong className="text-[#FA8128]">Explanation: </strong>
+                      {q.explanation}
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
         </div>
       </div>
     </div>

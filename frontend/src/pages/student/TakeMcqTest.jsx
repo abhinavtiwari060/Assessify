@@ -328,9 +328,14 @@ const TakeMcqTest = () => {
                 <div className="space-y-6">
                   {/* Question Header */}
                   <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-                    <span className="text-xs font-extrabold text-[var(--text-muted)]">
-                      Question {currentIndex + 1} of {questions.length}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-[var(--text-muted)]">
+                        Question {currentIndex + 1} of {questions.length}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">
+                        Section: Reading Comprehension
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={handleToggleFlag}
@@ -429,9 +434,14 @@ const TakeMcqTest = () => {
             <div className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
               {/* Question Header */}
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
-                <span className="text-sm font-extrabold text-[var(--text-muted)]">
-                  Question {currentIndex + 1} of {questions.length}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-[var(--text-muted)]">
+                    Question {currentIndex + 1} of {questions.length}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--bg-sub)] text-[var(--text-muted)] border border-[var(--border)]">
+                    Section: General MCQs
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleToggleFlag}
