@@ -33,6 +33,20 @@ const questionSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    type: {
+      type: String,
+      enum: ['mcq', 'comprehension'],
+      default: 'mcq',
+    },
+    passage: {
+      type: String,
+      default: '',
+    },
+    passageId: {
+      type: String,
+      default: null,
+      index: true,
+    },
     timerSeconds: {
       type: Number,
       default: null, // If set, overrides test perQuestionSeconds

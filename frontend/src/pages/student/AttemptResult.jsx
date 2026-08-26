@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Award,
   HelpCircle,
+  BookOpen,
 } from 'lucide-react';
 
 const AttemptResult = () => {
@@ -175,8 +176,8 @@ const AttemptResult = () => {
 
             return (
               <div
-                key={q._id}
-                className={`bg-[var(--bg-card)] rounded-2xl p-6 border transition-all ${
+                key={q._id || idx}
+                className={`bg-[var(--bg-card)] rounded-2xl p-6 border shadow-sm transition-all ${
                   isCorrect
                     ? 'border-[#22C55E]/30 bg-[#22C55E]/5'
                     : isUnattempted
@@ -184,6 +185,16 @@ const AttemptResult = () => {
                     : 'border-[#EF4444]/30 bg-[#EF4444]/5'
                 }`}
               >
+                {q.passage && (
+                  <div className="p-4 rounded-xl bg-[#FA8128]/10 border border-[#FA8128]/30 space-y-1.5 mb-4">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FA8128] flex items-center gap-1.5">
+                      <BookOpen className="w-4 h-4" /> Reading Passage
+                    </span>
+                    <p className="text-xs font-serif leading-relaxed text-[var(--text-main)] whitespace-pre-wrap">
+                      {q.passage}
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-[var(--text-muted)]">Q{idx + 1} ({q.marks} marks)</span>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${

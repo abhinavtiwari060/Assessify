@@ -15,6 +15,7 @@ import {
   RotateCcw,
   Send,
   HelpCircle,
+  BookOpen,
 } from 'lucide-react';
 
 const TakeMcqTest = () => {
@@ -254,6 +255,11 @@ const TakeMcqTest = () => {
   ).length;
   const unansweredCount = questions.length - answeredCount;
 
+  const currentPassageText = currentQuestion?.passageId
+    ? questions.find((q) => q.passageId === currentQuestion.passageId && q.passage)?.passage ||
+      currentQuestion.passage
+    : currentQuestion?.passage;
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Anti-Cheating Bar */}
@@ -294,104 +300,231 @@ const TakeMcqTest = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Question Display Panel */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
-            {/* Question Header */}
-            <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
-              <span className="text-sm font-extrabold text-[var(--text-muted)]">
-                Question {currentIndex + 1} of {questions.length}
-              </span>
-              <div className="flex items-center gap-2">
+          {currentPassageText ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column: Passage Panel */}
+              <div className="bg-[var(--bg-card)] rounded-2xl p-5 border-2 border-[#FA8128]/40 shadow-xs space-y-3 flex flex-col max-h-[600px]">
+                <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3 shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30 flex items-center justify-center font-black">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm text-[var(--text-main)]">
+                      Reading Passage
+                    </h3>
+                    <p className="text-[10px] text-[var(--text-sub)]">
+                      Read carefully to answer the question
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-1 text-xs sm:text-sm font-serif leading-relaxed text-[var(--text-main)] whitespace-pre-wrap bg-[var(--bg-sub)] p-4 rounded-xl border border-[var(--border)]">
+                  {currentPassageText}
+                </div>
+              </div>
+
+              {/* Right Column: Question Panel */}
+              <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs space-y-6 flex flex-col justify-between">
+                <div className="space-y-6">
+                  {/* Question Header */}
+                  <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                    <span className="text-xs font-extrabold text-[var(--text-muted)]">
+                      Question {currentIndex + 1} of {questions.length}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleToggleFlag}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          currentAnswer.isFlagged
+                            ? 'bg-[#FA8128] text-white'
+                            : 'bg-[var(--bg-sub)] text-[var(--text-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)]'
+                        }`}
+                      >
+                        <Bookmark className="w-3.5 h-3.5" />
+                        <span>{currentAnswer.isFlagged ? 'Flagged' : 'Flag'}</span>
+                      </button>
+
+                      {currentAnswer.selectedOptionIndex !== null && (
+                        <button
+                          onClick={handleClearChoice}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/20 cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Clear</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Question Text */}
+                  <div className="text-base sm:text-lg font-black text-[var(--text-main)] leading-snug">
+                    {currentQuestion?.questionText}
+                  </div>
+
+                  {/* Options List */}
+                  <div className="space-y-2.5">
+                    {currentQuestion?.options.map((option, idx) => {
+                      const isSelected = currentAnswer.selectedOptionIndex === idx;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => handleOptionSelect(idx)}
+                          className={`w-full text-left p-3.5 rounded-xl border-2 transition-all flex items-center justify-between group cursor-pointer ${
+                            isSelected
+                              ? 'border-[#FA8128] bg-[#FA8128]/10 text-[var(--text-main)] shadow-xs'
+                              : 'border-[var(--border)] hover:border-[#FA8128]/50 bg-[var(--bg-sub)] text-[var(--text-sub)]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`w-7 h-7 rounded-lg font-extrabold text-xs flex items-center justify-center transition-all ${
+                                isSelected
+                                  ? 'bg-[#FA8128] text-white'
+                                  : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] group-hover:bg-[#FA8128]/20'
+                              }`}
+                            >
+                              {String.fromCharCode(65 + idx)}
+                            </span>
+                            <span className="font-semibold text-xs sm:text-sm leading-snug">{option}</span>
+                          </div>
+                          {isSelected && <CheckCircle className="w-4 h-4 text-[#FA8128] shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Nav Controls */}
+                <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] mt-4">
+                  <button
+                    onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                    disabled={currentIndex === 0 || test?.isSequential}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border)] font-bold text-xs text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </button>
+
+                  {currentIndex < questions.length - 1 ? (
+                    <button
+                      onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
+                      className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-xs shadow-xs cursor-pointer"
+                    >
+                      <span>Next</span>
+                      <ChevronRight className="w-4 h-4 text-white" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmModalOpen(true)}
+                      className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-xs shadow-xs cursor-pointer"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Submit</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-[var(--bg-card)] rounded-2xl p-6 sm:p-8 border border-[var(--border)] shadow-xs space-y-6">
+              {/* Question Header */}
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+                <span className="text-sm font-extrabold text-[var(--text-muted)]">
+                  Question {currentIndex + 1} of {questions.length}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleToggleFlag}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      currentAnswer.isFlagged
+                        ? 'bg-[#FA8128] text-white shadow-xs'
+                        : 'bg-[var(--bg-sub)] text-[var(--text-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)]'
+                    }`}
+                  >
+                    <Bookmark className="w-3.5 h-3.5" />
+                    <span>{currentAnswer.isFlagged ? 'Flagged' : 'Flag for Review'}</span>
+                  </button>
+
+                  {currentAnswer.selectedOptionIndex !== null && (
+                    <button
+                      onClick={handleClearChoice}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/20 cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Clear Choice</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Question Text */}
+              <div className="text-lg sm:text-xl font-black text-[var(--text-main)] leading-relaxed">
+                {currentQuestion?.questionText}
+              </div>
+
+              {/* Options List */}
+              <div className="space-y-3 pt-2">
+                {currentQuestion?.options.map((option, idx) => {
+                  const isSelected = currentAnswer.selectedOptionIndex === idx;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleOptionSelect(idx)}
+                      className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between group cursor-pointer ${
+                        isSelected
+                          ? 'border-[#FA8128] bg-[#FA8128]/10 text-[var(--text-main)] shadow-xs'
+                          : 'border-[var(--border)] hover:border-[#FA8128]/50 bg-[var(--bg-sub)] text-[var(--text-sub)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <span
+                          className={`w-8 h-8 rounded-lg font-extrabold text-sm flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'bg-[#FA8128] text-white'
+                              : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] group-hover:bg-[#FA8128]/20'
+                          }`}
+                        >
+                          {String.fromCharCode(65 + idx)}
+                        </span>
+                        <span className="font-semibold text-sm sm:text-base leading-snug">{option}</span>
+                      </div>
+                      {isSelected && <CheckCircle className="w-5 h-5 text-[#FA8128] shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Nav Controls */}
+              <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
                 <button
-                  onClick={handleToggleFlag}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    currentAnswer.isFlagged
-                      ? 'bg-[#FA8128] text-white shadow-xs'
-                      : 'bg-[var(--bg-sub)] text-[var(--text-sub)] hover:bg-[var(--bg-card-hover)] border border-[var(--border)]'
-                  }`}
+                  onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
+                  disabled={currentIndex === 0 || test?.isSequential}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border)] font-bold text-sm text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <Bookmark className="w-3.5 h-3.5" />
-                  <span>{currentAnswer.isFlagged ? 'Flagged' : 'Flag for Review'}</span>
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
                 </button>
 
-                {currentAnswer.selectedOptionIndex !== null && (
+                {currentIndex < questions.length - 1 ? (
                   <button
-                    onClick={handleClearChoice}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/20 cursor-pointer"
+                    onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-sm shadow-xs cursor-pointer"
                   >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Clear Choice</span>
+                    <span>Next Question</span>
+                    <ChevronRight className="w-4 h-4 text-white" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setConfirmModalOpen(true)}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-sm shadow-xs cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Submit Test</span>
                   </button>
                 )}
               </div>
             </div>
-
-            {/* Question Text */}
-            <div className="text-lg sm:text-xl font-black text-[var(--text-main)] leading-relaxed">
-              {currentQuestion?.questionText}
-            </div>
-
-            {/* Options List */}
-            <div className="space-y-3 pt-2">
-              {currentQuestion?.options.map((option, idx) => {
-                const isSelected = currentAnswer.selectedOptionIndex === idx;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => handleOptionSelect(idx)}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center justify-between group cursor-pointer ${
-                      isSelected
-                        ? 'border-[#FA8128] bg-[#FA8128]/10 text-[var(--text-main)] shadow-xs'
-                        : 'border-[var(--border)] hover:border-[#FA8128]/50 bg-[var(--bg-sub)] text-[var(--text-sub)]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <span
-                        className={`w-8 h-8 rounded-lg font-extrabold text-sm flex items-center justify-center transition-all ${
-                          isSelected
-                            ? 'bg-[#FA8128] text-white'
-                            : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-main)] group-hover:bg-[#FA8128]/20'
-                        }`}
-                      >
-                        {String.fromCharCode(65 + idx)}
-                      </span>
-                      <span className="font-semibold text-sm sm:text-base leading-snug">{option}</span>
-                    </div>
-                    {isSelected && <CheckCircle className="w-5 h-5 text-[#FA8128] shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Nav Controls */}
-            <div className="flex items-center justify-between pt-6 border-t border-[var(--border)]">
-              <button
-                onClick={() => setCurrentIndex((prev) => Math.max(0, prev - 1))}
-                disabled={currentIndex === 0 || test?.isSequential}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border)] font-bold text-sm text-[var(--text-main)] bg-[var(--bg-sub)] hover:bg-[var(--bg-card-hover)] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Previous</span>
-              </button>
-
-              {currentIndex < questions.length - 1 ? (
-                <button
-                  onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FA8128] hover:bg-[#E06D1A] text-white font-extrabold text-sm shadow-xs cursor-pointer"
-                >
-                  <span>Next Question</span>
-                  <ChevronRight className="w-4 h-4 text-white" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setConfirmModalOpen(true)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] text-white font-black text-sm shadow-xs cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Submit Test</span>
-                </button>
-              )}
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Right Palette Panel */}

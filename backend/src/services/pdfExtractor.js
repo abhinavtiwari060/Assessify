@@ -206,6 +206,12 @@ const detectAnswerKeyHeader = (line) => {
   return /^(?:Answer\s*Key|Answers|ANSWER\s*SHEET|Key\s*Sheet)[\:\s]*$/i.test(line);
 };
 
+const detectPassageStart = (line) => {
+  return /^(?:PASSAGE(?:\s+\d+)?|READING\s+PASSAGE|COMPREHENSION(?:\s+PASSAGE)?|Read\s+the\s+(?:following\s+)?passage[^\n]*)/i.test(
+    line.trim()
+  );
+};
+
 const parseAnswerKeySection = (lines) => {
   const ansMap = new Map();
   const pairRegex = /(?:Q(?:uestion|\.)?\s*|\b)(\d{1,3})[\s\.\:\)\-]*[\(\[\{]?([A-Ea-e1-6])[\)\]\}]?(?=\s+|$)/gi;
@@ -294,6 +300,8 @@ function parsePdfTextToMCQs(rawText) {
   const extractedQuestions = [];
   let currentQuestion = null;
   let currentState = 'IDLE';
+  let currentPassage = null; // { id: string, text: string, isFirst: boolean }
+  let passageCounter = 0;
   const answerKeyLines = [];
 
   const finalizeQuestion = () => {
@@ -314,6 +322,54 @@ function parsePdfTextToMCQs(rawText) {
         return;
       }
 
+      if (detectPassageStart(line)) {
+        finalizeQuestion();
+        passageCounter++;
+        currentPassage = {
+          id: `passage_${Date.now()}_${passageCounter}`,
+          text: line,
+          isFirst: true,
+        };
+        currentState = 'PASSAGE';
+        return;
+      }
+
+      const qStart = detectQuestionStart(line);
+      if (qStart) {
+        if (currentQuestion && (currentQuestion.options.length >= 2 || currentState === 'OPTION')) {
+          finalizeQuestion();
+        }
+
+        if (!currentQuestion) {
+          const isComp = !!(currentPassage && currentPassage.text.trim().length > 0);
+          currentQuestion = {
+            questionNumber: parseInt(qStart.qNum, 10) || (extractedQuestions.length + 1),
+            qNum: qStart.qNum,
+            type: isComp ? 'comprehension' : 'mcq',
+            passage: isComp && currentPassage.isFirst ? currentPassage.text.trim() : '',
+            passageId: isComp ? currentPassage.id : null,
+            questionText: qStart.text,
+            options: [],
+            correctAnswerIndex: null,
+            answerSource: null,
+            explanation: '',
+            confidence: 'medium',
+            sourcePage: page.pageNum,
+            warnings: [],
+          };
+          if (isComp && currentPassage.isFirst) {
+            currentPassage.isFirst = false;
+          }
+          currentState = 'QUESTION';
+          return;
+        }
+      }
+
+      if (currentState === 'PASSAGE' && currentPassage) {
+        currentPassage.text += '\n' + line;
+        return;
+      }
+
       const ansIndex = detectAnswer(line);
       if (ansIndex !== null && currentQuestion) {
         currentQuestion.correctAnswerIndex = ansIndex;
@@ -327,30 +383,6 @@ function parsePdfTextToMCQs(rawText) {
         currentQuestion.explanation = expText;
         currentState = 'EXPLANATION';
         return;
-      }
-
-      const qStart = detectQuestionStart(line);
-      if (qStart) {
-        if (currentQuestion && (currentQuestion.options.length >= 2 || currentState === 'OPTION')) {
-          finalizeQuestion();
-        }
-
-        if (!currentQuestion) {
-          currentQuestion = {
-            questionNumber: parseInt(qStart.qNum, 10) || (extractedQuestions.length + 1),
-            qNum: qStart.qNum,
-            questionText: qStart.text,
-            options: [],
-            correctAnswerIndex: null,
-            answerSource: null,
-            explanation: '',
-            confidence: 'medium',
-            sourcePage: page.pageNum,
-            warnings: [],
-          };
-          currentState = 'QUESTION';
-          return;
-        }
       }
 
       const optStart = detectOptionStart(
@@ -425,6 +457,9 @@ function parsePdfTextToMCQs(rawText) {
 
     uniqueQuestions.push({
       questionNumber: q.questionNumber || uniqueQuestions.length + 1,
+      type: q.type || 'mcq',
+      passage: q.passage || '',
+      passageId: q.passageId || null,
       questionText: qText,
       options,
       correctAnswerIndex: q.correctAnswerIndex,

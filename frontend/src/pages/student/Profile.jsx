@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import PasswordInput from '../../components/PasswordInput';
 import { Save } from 'lucide-react';
 
 const Profile = () => {
@@ -92,12 +93,11 @@ const Profile = () => {
 
           <div className="space-y-1 pt-2 border-t border-[var(--border)]">
             <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">New Password (Optional)</label>
-            <input
-              type="password"
+            <PasswordInput
               placeholder="Leave blank to keep current password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+              autoComplete="new-password"
             />
           </div>
         </div>
