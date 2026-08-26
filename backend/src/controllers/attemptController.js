@@ -469,6 +469,9 @@ const getAttemptResult = async (req, res) => {
       const ans = answerMap.get(q._id.toString());
       return {
         _id: q._id,
+        type: q.type || 'mcq',
+        passage: q.passage || '',
+        passageId: q.passageId || null,
         questionText: q.questionText,
         options: q.options,
         correctAnswerIndex: q.correctAnswerIndex,

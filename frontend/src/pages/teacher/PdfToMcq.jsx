@@ -9,6 +9,7 @@ import {
   Trash2,
   AlertTriangle,
   Scan,
+  BookOpen,
 } from 'lucide-react';
 
 const PdfToMcq = () => {
@@ -278,6 +279,17 @@ const PdfToMcq = () => {
                   key={qIdx}
                   className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-4"
                 >
+                  {q.passage && (
+                    <div className="p-4 rounded-xl bg-[#FA8128]/10 border border-[#FA8128]/30 space-y-1.5 mb-2">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FA8128] flex items-center gap-1.5">
+                        <BookOpen className="w-4 h-4" /> Reading Comprehension Passage
+                      </span>
+                      <p className="text-xs font-serif leading-relaxed text-[var(--text-main)] whitespace-pre-wrap">
+                        {q.passage}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold text-[var(--text-main)]">Question #{qIdx + 1}</span>

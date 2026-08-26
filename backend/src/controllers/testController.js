@@ -192,7 +192,7 @@ const getTestById = async (req, res) => {
     let questionQuery = Question.find({ testId: test._id }).sort({ order: 1 }).lean();
 
     if (req.user.role === 'student') {
-      questionQuery = questionQuery.select('_id testId questionText options marks timerSeconds order');
+      questionQuery = questionQuery.select('_id testId type passage passageId questionText options marks timerSeconds order');
     }
 
     const questions = await questionQuery;
@@ -330,6 +330,9 @@ const createTest = async (req, res) => {
         totalMarks += marks;
         return {
           testId: newTest._id,
+          type: q.type === 'comprehension' ? 'comprehension' : 'mcq',
+          passage: q.passage || '',
+          passageId: q.passageId || null,
           questionText: q.questionText,
           options: q.options,
           correctAnswerIndex: q.correctAnswerIndex || 0,
@@ -422,6 +425,9 @@ const updateTest = async (req, res) => {
         calculatedTotalMarks += marks;
         return {
           testId: test._id,
+          type: q.type === 'comprehension' ? 'comprehension' : 'mcq',
+          passage: q.passage || '',
+          passageId: q.passageId || null,
           questionText: q.questionText,
           options: q.options,
           correctAnswerIndex: q.correctAnswerIndex || 0,
