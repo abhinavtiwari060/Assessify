@@ -68,6 +68,16 @@ const PdfToMcq = () => {
     setExtractedQuestions(updated);
   };
 
+  const handlePassageChange = (passageId, text) => {
+    const updated = extractedQuestions.map((q) => {
+      if (q.passageId === passageId && q.passage) {
+        return { ...q, passage: text };
+      }
+      return q;
+    });
+    setExtractedQuestions(updated);
+  };
+
   const handleOptionChange = (qIdx, optIdx, text) => {
     const updated = [...extractedQuestions];
     updated[qIdx].options[optIdx] = text;
@@ -259,131 +269,281 @@ const PdfToMcq = () => {
           </div>
 
           {/* Extracted Questions List */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-[var(--text-main)]">
               Extracted Questions Editor ({extractedQuestions.length})
             </h3>
 
-            {extractedQuestions.map((q, qIdx) => {
-              const confidenceColor =
-                q.confidence === 'high'
-                  ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
-                  : q.confidence === 'medium'
-                  ? 'bg-[#FA8128]/15 text-[#FA8128] border-[#FA8128]/30'
-                  : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30';
+            {(() => {
+              // Group contiguous questions into render items (MCQ or Comprehension Group)
+              const renderItems = [];
+              let currentGroup = null;
 
-              const missingAns = q.correctAnswerIndex === null || q.correctAnswerIndex === undefined;
+              extractedQuestions.forEach((q, qIdx) => {
+                if (q.type === 'comprehension' && q.passageId) {
+                  if (currentGroup && currentGroup.passageId === q.passageId) {
+                    currentGroup.questions.push({ q, qIdx });
+                  } else {
+                    if (currentGroup) renderItems.push(currentGroup);
+                    currentGroup = {
+                      type: 'comprehension_group',
+                      passageId: q.passageId,
+                      passage: q.passage || '',
+                      questions: [{ q, qIdx }],
+                    };
+                  }
+                } else {
+                  if (currentGroup) {
+                    renderItems.push(currentGroup);
+                    currentGroup = null;
+                  }
+                  renderItems.push({ type: 'single_mcq', q, qIdx });
+                }
+              });
+              if (currentGroup) renderItems.push(currentGroup);
 
-              return (
-                <div
-                  key={qIdx}
-                  className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-4"
-                >
-                  {q.passage && (
-                    <div className="p-4 rounded-xl bg-[#FA8128]/10 border border-[#FA8128]/30 space-y-1.5 mb-2">
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#FA8128] flex items-center gap-1.5">
-                        <BookOpen className="w-4 h-4" /> Reading Comprehension Passage
-                      </span>
-                      <p className="text-xs font-serif leading-relaxed text-[var(--text-main)] whitespace-pre-wrap">
-                        {q.passage}
-                      </p>
-                    </div>
-                  )}
+              return renderItems.map((item, itemIdx) => {
+                if (item.type === 'comprehension_group') {
+                  const groupPassageText =
+                    item.questions.find((itemObj) => itemObj.q.passage)?.q.passage ||
+                    item.passage ||
+                    '';
 
-                  <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-[var(--text-main)]">Question #{qIdx + 1}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${confidenceColor}`}>
-                        Confidence: {q.confidence || 'Medium'}
-                      </span>
-                      {q.sourcePage && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--bg-sub)] border border-[var(--border)] text-[var(--text-muted)]">
-                          Page {q.sourcePage}
-                        </span>
-                      )}
-                      {q.answerSource && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30">
-                          Source: {q.answerSource}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleRemoveQuestion(qIdx)}
-                      className="p-1.5 text-[#EF4444] hover:bg-[var(--bg-sub)] rounded-xl transition-colors cursor-pointer"
-                      title="Remove Question"
+                  return (
+                    <div
+                      key={`group-${item.passageId}-${itemIdx}`}
+                      className="bg-[var(--bg-card)] rounded-2xl p-6 border-2 border-[#FA8128]/50 shadow-md space-y-6"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Warnings List */}
-                  {q.warnings && q.warnings.length > 0 && (
-                    <div className="p-3 bg-[#FA8128]/10 border border-[#FA8128]/30 rounded-xl space-y-1 text-xs text-[#FA8128]">
-                      <div className="font-bold text-[var(--text-main)] flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-[#FA8128]" /> Review Warnings:
-                      </div>
-                      <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-[var(--text-sub)]">
-                        {q.warnings.map((w, wIdx) => (
-                          <li key={wIdx}>{w}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Question Text</label>
-                    <textarea
-                      rows={2}
-                      value={q.questionText}
-                      onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
-                      className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
-                    />
-                  </div>
-
-                  {/* Missing Answer Alert */}
-                  {missingAns && (
-                    <div className="p-2.5 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl text-xs text-[#EF4444] font-bold flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 shrink-0" />
-                      <span>Select the correct answer option radio button below:</span>
-                    </div>
-                  )}
-
-                  {/* Options List */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {q.options.map((opt, optIdx) => {
-                      const isCorrect = q.correctAnswerIndex === optIdx;
-                      return (
-                        <div
-                          key={optIdx}
-                          className={`flex items-center gap-3 p-3 rounded-xl border ${
-                            isCorrect
-                              ? 'border-[#22C55E] bg-[#22C55E]/10'
-                              : 'border-[var(--border)] bg-[var(--bg-sub)]'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name={`pdf-ans-${qIdx}`}
-                            checked={isCorrect}
-                            onChange={() => handleCorrectAnsChange(qIdx, optIdx)}
-                            className="w-4 h-4 text-[#22C55E] cursor-pointer"
-                          />
-                          <span className="w-6 h-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-xs font-bold text-[var(--text-main)] flex items-center justify-center shrink-0">
-                            {String.fromCharCode(65 + optIdx)}
-                          </span>
-                          <input
-                            type="text"
-                            value={opt}
-                            onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
-                            className="flex-1 bg-transparent border-none text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none"
-                          />
+                      {/* Section Header */}
+                      <div className="flex items-center justify-between border-b border-[#FA8128]/30 pb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-[#FA8128]/15 text-[#FA8128] border border-[#FA8128]/30 flex items-center justify-center font-black">
+                            <BookOpen className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-base text-[var(--text-main)]">
+                              Reading Comprehension Section
+                            </h4>
+                            <p className="text-xs text-[var(--text-sub)]">
+                              {item.questions.length} question(s) bound to this passage
+                            </p>
+                          </div>
                         </div>
-                      );
-                    })}
+                      </div>
+
+                      {/* Passage Editor */}
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-extrabold uppercase tracking-wider text-[#FA8128]">
+                          Section Reading Passage Text
+                        </label>
+                        <textarea
+                          rows={5}
+                          value={groupPassageText}
+                          onChange={(e) => handlePassageChange(item.passageId, e.target.value)}
+                          className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-4 text-xs sm:text-sm font-serif leading-relaxed text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+                          placeholder="Edit passage text for this section..."
+                        />
+                      </div>
+
+                      {/* Nested Questions */}
+                      <div className="space-y-4 pt-2">
+                        <h5 className="text-xs font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border)] pb-2">
+                          Passage Questions ({item.questions.length})
+                        </h5>
+
+                        {item.questions.map(({ q, qIdx }, subIdx) => {
+                          const confidenceColor =
+                            q.confidence === 'high'
+                              ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
+                              : q.confidence === 'medium'
+                              ? 'bg-[#FA8128]/15 text-[#FA8128] border-[#FA8128]/30'
+                              : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30';
+
+                          const missingAns =
+                            q.correctAnswerIndex === null || q.correctAnswerIndex === undefined;
+
+                          return (
+                            <div
+                              key={qIdx}
+                              className="bg-[var(--bg-sub)] rounded-xl p-5 border border-[var(--border)] space-y-4"
+                            >
+                              <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-extrabold text-[var(--text-main)]">
+                                    Question #{qIdx + 1} (Passage Q{subIdx + 1})
+                                  </span>
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${confidenceColor}`}
+                                  >
+                                    Confidence: {q.confidence || 'Medium'}
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => handleRemoveQuestion(qIdx)}
+                                  className="p-1.5 text-[#EF4444] hover:bg-[var(--bg-card)] rounded-xl transition-colors cursor-pointer"
+                                  title="Remove Question"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                  Question Text
+                                </label>
+                                <textarea
+                                  rows={2}
+                                  value={q.questionText}
+                                  onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
+                                  className="w-full bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+                                />
+                              </div>
+
+                              {/* Missing Answer Alert */}
+                              {missingAns && (
+                                <div className="p-2.5 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl text-xs text-[#EF4444] font-bold flex items-center gap-2">
+                                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                                  <span>Select the correct answer option radio button below:</span>
+                                </div>
+                              )}
+
+                              {/* Options List */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {q.options.map((opt, optIdx) => {
+                                  const isCorrect = q.correctAnswerIndex === optIdx;
+                                  return (
+                                    <div
+                                      key={optIdx}
+                                      className={`flex items-center gap-3 p-3 rounded-xl border ${
+                                        isCorrect
+                                          ? 'border-[#22C55E] bg-[#22C55E]/10'
+                                          : 'border-[var(--border)] bg-[var(--bg-card)]'
+                                      }`}
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`pdf-ans-${qIdx}`}
+                                        checked={isCorrect}
+                                        onChange={() => handleCorrectAnsChange(qIdx, optIdx)}
+                                        className="w-4 h-4 text-[#22C55E] cursor-pointer"
+                                      />
+                                      <span className="w-6 h-6 rounded-lg bg-[var(--bg-sub)] border border-[var(--border)] text-xs font-bold text-[var(--text-main)] flex items-center justify-center shrink-0">
+                                        {String.fromCharCode(65 + optIdx)}
+                                      </span>
+                                      <input
+                                        type="text"
+                                        value={opt}
+                                        onChange={(e) =>
+                                          handleOptionChange(qIdx, optIdx, e.target.value)
+                                        }
+                                        className="flex-1 bg-transparent border-none text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none"
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Render standalone MCQ
+                const { q, qIdx } = item;
+                const confidenceColor =
+                  q.confidence === 'high'
+                    ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
+                    : q.confidence === 'medium'
+                    ? 'bg-[#FA8128]/15 text-[#FA8128] border-[#FA8128]/30'
+                    : 'bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30';
+
+                const missingAns =
+                  q.correctAnswerIndex === null || q.correctAnswerIndex === undefined;
+
+                return (
+                  <div
+                    key={qIdx}
+                    className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-sm space-y-4"
+                  >
+                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-[var(--text-main)]">
+                          Question #{qIdx + 1}
+                        </span>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase ${confidenceColor}`}
+                        >
+                          Confidence: {q.confidence || 'Medium'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveQuestion(qIdx)}
+                        className="p-1.5 text-[#EF4444] hover:bg-[var(--bg-sub)] rounded-xl transition-colors cursor-pointer"
+                        title="Remove Question"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                        Question Text
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={q.questionText}
+                        onChange={(e) => handleQuestionChange(qIdx, e.target.value)}
+                        className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl p-3 text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+                      />
+                    </div>
+
+                    {/* Missing Answer Alert */}
+                    {missingAns && (
+                      <div className="p-2.5 bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl text-xs text-[#EF4444] font-bold flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <span>Select the correct answer option radio button below:</span>
+                      </div>
+                    )}
+
+                    {/* Options List */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {q.options.map((opt, optIdx) => {
+                        const isCorrect = q.correctAnswerIndex === optIdx;
+                        return (
+                          <div
+                            key={optIdx}
+                            className={`flex items-center gap-3 p-3 rounded-xl border ${
+                              isCorrect
+                                ? 'border-[#22C55E] bg-[#22C55E]/10'
+                                : 'border-[var(--border)] bg-[var(--bg-sub)]'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name={`pdf-ans-${qIdx}`}
+                              checked={isCorrect}
+                              onChange={() => handleCorrectAnsChange(qIdx, optIdx)}
+                              className="w-4 h-4 text-[#22C55E] cursor-pointer"
+                            />
+                            <span className="w-6 h-6 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] text-xs font-bold text-[var(--text-main)] flex items-center justify-center shrink-0">
+                              {String.fromCharCode(65 + optIdx)}
+                            </span>
+                            <input
+                              type="text"
+                              value={opt}
+                              onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
+                              className="flex-1 bg-transparent border-none text-xs sm:text-sm font-medium text-[var(--text-main)] focus:outline-none"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
 
           <div className="flex justify-end pt-4">
