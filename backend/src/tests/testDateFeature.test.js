@@ -163,4 +163,86 @@ describe('Test Date & Time Feature Verification', () => {
     // Ensure security: testCode is NOT exposed to student
     assert.strictEqual(fetchedTest.testCode, undefined);
   });
+
+  test('4. Admin can create, view, and edit any test date/time to a past timestamp', async () => {
+    const adminUser = await User.create({
+      name: 'System Admin',
+      email: 'admin_testdate@assessify.com',
+      password: 'AdminPassword123!',
+      role: 'admin',
+    });
+
+    const pastDate = new Date('2020-05-10T08:30:00.000Z');
+
+    // Admin creates test with past date
+    let createdTest = null;
+    const createReq = {
+      user: adminUser,
+      body: {
+        title: 'Admin Historical Assessment',
+        description: 'Test created in past',
+        subjectId: subject._id.toString(),
+        type: 'mcq',
+        testDate: pastDate.toISOString(),
+      },
+    };
+    const createRes = {
+      status() { return this; },
+      json(data) { createdTest = data; return this; },
+    };
+
+    await createTest(createReq, createRes);
+    assert.ok(createdTest._id);
+    assert.strictEqual(new Date(createdTest.testDate).toISOString(), pastDate.toISOString());
+
+    // Admin edits test to an even earlier past date
+    const olderPastDate = new Date('2019-01-01T07:00:00.000Z');
+    let updatedTest = null;
+    const updateReq = {
+      user: adminUser,
+      params: { id: createdTest._id.toString() },
+      body: {
+        testDate: olderPastDate.toISOString(),
+      },
+    };
+    const updateRes = {
+      status() { return this; },
+      json(data) { updatedTest = data; return this; },
+    };
+
+    await updateTest(updateReq, updateRes);
+    assert.strictEqual(new Date(updatedTest.testDate).toISOString(), olderPastDate.toISOString());
+  });
+
+  test('5. Legacy test without testDate field falls back gracefully to existing timestamp in API', async () => {
+    // Create raw test directly in DB without testDate field
+    const legacyCreatedAt = new Date('2023-06-15T12:00:00.000Z');
+    const legacyDoc = await Test.collection.insertOne({
+      title: 'Legacy Database Test',
+      description: 'Test created prior to testDate schema field',
+      subjectId: subject._id,
+      teacherId: teacher._id,
+      type: 'mcq',
+      testType: 'mcq',
+      timerMode: 'full',
+      durationMinutes: 30,
+      isPublished: true,
+      createdAt: legacyCreatedAt,
+      updatedAt: legacyCreatedAt,
+    });
+
+    // Student fetches tests list via getTests
+    let testsList = null;
+    const listReq = { user: student, query: {} };
+    const listRes = {
+      status() { return this; },
+      json(data) { testsList = data; return this; },
+    };
+
+    await getTests(listReq, listRes);
+    const foundLegacy = testsList.find((t) => t._id.toString() === legacyDoc.insertedId.toString());
+    assert.ok(foundLegacy, 'Legacy test should be returned');
+    assert.ok(foundLegacy.testDate, 'Legacy test must have testDate fallback');
+    assert.strictEqual(new Date(foundLegacy.testDate).toISOString(), legacyCreatedAt.toISOString());
+  });
 });

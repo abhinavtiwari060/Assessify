@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import PDFUploader from '../../components/PDFUploader';
 import {
@@ -21,6 +22,7 @@ import {
 
 const PdfToMcq = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToast } = useToast();
 
   const [subjects, setSubjects] = useState([]);
@@ -148,7 +150,7 @@ const PdfToMcq = () => {
         `Test "${testTitle}" created with ${extractedQuestions.length} verified questions!`,
         'success'
       );
-      navigate('/teacher/tests');
+      navigate(user?.role === 'admin' ? '/admin/tests' : '/teacher/tests');
     } catch (err) {
       console.error(err);
       addToast(err.response?.data?.message || 'Failed to save test', 'error');

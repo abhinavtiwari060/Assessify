@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import {
   formatDateForInput,
@@ -21,6 +22,7 @@ import {
 const CreateMcqTest = ({ isEditMode = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToast } = useToast();
 
   const [subjects, setSubjects] = useState([]);
@@ -291,7 +293,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
         addToast('MCQ Test created successfully!', 'success');
       }
 
-      navigate('/teacher/tests');
+      navigate(user?.role === 'admin' ? '/admin/tests' : '/teacher/tests');
     } catch (err) {
       console.error(err);
       addToast(err.response?.data?.message || 'Failed to save test', 'error');

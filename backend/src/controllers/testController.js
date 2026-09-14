@@ -110,8 +110,10 @@ const getTests = async (req, res) => {
         }
       }
 
+      const effectiveTestDate = test.testDate || test.startedAt || test.createdAt || new Date();
       const item = {
         ...test,
+        testDate: effectiveTestDate,
         questionCount,
         userAttempts,
         bestScore,
@@ -198,8 +200,10 @@ const getTestById = async (req, res) => {
     const questions = await questionQuery;
     const questionQueryDuration = Date.now() - t1;
 
+    const effectiveTestDate = test.testDate || test.startedAt || test.createdAt || new Date();
     const responsePayload = {
       ...test,
+      testDate: effectiveTestDate,
       questions,
     };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import PDFUploader from '../../components/PDFUploader';
 import {
@@ -26,6 +27,7 @@ import {
 const CreateReadingComprehension = ({ isEditMode = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
   const { addToast } = useToast();
 
   const [subjects, setSubjects] = useState([]);
@@ -335,7 +337,7 @@ const CreateReadingComprehension = ({ isEditMode = false }) => {
         await api.post('/tests', payload);
         addToast('Reading Comprehension published successfully!', 'success');
       }
-      navigate('/teacher/tests');
+      navigate(user?.role === 'admin' ? '/admin/tests' : '/teacher/tests');
     } catch (err) {
       console.error('Failed to save reading comprehension:', err);
       addToast(err.response?.data?.message || 'Failed to save test', 'error');

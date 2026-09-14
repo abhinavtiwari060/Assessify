@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import {
   formatDateForInput,
@@ -11,6 +12,7 @@ import { Save, Calendar, Clock } from 'lucide-react';
 
 const CreateEssayTest = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToast } = useToast();
 
   const [subjects, setSubjects] = useState([]);
@@ -58,7 +60,7 @@ const CreateEssayTest = () => {
       });
 
       addToast('Essay Test prompt created successfully!', 'success');
-      navigate('/teacher/tests');
+      navigate(user?.role === 'admin' ? '/admin/tests' : '/teacher/tests');
     } catch (err) {
       console.error(err);
       addToast(err.response?.data?.message || 'Failed to create essay test', 'error');

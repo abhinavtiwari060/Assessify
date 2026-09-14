@@ -17,6 +17,7 @@ const connectDB = async () => {
       };
       const conn = await mongoose.connect(mongoUri, options);
       console.log(`🚀 MongoDB Connected (External Database): ${conn.connection.host}`);
+      await runTestDateMigration();
       return;
     } catch (error) {
       console.warn(`⚠️ External MongoDB connection failed: ${error.message}`);
@@ -37,9 +38,33 @@ const connectDB = async () => {
       minPoolSize: 10,
     });
     console.log(`🚀 MongoDB Connected (Local In-Memory Server): ${conn.connection.host}`);
+    await runTestDateMigration();
   } catch (fallbackError) {
     console.error(`❌ Fatal local DB connection error: ${fallbackError.message}`);
     process.exit(1);
+  }
+};
+
+const runTestDateMigration = async () => {
+  try {
+    const Test = require('../models/Test');
+    const result = await Test.updateMany(
+      { $or: [{ testDate: { $exists: false } }, { testDate: null }] },
+      [
+        {
+          $set: {
+            testDate: {
+              $ifNull: ['$startedAt', { $ifNull: ['$createdAt', new Date()] }],
+            },
+          },
+        },
+      ]
+    );
+    if (result && result.modifiedCount > 0) {
+      console.log(`✅ Safe Migration: Initialized testDate on ${result.modifiedCount} legacy tests.`);
+    }
+  } catch (migErr) {
+    console.warn(`⚠️ testDate migration note: ${migErr.message}`);
   }
 };
 
