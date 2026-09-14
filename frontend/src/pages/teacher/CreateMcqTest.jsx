@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import {
+  formatDateForInput,
+  formatTimeForInput,
+  combineDateAndTime,
+} from '../../utils/dateUtils';
 import {
   PlusCircle,
   Trash2,
@@ -9,17 +15,22 @@ import {
   BookOpen,
   FileText,
   HelpCircle,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 
 const CreateMcqTest = ({ isEditMode = false }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToast } = useToast();
 
   const [subjects, setSubjects] = useState([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [testDate, setTestDate] = useState(formatDateForInput(new Date()));
+  const [testTime, setTestTime] = useState(formatTimeForInput(new Date()));
   const [timerMode, setTimerMode] = useState('full');
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [perQuestionSeconds, setPerQuestionSeconds] = useState(60);
@@ -64,6 +75,11 @@ const CreateMcqTest = ({ isEditMode = false }) => {
           setTitle(data.title);
           setDescription(data.description || '');
           setSubjectId(data.subjectId?._id || data.subjectId);
+          if (data.testDate || data.createdAt) {
+            const dt = data.testDate || data.createdAt;
+            setTestDate(formatDateForInput(dt));
+            setTestTime(formatTimeForInput(dt));
+          }
           setTimerMode(data.timerMode || 'full');
           setDurationMinutes(data.durationMinutes || 30);
           setPerQuestionSeconds(data.perQuestionSeconds || 60);
@@ -258,6 +274,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
         description,
         subjectId,
         type: 'mcq',
+        testDate: combineDateAndTime(testDate, testTime),
         timerMode,
         durationMinutes: Number(durationMinutes),
         perQuestionSeconds: Number(perQuestionSeconds),
@@ -276,7 +293,7 @@ const CreateMcqTest = ({ isEditMode = false }) => {
         addToast('MCQ Test created successfully!', 'success');
       }
 
-      navigate('/teacher/tests');
+      navigate(user?.role === 'admin' ? '/admin/tests' : '/teacher/tests');
     } catch (err) {
       console.error(err);
       addToast(err.response?.data?.message || 'Failed to save test', 'error');
@@ -617,6 +634,34 @@ const CreateMcqTest = ({ isEditMode = false }) => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-[#FA8128]" />
+              <span>Test Date</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={testDate}
+              onChange={(e) => setTestDate(e.target.value)}
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#FA8128]" />
+              <span>Test Time</span>
+            </label>
+            <input
+              type="time"
+              required
+              value={testTime}
+              onChange={(e) => setTestTime(e.target.value)}
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+            />
           </div>
 
           <div className="space-y-1 md:col-span-2">

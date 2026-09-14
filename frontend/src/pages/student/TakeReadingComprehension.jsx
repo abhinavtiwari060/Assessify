@@ -19,7 +19,10 @@ import {
   HelpCircle,
   Maximize2,
   X,
+  Calendar,
+  Clock,
 } from 'lucide-react';
+import { formatTestDate, formatTestTime } from '../../utils/dateUtils';
 
 const TakeReadingComprehension = () => {
   const { id: testId } = useParams();
@@ -167,9 +170,24 @@ const TakeReadingComprehension = () => {
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#FA8128]">
-              Reading Comprehension Module • {test?.subjectId?.name || 'English'}
-            </span>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#FA8128]">
+                Reading Comprehension Module • {test?.subjectId?.name || 'English'}
+              </span>
+              {test && (
+                <span className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] bg-[var(--bg-sub)] px-2.5 py-0.5 rounded-md border border-[var(--border)]">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-[#FA8128]" />
+                    {formatTestDate(test.testDate || test.createdAt)}
+                  </span>
+                  <span className="text-[var(--border)]">|</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-[#FA8128]" />
+                    {formatTestTime(test.testDate || test.createdAt)}
+                  </span>
+                </span>
+              )}
+            </div>
             <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--text-main)] leading-tight">
               {test?.title}
             </h2>

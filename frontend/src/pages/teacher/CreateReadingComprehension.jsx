@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import PDFUploader from '../../components/PDFUploader';
+import {
+  formatDateForInput,
+  formatTimeForInput,
+  combineDateAndTime,
+} from '../../utils/dateUtils';
 import {
   BookOpen,
   PlusCircle,
@@ -14,11 +20,14 @@ import {
   Sparkles,
   ArrowLeft,
   CheckCircle,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 
 const CreateReadingComprehension = ({ isEditMode = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
   const { addToast } = useToast();
 
   const [subjects, setSubjects] = useState([]);
@@ -30,6 +39,8 @@ const CreateReadingComprehension = ({ isEditMode = false }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [testDate, setTestDate] = useState(formatDateForInput(new Date()));
+  const [testTime, setTestTime] = useState(formatTimeForInput(new Date()));
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [passingPercentage, setPassingPercentage] = useState(40);
   const [negativeMarkingRate, setNegativeMarkingRate] = useState(0);
@@ -78,6 +89,11 @@ const CreateReadingComprehension = ({ isEditMode = false }) => {
           setTitle(test.title || '');
           setDescription(test.description || '');
           setSubjectId(test.subjectId?._id || test.subjectId || '');
+          if (test.testDate || test.createdAt) {
+            const dt = test.testDate || test.createdAt;
+            setTestDate(formatDateForInput(dt));
+            setTestTime(formatTimeForInput(dt));
+          }
           setDurationMinutes(test.durationMinutes || 30);
           setPassingPercentage(test.passingPercentage || 40);
           setNegativeMarkingRate(test.negativeMarkingRate || 0);
@@ -305,6 +321,7 @@ const CreateReadingComprehension = ({ isEditMode = false }) => {
         subjectId,
         testType: 'reading_comprehension',
         type: 'reading_comprehension',
+        testDate: combineDateAndTime(testDate, testTime),
         durationMinutes: parseInt(durationMinutes, 10) || 30,
         passingPercentage: parseInt(passingPercentage, 10) || 40,
         negativeMarkingRate: parseFloat(negativeMarkingRate) || 0,
@@ -320,7 +337,7 @@ const CreateReadingComprehension = ({ isEditMode = false }) => {
         await api.post('/tests', payload);
         addToast('Reading Comprehension published successfully!', 'success');
       }
-      navigate('/teacher/tests');
+      navigate(user?.role === 'admin' ? '/admin/tests' : '/teacher/tests');
     } catch (err) {
       console.error('Failed to save reading comprehension:', err);
       addToast(err.response?.data?.message || 'Failed to save test', 'error');
@@ -402,6 +419,34 @@ const CreateReadingComprehension = ({ isEditMode = false }) => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-[#FA8128]" />
+              <span>Test Date</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={testDate}
+              onChange={(e) => setTestDate(e.target.value)}
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#FA8128]" />
+              <span>Test Time</span>
+            </label>
+            <input
+              type="time"
+              required
+              value={testTime}
+              onChange={(e) => setTestTime(e.target.value)}
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+            />
           </div>
         </div>
 

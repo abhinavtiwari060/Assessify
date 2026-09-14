@@ -221,6 +221,12 @@ const App = () => {
                 <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><ManageUsers /></ProtectedRoute>} />
                 <Route path="/admin/subjects" element={<ProtectedRoute allowedRoles={['admin']}><ManageSubjects /></ProtectedRoute>} />
                 <Route path="/admin/tests" element={<ProtectedRoute allowedRoles={['admin']}><ManageTests /></ProtectedRoute>} />
+                <Route path="/admin/create-test" element={<ProtectedRoute allowedRoles={['admin']}><CreateMcqTest /></ProtectedRoute>} />
+                <Route path="/admin/edit-test/:id" element={<ProtectedRoute allowedRoles={['admin']}><CreateMcqTest isEditMode={true} /></ProtectedRoute>} />
+                <Route path="/admin/create-reading-comprehension" element={<ProtectedRoute allowedRoles={['admin']}><CreateReadingComprehension /></ProtectedRoute>} />
+                <Route path="/admin/edit-reading-comprehension/:id" element={<ProtectedRoute allowedRoles={['admin']}><CreateReadingComprehension isEditMode={true} /></ProtectedRoute>} />
+                <Route path="/admin/create-essay" element={<ProtectedRoute allowedRoles={['admin']}><CreateEssayTest /></ProtectedRoute>} />
+                <Route path="/admin/pdf-mcq" element={<ProtectedRoute allowedRoles={['admin']}><PdfToMcq /></ProtectedRoute>} />
                 <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><PlatformAnalytics /></ProtectedRoute>} />
                 <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={['admin']}><Settings /></ProtectedRoute>} />
 

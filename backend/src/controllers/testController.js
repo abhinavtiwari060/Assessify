@@ -110,8 +110,10 @@ const getTests = async (req, res) => {
         }
       }
 
+      const effectiveTestDate = test.testDate || test.startedAt || test.createdAt || new Date();
       const item = {
         ...test,
+        testDate: effectiveTestDate,
         questionCount,
         userAttempts,
         bestScore,
@@ -169,7 +171,7 @@ const getTestById = async (req, res) => {
       // Students MUST NOT receive testCode in single test lookup!
       testQuery = Test.findById(testIdStr)
         .populate('subjectId', 'name code iconName')
-        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished status startedAt endedAt subjectId')
+        .select('title description type timerMode durationMinutes perQuestionSeconds isSequential maxAttempts passingPercentage negativeMarkingRate instructions totalMarks isPublished status startedAt endedAt testDate createdAt subjectId')
         .lean();
     }
 
@@ -198,8 +200,10 @@ const getTestById = async (req, res) => {
     const questions = await questionQuery;
     const questionQueryDuration = Date.now() - t1;
 
+    const effectiveTestDate = test.testDate || test.startedAt || test.createdAt || new Date();
     const responsePayload = {
       ...test,
+      testDate: effectiveTestDate,
       questions,
     };
 
@@ -298,7 +302,16 @@ const createTest = async (req, res) => {
       instructions,
       isPublished,
       questions,
+      testDate,
     } = req.body;
+
+    let parsedTestDate = new Date();
+    if (testDate) {
+      const d = new Date(testDate);
+      if (!isNaN(d.getTime())) {
+        parsedTestDate = d;
+      }
+    }
 
     const testCode = await generateUniqueTestCode();
 
@@ -320,6 +333,7 @@ const createTest = async (req, res) => {
       negativeMarkingRate: negativeMarkingRate || 0,
       instructions: instructions || 'Read all questions carefully.',
       isPublished: isPublished !== undefined ? isPublished : true,
+      testDate: parsedTestDate,
       testCode,
       status: 'DRAFT',
     });
@@ -410,11 +424,19 @@ const updateTest = async (req, res) => {
       'instructions',
       'isPublished',
       'totalMarks',
+      'testDate',
     ];
 
     fields.forEach((field) => {
       if (req.body[field] !== undefined) {
-        test[field] = req.body[field];
+        if (field === 'testDate') {
+          const d = new Date(req.body.testDate);
+          if (!isNaN(d.getTime())) {
+            test.testDate = d;
+          }
+        } else {
+          test[field] = req.body[field];
+        }
       }
     });
 

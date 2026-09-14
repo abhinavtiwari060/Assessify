@@ -20,7 +20,9 @@ import {
   Lock,
   CheckCircle,
   FileText,
+  Calendar,
 } from 'lucide-react';
+import { formatTestDate, formatTestTime } from '../../utils/dateUtils';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -255,6 +257,24 @@ const StudentDashboard = () => {
                       <p className="text-xs text-[var(--text-sub)] line-clamp-2 mt-1 font-normal leading-relaxed">
                         {test.description || 'Test your proficiency and earn leaderboard points.'}
                       </p>
+                    </div>
+
+                    {/* Test Date & Time Display */}
+                    <div className="bg-[var(--bg-sub)] rounded-xl p-2.5 border border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1.5 text-[var(--text-main)]">
+                        <Calendar className="w-3.5 h-3.5 text-[#FA8128] shrink-0" />
+                        <div className="min-w-0">
+                          <span className="text-[9px] uppercase font-bold text-[var(--text-muted)] block">Date</span>
+                          <span className="font-bold text-[11px] truncate block">{formatTestDate(test.testDate || test.createdAt)}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[var(--text-main)]">
+                        <Clock className="w-3.5 h-3.5 text-[#FA8128] shrink-0" />
+                        <div className="min-w-0">
+                          <span className="text-[9px] uppercase font-bold text-[var(--text-muted)] block">Time</span>
+                          <span className="font-bold text-[11px] truncate block">{formatTestTime(test.testDate || test.createdAt)}</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-4 text-xs text-[var(--text-sub)] pt-3 border-t border-[var(--border)]">

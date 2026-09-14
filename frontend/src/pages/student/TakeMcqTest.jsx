@@ -16,7 +16,10 @@ import {
   Send,
   HelpCircle,
   BookOpen,
+  Calendar,
+  Clock,
 } from 'lucide-react';
+import { formatTestDate, formatTestTime } from '../../utils/dateUtils';
 
 const TakeMcqTest = () => {
   const { id: testId } = useParams();
@@ -271,9 +274,24 @@ const TakeMcqTest = () => {
       {/* Header bar with timer and controls */}
       <div className="bg-[var(--bg-card)] rounded-2xl p-6 border border-[var(--border)] shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#FA8128]">
-            {test?.subjectId?.name || 'Subject'}
-          </span>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#FA8128]">
+              {test?.subjectId?.name || 'Subject'}
+            </span>
+            {test && (
+              <span className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] bg-[var(--bg-sub)] px-2.5 py-0.5 rounded-md border border-[var(--border)]">
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-[#FA8128]" />
+                  {formatTestDate(test.testDate || test.createdAt)}
+                </span>
+                <span className="text-[var(--border)]">|</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-[#FA8128]" />
+                  {formatTestTime(test.testDate || test.createdAt)}
+                </span>
+              </span>
+            )}
+          </div>
           <h2 className="text-2xl font-extrabold text-[var(--text-main)] leading-tight">
             {test?.title}
           </h2>
