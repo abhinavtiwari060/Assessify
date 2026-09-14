@@ -16,7 +16,9 @@ import {
   CheckCircle,
   Lock,
   FileText,
+  Calendar,
 } from 'lucide-react';
+import { formatTestDate, formatTestTime } from '../../utils/dateUtils';
 
 const AvailableTests = () => {
   const navigate = useNavigate();
@@ -245,6 +247,24 @@ const AvailableTests = () => {
                     <p className="text-xs text-[var(--text-sub)] line-clamp-2 mt-1">
                       {test.description || 'Proctored online assessment.'}
                     </p>
+                  </div>
+
+                  {/* Test Date & Time Display */}
+                  <div className="bg-[var(--bg-sub)] rounded-xl p-3 border border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#FA8128] shrink-0" />
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] block">Test Date</span>
+                        <span className="font-bold text-[var(--text-main)]">{formatTestDate(test.testDate || test.createdAt)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#FA8128] shrink-0" />
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] block">Test Time</span>
+                        <span className="font-bold text-[var(--text-main)]">{formatTestTime(test.testDate || test.createdAt)}</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Contextual Status Message Banner */}

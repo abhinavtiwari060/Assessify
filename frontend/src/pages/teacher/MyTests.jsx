@@ -14,7 +14,10 @@ import {
   KeyRound,
   FileText,
   BookOpen,
+  Calendar,
+  Clock,
 } from 'lucide-react';
+import { formatTestDate, formatTestTime } from '../../utils/dateUtils';
 
 const MyTests = () => {
   const [tests, setTests] = useState([]);
@@ -167,7 +170,7 @@ const MyTests = () => {
                   <th className="px-5 py-3.5">Type</th>
                   <th className="px-5 py-3.5">Test Code</th>
                   <th className="px-5 py-3.5">Status</th>
-                  <th className="px-5 py-3.5">Created At</th>
+                  <th className="px-5 py-3.5">Test Date & Time</th>
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
@@ -181,6 +184,7 @@ const MyTests = () => {
                   .map((test) => {
                   const status = test.status || 'DRAFT';
                   const displayType = test.testType || test.type || 'mcq';
+                  const rawDt = test.testDate || test.createdAt;
                   return (
                     <tr key={test._id} className="hover:bg-[var(--bg-sub)] transition-colors">
                       <td className="px-5 py-4">
@@ -219,12 +223,17 @@ const MyTests = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-xs font-medium text-[var(--text-muted)]">
-                        {new Date(test.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
+                      <td className="px-5 py-4 text-xs font-medium text-[var(--text-main)]">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="flex items-center gap-1 font-semibold text-[var(--text-main)]">
+                            <Calendar className="w-3.5 h-3.5 text-[#FA8128]" />
+                            {formatTestDate(rawDt)}
+                          </span>
+                          <span className="flex items-center gap-1 text-[var(--text-muted)]">
+                            <Clock className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                            {formatTestTime(rawDt)}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">

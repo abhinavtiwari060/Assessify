@@ -4,12 +4,19 @@ import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import PDFUploader from '../../components/PDFUploader';
 import {
+  formatDateForInput,
+  formatTimeForInput,
+  combineDateAndTime,
+} from '../../utils/dateUtils';
+import {
   Sparkles,
   Save,
   Trash2,
   AlertTriangle,
   Scan,
   BookOpen,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 
 const PdfToMcq = () => {
@@ -21,6 +28,8 @@ const PdfToMcq = () => {
   const [extractionMeta, setExtractionMeta] = useState(null);
   const [testTitle, setTestTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [testDate, setTestDate] = useState(formatDateForInput(new Date()));
+  const [testTime, setTestTime] = useState(formatTimeForInput(new Date()));
   const [warnings, setWarnings] = useState([]);
   const [extractionStatus, setExtractionStatus] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -128,6 +137,7 @@ const PdfToMcq = () => {
         description: 'Auto-extracted from uploaded PDF paper.',
         subjectId,
         type: 'mcq',
+        testDate: combineDateAndTime(testDate, testTime),
         timerMode: 'full',
         durationMinutes: 30,
         questions: extractedQuestions,
@@ -264,6 +274,34 @@ const PdfToMcq = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-[#FA8128]" />
+                  <span>Test Date</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={testDate}
+                  onChange={(e) => setTestDate(e.target.value)}
+                  className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-[#FA8128]" />
+                  <span>Test Time</span>
+                </label>
+                <input
+                  type="time"
+                  required
+                  value={testTime}
+                  onChange={(e) => setTestTime(e.target.value)}
+                  className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+                />
               </div>
             </div>
           </div>

@@ -92,6 +92,10 @@ const testSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    testDate: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,

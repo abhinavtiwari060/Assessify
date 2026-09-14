@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { Save } from 'lucide-react';
+import {
+  formatDateForInput,
+  formatTimeForInput,
+  combineDateAndTime,
+} from '../../utils/dateUtils';
+import { Save, Calendar, Clock } from 'lucide-react';
 
 const CreateEssayTest = () => {
   const navigate = useNavigate();
@@ -12,6 +17,8 @@ const CreateEssayTest = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [testDate, setTestDate] = useState(formatDateForInput(new Date()));
+  const [testTime, setTestTime] = useState(formatTimeForInput(new Date()));
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [totalMarks, setTotalMarks] = useState(20);
   const [saving, setSaving] = useState(false);
@@ -44,6 +51,7 @@ const CreateEssayTest = () => {
         subjectId,
         type: 'essay',
         timerMode: 'full',
+        testDate: combineDateAndTime(testDate, testTime),
         durationMinutes: Number(durationMinutes),
         totalMarks: Number(totalMarks),
         isPublished: true,
@@ -97,6 +105,36 @@ const CreateEssayTest = () => {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-[#FA8128]" />
+              <span>Test Date</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={testDate}
+              onChange={(e) => setTestDate(e.target.value)}
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#FA8128]" />
+              <span>Test Time</span>
+            </label>
+            <input
+              type="time"
+              required
+              value={testTime}
+              onChange={(e) => setTestTime(e.target.value)}
+              className="w-full bg-[var(--bg-sub)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:ring-2 focus:ring-[#FA8128]"
+            />
+          </div>
         </div>
 
         <div className="space-y-1">
